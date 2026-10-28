@@ -177,6 +177,49 @@ label.f.wide { grid-column: 1 / -1 }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 9px 16px; border-radius: 6px; font-size: 14px; z-index: 50 }
 textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size: 12px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); padding: 8px }
 @media (prefers-reduced-motion: no-preference) { .row, .btn, .chip { transition: border-color .12s, filter .12s } }
+
+/* Reiter */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 18px; overflow-x: auto }
+.tab { border: 0; background: none; padding: 10px 14px 9px; border-bottom: 3px solid transparent; font-family: var(--f-display); font-weight: 600; font-size: 19px; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); cursor: pointer; white-space: nowrap }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent) }
+.tab b { font-family: var(--f-num); font-size: 12px; font-weight: 500; background: var(--warn-bg); color: var(--warn); border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: 3px }
+
+/* Aktionskalender: Flächen als Zeilen, Kalenderwochen als Spalten */
+.kalbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 10px }
+.weeknav { display: flex; gap: 6px; align-items: center; flex-wrap: wrap }
+.weeknav .rng { font-family: var(--f-display); font-weight: 600; font-size: 20px; margin-left: 6px }
+.kalscroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); -webkit-overflow-scrolling: touch }
+.kal { --lab: 140px; display: grid; grid-template-columns: var(--lab) repeat(var(--n), minmax(72px, 1fr)); min-width: calc(var(--lab) + var(--n) * 72px) }
+.kh { padding: 7px 4px; text-align: center; font-size: 11px; color: var(--muted); border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); line-height: 1.2 }
+.kh b { display: block; font-family: var(--f-display); font-size: 18px; color: var(--fg); font-weight: 600 }
+.kh.now { background: var(--tag); color: var(--tag-fg) }
+.kh.now b { color: var(--tag-fg) }
+.kcorner { border-bottom: 1px solid var(--line); padding: 7px 10px; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 600; display: flex; align-items: flex-end; position: sticky; left: 0; background: var(--surface); z-index: 2 }
+.kl { padding: 10px; border-bottom: 1px solid var(--line); position: sticky; left: 0; background: var(--surface); z-index: 2; min-width: 0 }
+.kl .t { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; line-height: 1.25 }
+.kl .s { font-size: 12px; color: var(--muted) }
+.kc { border: 0; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); background: transparent; min-height: 74px; cursor: pointer; color: transparent; font-size: 22px; padding: 0 }
+.kc.now { background: color-mix(in srgb, var(--tag) 10%, transparent) }
+.kc:hover, .kc:focus-visible { background: var(--sunken); color: var(--muted) }
+.kw { border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 6px 4px; display: flex; min-width: 0 }
+.kb { flex: 1; min-width: 0; text-align: left; border-radius: 5px; padding: 6px 8px; font-size: 13px; line-height: 1.25; cursor: pointer; border: 1px solid transparent; overflow: hidden }
+.kb .t { font-weight: 600; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
+.kb .s { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .85 }
+.kb.st-offen, .kb.st-teil { background: var(--open-bg); color: var(--open); border-color: var(--open) }
+.kb.st-buchen { background: var(--warn-bg); color: var(--warn); border-color: var(--warn) }
+.kb.st-fertig { background: var(--ok-bg); color: var(--ok); border-color: var(--ok) }
+.kb.st-fehlt { background: var(--danger-bg); color: var(--danger); border-color: var(--danger) }
+.kb.nolink { background: repeating-linear-gradient(135deg, var(--surface) 0 6px, var(--sunken) 6px 12px); color: var(--fg); border: 1.5px dashed var(--muted) }
+.kb.cut-l { border-top-left-radius: 0; border-bottom-left-radius: 0 }
+.kb.cut-r { border-top-right-radius: 0; border-bottom-right-radius: 0 }
+.klegend { margin-top: 10px }
+.klegend span.hatch::before { background: repeating-linear-gradient(135deg, var(--surface) 0 2px, var(--muted) 2px 4px) }
+h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; letter-spacing: .03em; text-transform: uppercase; margin: 26px 0 10px }
+.urow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface) }
+.urow .s { color: var(--muted); font-size: 13px }
+.flrow { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto; gap: 8px; align-items: end }
+.flrow input, .flrow select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); width: 100%; min-width: 0 }
+@media (max-width: 560px) { .tab { font-size: 16px; padding-inline: 8px } .kal { --lab: 108px } .flrow { grid-template-columns: 1fr 1fr } .flrow .btn { grid-column: 1 / -1 } }
 </style>
 </head>
 <body>
@@ -194,6 +237,34 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
 
   <div class="banner" id="banner" hidden></div>
 
+  <nav class="tabs" role="tablist" aria-label="Bereiche">
+    <button class="tab" type="button" role="tab" id="tabKal" data-view="kalender" aria-selected="false">Aktionskalender</button>
+    <button class="tab" type="button" role="tab" id="tabGratis" data-view="gratis" aria-selected="true">Gratiswaren-Kontrolle</button>
+  </nav>
+
+  <section id="viewKal" hidden>
+    <div class="kalbar">
+      <div class="weeknav">
+        <button class="btn small" type="button" id="kPrev" aria-label="4 Wochen zurück">‹ 4 Wochen</button>
+        <button class="btn small" type="button" id="kToday">Diese Woche</button>
+        <button class="btn small" type="button" id="kNext" aria-label="4 Wochen vor">4 Wochen ›</button>
+        <span class="rng" id="kRange"></span>
+      </div>
+      <button class="btn small" type="button" id="btnFl">Flächen verwalten</button>
+    </div>
+    <div class="kalscroll"><div class="kal" id="kal"></div></div>
+    <div class="legend klegend">
+      <span class="hatch" style="--c:var(--muted)">belegt, Gratisware noch nicht angelegt</span>
+      <span style="--c:var(--open)">Gratisware offen</span>
+      <span style="--c:var(--warn)">zu verbuchen</span>
+      <span style="--c:var(--ok)">verbucht</span>
+    </div>
+    <p class="note">Freies Feld antippen, um eine Fläche zu belegen. Eine Belegung antippen, um sie zu ändern oder in die Gratiswaren-Kontrolle zu übernehmen.</p>
+    <h3 class="sec" id="uHead">Noch nicht übernommen</h3>
+    <div class="list" id="uList"></div>
+  </section>
+
+  <section id="viewGratis">
   <section class="kpis" aria-label="Übersicht">
     <div class="kpi total"><div class="lbl">Gratiswert gesamt</div><div class="val" id="kTotal">–</div><div class="sub" id="kTotalSub">&nbsp;</div></div>
     <div class="kpi done"><div class="lbl">Davon bereits verbucht</div><div class="val" id="kDone">–</div><div class="sub" id="kDoneSub">&nbsp;</div></div>
@@ -211,7 +282,45 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
     <div class="empty"><strong>Aktionen werden geladen …</strong>Hier erscheinen deine vereinbarten Gratiswaren.</div>
   </div>
   <p class="note">Kassenregal = 20 % · Standardaktion = 10 % · abweichende Quote selbst eintragen. Anspruch = ganze Gratis-Einheiten aus dem Gratiswert, der Rest bleibt als Restwert stehen.</p>
+  </section>
 </div>
+
+<!-- Belegung -->
+<dialog id="dlgBel" aria-labelledby="bTitle">
+  <form id="belForm" method="dialog" novalidate>
+    <div class="dlg-h"><h2 id="bTitle">Fläche belegen</h2><button class="btn ghost" type="button" data-close>Schließen</button></div>
+    <div class="dlg-b">
+      <fieldset>
+        <legend>Fläche &amp; Zeitraum</legend>
+        <label class="f wide">Aktionsfläche<select id="bl_flaeche"></select></label>
+        <label class="f">Ab Kalenderwoche<select id="bl_start"></select></label>
+        <label class="f">Dauer<select id="bl_wochen"></select></label>
+      </fieldset>
+      <div class="calc" id="bl_info"></div>
+      <fieldset>
+        <legend>Mieter</legend>
+        <label class="f">Lieferant<input id="bl_lieferant" autocomplete="off" list="dlLieferanten"></label>
+        <label class="f">Kontakt <span class="h">optional</span><input id="bl_kontakt" autocomplete="off"></label>
+        <label class="f wide">Artikel / Aktion<input id="bl_artikel" autocomplete="off" placeholder="z. B. Weihnachtsbier-Display"></label>
+        <label class="f wide">Notiz <span class="h">optional</span><input id="bl_notiz" autocomplete="off"></label>
+      </fieldset>
+      <div class="err" id="bl_err" hidden></div>
+    </div>
+    <div class="dlg-f" id="bl_foot"></div>
+  </form>
+</dialog>
+
+<!-- Flächen verwalten -->
+<dialog id="dlgFl" aria-labelledby="flTitle">
+  <div class="dlg-h"><h2 id="flTitle">Aktionsflächen</h2><button class="btn ghost" type="button" data-close>Schließen</button></div>
+  <div class="dlg-b">
+    <p style="margin:0">Die Art der Fläche bestimmt die Gratisquote, wenn du eine Belegung in die Gratiswaren-Kontrolle übernimmst.</p>
+    <div class="lief" id="flList"></div>
+    <div><button class="btn" type="button" id="flAdd">+ Fläche hinzufügen</button></div>
+    <div class="err" id="flErr" hidden></div>
+  </div>
+  <div class="dlg-f"><button class="btn ghost" type="button" data-close>Abbrechen</button><button class="btn primary" type="button" id="flSave">Speichern</button></div>
+</dialog>
 
 <!-- Erfassen / Bearbeiten -->
 <dialog id="dlgForm" aria-labelledby="fTitle">
@@ -306,14 +415,16 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
   const r2 = (v) => Math.round((v + Number.EPSILON) * 100) / 100;
   const num = (v) => { if (v === "" || v == null) return null; const n = Number(String(v).replace(",", ".")); return isFinite(n) ? n : null; };
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const today = () => new Date().toISOString().slice(0, 10);
+  const today = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
   const dDE = (iso) => iso ? iso.split("-").reverse().join(".") : "";
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
   let items = [];          // {id, ...data}
   let store = "loading";
   let filter = "alle", query = "";
-  let editingId = null, detailId = null;
+  let editingId = null, detailId = null, pendingBelId = null;
+  let flaechen = [], belegungen = [];   // Aktionskalender
+  let view = "gratis";
 
   /* ---------- Berechnung ---------- */
   function quoteOf(b) {
@@ -370,6 +481,7 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
   async function remove(id) { items = items.filter((x) => x.id !== id); saveLocal(); render(); }
   function connect() {
     store = "local"; items = loadLocal();
+    loadKal();
     let seeded = false; try { seeded = !!localStorage.getItem(SEEDED); } catch (e) {}
     if (!items.length && !seeded) {
       items = [{ id: "beispiel-weihnachtsbier", beispiel: true, lieferant: "Beispiel-Lieferant", kontakt: "", datum: today(), bestellartikel: "Weihnachtsbier-Display", menge: 6, einheit: "Display", ve: 60, veName: "Sixpack", preis: 6.49, aktion: "Kassenregal", quote: null, gratisartikel: "Barre Pils 24 × 0,33 l", gEinheit: "Kiste", gPreis: 17.99, notiz: "Beispiel – bearbeiten oder löschen", lieferungen: [], erstellt: new Date().toISOString() }];
@@ -384,6 +496,7 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
   /* ---------- Übersicht ---------- */
   const FILTERS = [["alle", "Alle"], ["offen", "Offen"], ["buchen", "Zu verbuchen"], ["fertig", "Verbucht"], ["fehlt", "Angaben fehlen"]];
   function render() {
+    renderKal();
     const rows = items.map((b) => ({ b, c: calc(b) }));
     let total = 0, done = 0, waiting = 0;
     rows.forEach(({ c }) => { if (c.gratiswert != null) { total += c.gratiswert; done += c.verbucht; waiting += Math.max(0, c.geliefertWert - c.verbucht); } });
@@ -425,7 +538,7 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
       return `<button type="button" class="row" data-id="${esc(b.id)}">
         <div class="c-main"><div class="t">${esc(b.lieferant || "Ohne Lieferant")}${b.beispiel ? '<span class="tagx">Beispiel</span>' : ""}</div>
           <div class="s">${esc(b.bestellartikel || "–")} → ${esc(b.gratisartikel || "–")}</div>
-          <div class="s"><span class="${b.aktion === "Kassenregal" ? "aktion-kr" : ""}">${b.aktion === "Eigene" ? "Eigene Quote" : b.aktion === "Standard" ? "Standardaktion" : "Kassenregal"} · ${pct(c.quote)}</span>${b.datum ? " · " + dDE(b.datum) : ""}</div></div>
+          <div class="s"><span class="${b.aktion === "Kassenregal" ? "aktion-kr" : ""}">${b.aktion === "Eigene" ? "Eigene Quote" : b.aktion === "Standard" ? "Standardaktion" : "Kassenregal"} · ${pct(c.quote)}</span>${b.datum ? " · " + dDE(b.datum) : ""}${belTag(b)}</div></div>
         <div><div class="k">Gratiswert</div><div class="v">${fmt(c.gratiswert)}</div></div>
         <div><div class="k">Anspruch</div><div class="v">${c.anspruch != null ? units(c.anspruch, b.gEinheit) : "–"}</div>
           <div class="s num">${c.anspruch != null ? "geliefert " + nf.format(c.geliefert) : ""}</div></div>
@@ -475,12 +588,13 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
     if (c.bestellwert == null) h += `<div class="hint">Bestellmenge${isD ? ", Einheiten je Display" : ""} und Preis eintragen.</div>`;
     $("fCalc").innerHTML = h;
   }
-  function openForm(id) {
+  function openForm(id, prefill, belId) {
     editingId = id || null;
+    pendingBelId = id ? null : (belId || null);
     const b = id ? items.find((x) => x.id === id) : null;
-    $("fTitle").textContent = b ? "Gratisware bearbeiten" : "Neue Gratisware";
+    $("fTitle").textContent = b ? "Gratisware bearbeiten" : prefill ? "Belegung übernehmen" : "Neue Gratisware";
     $("fErr").hidden = true;
-    fillForm(b || { datum: today(), einheit: "Display", veName: "Sixpack", gEinheit: "Kiste", aktion: "Kassenregal" });
+    fillForm(b || { datum: today(), einheit: "Display", veName: "Sixpack", gEinheit: "Kiste", aktion: "Kassenregal", ...(prefill || {}) });
     $("dlgForm").showModal();
     $("f_lieferant").focus();
   }
@@ -498,8 +612,15 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
     const prev = editingId ? items.find((x) => x.id === editingId) : null;
     const item = { ...(prev || {}), ...o, id: editingId || uid(), lieferungen: prev?.lieferungen || [], erstellt: prev?.erstellt || new Date().toISOString(), geaendert: new Date().toISOString() };
     if (prev) delete item.beispiel;
+    if (!prev && pendingBelId) item.belegungId = pendingBelId;
     $("fSave").disabled = true;
-    try { await persist(item); $("dlgForm").close(); toast(prev ? "Gespeichert" : "Gratisware angelegt"); if (prev && detailId === item.id) renderDetail(); }
+    try {
+      if (!prev && pendingBelId) {
+        const bel = belegungen.find((x) => x.id === pendingBelId);
+        if (bel) { bel.buchungId = item.id; saveKal(); }
+        pendingBelId = null;
+      }
+      await persist(item); $("dlgForm").close(); toast(prev ? "Gespeichert" : "Gratisware angelegt"); if (prev && detailId === item.id) renderDetail(); }
     catch (err) { $("fErr").textContent = "Speichern fehlgeschlagen: " + (err?.message || err) + ". Bitte erneut versuchen."; $("fErr").hidden = false; }
     finally { $("fSave").disabled = false; }
   });
@@ -520,6 +641,7 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
       <div><span>Aktion</span>${b.aktion === "Eigene" ? "Eigene Quote" : b.aktion === "Standard" ? "Standardaktion" : "Kassenregal"} · ${pct(c.quote)}</div>
       <div><span>Abgemacht am</span>${b.datum ? dDE(b.datum) : "–"}</div>
       <div><span>Gratisartikel</span>${esc(b.gratisartikel || "–")}</div>
+      ${belOf(b) ? `<div><span>Aktionsfläche</span>${esc(flName(belOf(b).flaecheId))} · ${belRange(belOf(b))}</div>` : ""}
       ${b.notiz ? `<div><span>Notiz</span>${esc(b.notiz)}</div>` : ""}
     </div>`;
     h += `<div class="calc">`;
@@ -584,19 +706,25 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
     else if (t.id === "dBookAll") { updateLief((ls) => ls.map((l) => l.verbucht ? l : { ...l, verbucht: true, verbuchtAm: today() })); toast("Alle Lieferungen verbucht"); }
     else if (t.id === "dDel") { confirmDel = true; renderDetail(); }
     else if (t.id === "dDelNo") { confirmDel = false; renderDetail(); }
-    else if (t.id === "dDelYes") { const id = detailId; $("dlgDetail").close(); try { await remove(id); toast("Gelöscht"); } catch (err) { toast("Löschen fehlgeschlagen."); } }
+    else if (t.id === "dDelYes") {
+      const id = detailId; $("dlgDetail").close();
+      try {
+        belegungen.forEach((x) => { if (x.buchungId === id) delete x.buchungId; }); saveKal();
+        await remove(id); toast("Gelöscht");
+      } catch (err) { toast("Löschen fehlgeschlagen."); }
+    }
   });
 
   /* ---------- CSV-Export ---------- */
   function csv() {
     const n = (v) => v == null || v === "" ? "" : String(v).replace(".", ",");
     const q = (v) => { const s = String(v ?? ""); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
-    const head = ["Abgemacht am", "Lieferant", "Kontakt", "Bestellartikel", "Gratisartikel", "Aktion", "Quote %", "Bestellmenge", "Bestelleinheit", "VE je Display", "Verkaufseinheit", "Preis je Einheit €", "Bestellwert €", "Gratiswert €", "Gratis-Einheit", "Preis je Gratis-Einheit €", "Anspruch", "Restwert €", "Geliefert", "Verbucht €", "Offen €", "Status", "Lieferungen"];
+    const head = ["Abgemacht am", "Lieferant", "Kontakt", "Bestellartikel", "Gratisartikel", "Aktion", "Quote %", "Bestellmenge", "Bestelleinheit", "VE je Display", "Verkaufseinheit", "Preis je Einheit €", "Bestellwert €", "Gratiswert €", "Gratis-Einheit", "Preis je Gratis-Einheit €", "Anspruch", "Restwert €", "Geliefert", "Verbucht €", "Offen €", "Status", "Lieferungen", "Aktionsfläche"];
     const lines = [head.join(";")];
     items.forEach((b) => {
       const c = calc(b);
       const lf = (b.lieferungen || []).map((l) => `${dDE(l.datum)} ${l.menge} ${b.gEinheit}${l.lieferschein ? " LS " + l.lieferschein : ""}${l.verbucht ? " (verbucht " + dDE(l.verbuchtAm) + ")" : " (nicht verbucht)"}`).join(" | ");
-      lines.push([dDE(b.datum), b.lieferant, b.kontakt, b.bestellartikel, b.gratisartikel, b.aktion === "Eigene" ? "Eigene Quote" : b.aktion, n(c.quote != null ? r2(c.quote * 100) : ""), n(b.menge), b.einheit, n(c.isDisplay ? b.ve : ""), c.isDisplay ? b.veName : "", n(b.preis), n(c.bestellwert), n(c.gratiswert), b.gEinheit, n(b.gPreis), n(c.anspruch), n(c.restwert), n(c.geliefert), n(c.verbucht), n(c.offen), c.status, lf].map(q).join(";"));
+      lines.push([dDE(b.datum), b.lieferant, b.kontakt, b.bestellartikel, b.gratisartikel, b.aktion === "Eigene" ? "Eigene Quote" : b.aktion, n(c.quote != null ? r2(c.quote * 100) : ""), n(b.menge), b.einheit, n(c.isDisplay ? b.ve : ""), c.isDisplay ? b.veName : "", n(b.preis), n(c.bestellwert), n(c.gratiswert), b.gEinheit, n(b.gPreis), n(c.anspruch), n(c.restwert), n(c.geliefert), n(c.verbucht), n(c.offen), c.status, lf, belOf(b) ? `${flName(belOf(b).flaecheId)} ${belRange(belOf(b))}` : ""].map(q).join(";"));
     });
     return "﻿" + lines.join("\r\n");
   }
@@ -624,7 +752,7 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
     if (await saveFile(`gratiswaren_${today()}.csv`, csv(), "text/csv")) toast("Export erstellt");
   });
   $("btnBackup").addEventListener("click", async () => {
-    const data = JSON.stringify({ app: "gratiswaren-kontrolle", version: 1, gesichert: new Date().toISOString(), buchungen: items }, null, 1);
+    const data = JSON.stringify({ app: "gratiswaren-kontrolle", version: 2, gesichert: new Date().toISOString(), buchungen: items, flaechen, belegungen }, null, 1);
     if (await saveFile(`gratiswaren_sicherung_${today()}.json`, data, "application/json")) toast("Sicherung erstellt");
   });
   let pendingRestore = null;
@@ -636,31 +764,261 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
       const o = JSON.parse(await f.text());
       const list = Array.isArray(o) ? o : o.buchungen;
       if (!Array.isArray(list) || list.some((x) => !x || typeof x !== "object" || !x.id)) throw new Error();
-      pendingRestore = list;
-      ask.innerHTML = `Sicherung mit ${list.length} ${list.length === 1 ? "Aktion" : "Aktionen"} laden? Die ${items.length} Einträge auf diesem Gerät werden ersetzt. <button type="button" class="btn danger small" id="rsYes">Ja, ersetzen</button><button type="button" class="btn small" id="rsNo">Abbrechen</button>`;
+      const fl = Array.isArray(o.flaechen) ? o.flaechen : null, bl = Array.isArray(o.belegungen) ? o.belegungen : [];
+      pendingRestore = { list, fl, bl };
+      ask.innerHTML = `Sicherung mit ${list.length} ${list.length === 1 ? "Aktion" : "Aktionen"}${fl ? ` und ${bl.length} ${bl.length === 1 ? "Belegung" : "Belegungen"}` : ""} laden? Die Einträge auf diesem Gerät werden ersetzt. <button type="button" class="btn danger small" id="rsYes">Ja, ersetzen</button><button type="button" class="btn small" id="rsNo">Abbrechen</button>`;
     } catch (err) { pendingRestore = null; ask.textContent = "Diese Datei ist keine gültige Sicherung der Gratiswaren-App."; }
     ask.hidden = false;
   });
   $("restoreAsk").addEventListener("click", (e) => {
     const t = e.target.closest("button"); if (!t) return;
     if (t.id === "rsYes" && pendingRestore) {
-      items = pendingRestore; pendingRestore = null;
-      try { saveLocal(); } catch (err) { return; }
+      items = pendingRestore.list;
+      if (pendingRestore.fl) { flaechen = pendingRestore.fl; belegungen = pendingRestore.bl; }
+      pendingRestore = null;
+      try { saveLocal(); saveKal(); } catch (err) { return; }
       render(); $("dlgData").close(); toast("Sicherung geladen");
     } else { pendingRestore = null; $("restoreAsk").hidden = true; }
   });
+
+  /* ---------- Aktionskalender ---------- */
+  const FL_KEY = "gratiswaren-flaechen", BEL_KEY = "gratiswaren-belegungen";
+  const KAL_N = 12;                       // sichtbare Wochen
+  const TYPEN = { Kassenregal: "Kassenregal · 20 %", Standard: "Standardaktion · 10 %" };
+  const day = (iso) => new Date(iso + "T00:00:00Z");
+  const isoOf = (d) => d.toISOString().slice(0, 10);
+  function mondayOf(iso) { const d = day(iso); d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 6) % 7); return isoOf(d); }
+  function addWeeks(iso, n) { const d = day(iso); d.setUTCDate(d.getUTCDate() + 7 * n); return isoOf(d); }
+  function addDays(iso, n) { const d = day(iso); d.setUTCDate(d.getUTCDate() + n); return isoOf(d); }
+  const weekDiff = (a, b) => Math.round((day(b) - day(a)) / 6048e5);
+  function isoWeek(iso) {
+    const d = day(iso); d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 6) % 7 + 3);   // Donnerstag der Woche
+    const y = d.getUTCFullYear();
+    return { w: 1 + Math.floor((d - Date.UTC(y, 0, 1)) / 6048e5), y };
+  }
+  const kw = (iso) => isoWeek(iso).w;
+  const shortDE = (iso) => iso.slice(8, 10) + "." + iso.slice(5, 7) + ".";
+  const belEnd = (b) => addWeeks(b.start, (b.wochen || 1) - 1);
+  const belRange = (b) => (b.wochen || 1) > 1 ? `KW ${kw(b.start)}–${kw(belEnd(b))}` : `KW ${kw(b.start)}`;
+  const flById = (id) => flaechen.find((f) => f.id === id);
+  const flName = (id) => flById(id)?.name || "Gelöschte Fläche";
+  const belOf = (b) => b.belegungId ? belegungen.find((x) => x.id === b.belegungId) : null;
+  const belTag = (b) => { const x = belOf(b); return x ? ` · <span class="tagx" style="margin-left:0">${esc(flName(x.flaecheId))} · ${belRange(x)}</span>` : ""; };
+  let kalStart = mondayOf(today());
+
+  function loadKal() {
+    try {
+      const f = JSON.parse(localStorage.getItem(FL_KEY) || "null");
+      flaechen = Array.isArray(f) ? f : [
+        { id: "fl1", name: "Kassenregal 1", typ: "Kassenregal" },
+        { id: "fl2", name: "Kassenregal 2", typ: "Kassenregal" },
+        { id: "fl3", name: "Stirnseite Getränke", typ: "Standard" }];
+      belegungen = JSON.parse(localStorage.getItem(BEL_KEY) || "[]");
+      if (!Array.isArray(f)) localStorage.setItem(FL_KEY, JSON.stringify(flaechen));
+    } catch (e) { if (!flaechen.length) flaechen = [{ id: "fl1", name: "Kassenregal 1", typ: "Kassenregal" }]; }
+  }
+  function saveKal() {
+    try { localStorage.setItem(FL_KEY, JSON.stringify(flaechen)); localStorage.setItem(BEL_KEY, JSON.stringify(belegungen)); }
+    catch (e) { toast("Speichern auf dem Gerät fehlgeschlagen. Bitte eine Sicherung machen."); throw e; }
+  }
+  function linkedBuchung(b) { return b.buchungId ? items.find((x) => x.id === b.buchungId) : null; }
+  function conflict(b) {
+    const end = belEnd(b);
+    return belegungen.find((o) => o.id !== b.id && o.flaecheId === b.flaecheId && o.start <= end && b.start <= belEnd(o));
+  }
+
+  function renderKal() {
+    const cur = mondayOf(today());
+    const weeks = Array.from({ length: KAL_N }, (_, i) => addWeeks(kalStart, i));
+    const last = weeks[KAL_N - 1];
+    const y1 = isoWeek(weeks[0]).y, y2 = isoWeek(last).y;
+    $("kRange").textContent = `KW ${kw(weeks[0])} – KW ${kw(last)} · ${y1 === y2 ? y1 : y1 + "/" + y2}`;
+    const kal = $("kal"); kal.style.setProperty("--n", KAL_N);
+    let h = `<div class="kcorner" style="grid-row:1;grid-column:1">Fläche</div>`;
+    weeks.forEach((w, i) => {
+      h += `<div class="kh ${w === cur ? "now" : ""}" style="grid-row:1;grid-column:${i + 2}"><b>KW ${kw(w)}</b>${shortDE(w)}–${shortDE(addDays(w, 6))}</div>`;
+    });
+    flaechen.forEach((f, fi) => {
+      const row = fi + 2, covered = new Array(KAL_N).fill(false);
+      h += `<div class="kl" style="grid-row:${row};grid-column:1"><div class="t">${esc(f.name)}</div><div class="s">${TYPEN[f.typ] || ""}</div></div>`;
+      belegungen.filter((b) => b.flaecheId === f.id && b.start <= last && belEnd(b) >= weeks[0]).forEach((b) => {
+        const a = Math.max(0, weekDiff(kalStart, b.start)), e = Math.min(KAL_N - 1, weekDiff(kalStart, belEnd(b)));
+        for (let i = a; i <= e; i++) covered[i] = true;
+        const bu = linkedBuchung(b), c = bu ? calc(bu) : null;
+        const cls = c ? c.cls : "nolink";
+        const cut = (b.start < weeks[0] ? " cut-l" : "") + (belEnd(b) > last ? " cut-r" : "");
+        const state = c ? c.status : "Gratisware fehlt";
+        h += `<div class="kw" style="grid-row:${row};grid-column:${a + 2} / span ${e - a + 1}">
+          <button type="button" class="kb ${cls}${cut}" data-bel="${esc(b.id)}" aria-label="${esc(f.name)}, ${belRange(b)}: ${esc(b.lieferant)}, ${state}">
+            <div class="t">${esc(b.lieferant || "Ohne Lieferant")}</div>
+            <div class="s">${esc(b.artikel || "")}</div>
+            <div class="s">${belRange(b)} · ${state}</div>
+          </button></div>`;
+      });
+      weeks.forEach((w, i) => {
+        if (!covered[i]) h += `<button type="button" class="kc ${w === cur ? "now" : ""}" style="grid-row:${row};grid-column:${i + 2}" data-fl="${esc(f.id)}" data-w="${w}" aria-label="${esc(f.name)} in KW ${kw(w)} belegen">+</button>`;
+      });
+    });
+    if (!flaechen.length) h += `<div style="grid-row:2;grid-column:1 / -1;padding:24px;color:var(--muted)">Noch keine Aktionsflächen. Lege sie über „Flächen verwalten“ an.</div>`;
+    kal.innerHTML = h;
+
+    // Belegungen ohne Gratisware
+    const open = belegungen.filter((b) => !linkedBuchung(b)).sort((a, b) => a.start.localeCompare(b.start));
+    $("uHead").textContent = open.length ? `Noch nicht übernommen (${open.length})` : "Alle Belegungen übernommen";
+    $("uList").innerHTML = open.length ? open.map((b) => `<div class="urow">
+        <div><b>${esc(b.lieferant || "Ohne Lieferant")}</b>${b.artikel ? " · " + esc(b.artikel) : ""}
+          <div class="s">${esc(flName(b.flaecheId))} · ${belRange(b)} · ${dDE(b.start)} – ${dDE(addDays(belEnd(b), 6))}</div></div>
+        <button type="button" class="btn primary small" data-take="${esc(b.id)}">In Gratisware übernehmen</button>
+      </div>`).join("") : `<div class="empty" style="padding:18px">Jede Belegung hat schon einen Eintrag in der Gratiswaren-Kontrolle.</div>`;
+    const tb = $("tabKal"); tb.innerHTML = "Aktionskalender" + (open.length ? `<b title="noch nicht übernommen">${open.length}</b>` : "");
+  }
+
+  /* Belegung anlegen / ändern */
+  let belEditId = null, belConfirmDel = false;
+  function openBel(id, preset) {
+    belEditId = id || null; belConfirmDel = false;
+    const b = id ? belegungen.find((x) => x.id === id) : { flaecheId: preset?.flaecheId || flaechen[0]?.id, start: preset?.start || mondayOf(today()), wochen: 1 };
+    if (!b) return;
+    if (!flaechen.length) { openFl(); return; }
+    $("bTitle").textContent = id ? "Belegung" : "Fläche belegen";
+    $("bl_flaeche").innerHTML = flaechen.map((f) => `<option value="${esc(f.id)}">${esc(f.name)} (${TYPEN[f.typ] || ""})</option>`).join("");
+    const cur = mondayOf(today());
+    const opts = new Set(Array.from({ length: 70 }, (_, i) => addWeeks(cur, i - 16)));
+    opts.add(b.start);
+    $("bl_start").innerHTML = [...opts].sort().map((w) => `<option value="${w}">KW ${kw(w)} · ab ${dDE(w)}</option>`).join("");
+    $("bl_wochen").innerHTML = Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">${i + 1} ${i ? "Wochen" : "Woche"}</option>`).join("");
+    $("bl_flaeche").value = b.flaecheId; $("bl_start").value = b.start; $("bl_wochen").value = String(b.wochen || 1);
+    ["lieferant", "kontakt", "artikel", "notiz"].forEach((k) => $("bl_" + k).value = b[k] || "");
+    $("bl_err").hidden = true;
+    syncBel(); renderBelFoot();
+    $("dlgBel").showModal();
+    if (!id) $("bl_lieferant").focus();
+  }
+  function readBel() {
+    return { id: belEditId || uid(), flaecheId: $("bl_flaeche").value, start: $("bl_start").value, wochen: +$("bl_wochen").value,
+      lieferant: $("bl_lieferant").value.trim(), kontakt: $("bl_kontakt").value.trim(), artikel: $("bl_artikel").value.trim(), notiz: $("bl_notiz").value.trim() };
+  }
+  function syncBel() {
+    const b = readBel(), f = flById(b.flaecheId), x = conflict(b);
+    const prev = belEditId ? belegungen.find((y) => y.id === belEditId) : null;
+    const bu = prev ? linkedBuchung(prev) : null;
+    let h = `<div class="ln"><span>Zeitraum</span><span>${belRange(b)}</span></div>
+      <div class="ln"><span>von – bis</span><span>${dDE(b.start)} – ${dDE(addDays(belEnd(b), 6))}</span></div>
+      <div class="ln"><span>Gratisquote der Fläche</span><span>${f?.typ === "Standard" ? "10 %" : "20 %"}</span></div>`;
+    if (bu) h += `<div class="ln sum"><span>Gratiswaren-Kontrolle</span><span>${fmt(calc(bu).gratiswert)} · ${calc(bu).status}</span></div>`;
+    if (x) h += `<div class="hint" style="color:var(--danger)">Überschneidung: ${esc(flName(x.flaecheId))} ist in ${belRange(x)} schon an ${esc(x.lieferant || "jemanden")} vergeben.</div>`;
+    $("bl_info").innerHTML = h;
+  }
+  // Knöpfe nur bei Bedarf neu aufbauen, sonst geht ein Tipp beim Verlassen eines Felds verloren
+  function renderBelFoot() {
+    const prev = belEditId ? belegungen.find((y) => y.id === belEditId) : null;
+    const bu = prev ? linkedBuchung(prev) : null;
+    $("bl_foot").innerHTML = belConfirmDel
+      ? `<div class="confirm">Belegung löschen?${bu ? " Der Eintrag in der Gratiswaren-Kontrolle bleibt erhalten." : ""} <button type="button" class="btn danger small" id="blDelYes">Ja, löschen</button><button type="button" class="btn small" id="blDelNo">Behalten</button></div>`
+      : `${prev ? `<button type="button" class="btn ghost" id="blDel">Löschen</button>` : `<span></span>`}
+         <div class="actions">
+           <button type="submit" class="btn${bu ? " primary" : ""}">Speichern</button>
+           ${bu ? `<button type="button" class="btn" id="blOpenG">Gratisware öffnen</button>`
+                : `<button type="button" class="btn primary" id="blTake">Speichern &amp; Gratisware anlegen</button>`}
+         </div>`;
+  }
+  function saveBel() {
+    const b = readBel();
+    if (!b.lieferant) { $("bl_err").textContent = "Bitte einen Lieferanten eintragen."; $("bl_err").hidden = false; $("bl_lieferant").focus(); return null; }
+    if (conflict(b)) { $("bl_err").textContent = "Die Fläche ist in diesem Zeitraum schon belegt. Bitte andere Woche, Dauer oder Fläche wählen."; $("bl_err").hidden = false; return null; }
+    const i = belegungen.findIndex((x) => x.id === b.id);
+    if (i >= 0) belegungen[i] = { ...belegungen[i], ...b }; else belegungen.push({ ...b, erstellt: new Date().toISOString() });
+    try { saveKal(); } catch (e) { return null; }
+    render();
+    return belegungen.find((x) => x.id === b.id);
+  }
+  function takeOver(bel) {
+    const f = flById(bel.flaecheId);
+    openForm(null, {
+      lieferant: bel.lieferant, kontakt: bel.kontakt, bestellartikel: bel.artikel, datum: bel.start,
+      aktion: f?.typ === "Standard" ? "Standard" : "Kassenregal",
+      notiz: [`${flName(bel.flaecheId)} · ${belRange(bel)}`, bel.notiz].filter(Boolean).join(" · ")
+    }, bel.id);
+  }
+  $("belForm").addEventListener("input", () => { $("bl_err").hidden = true; syncBel(); });
+  $("belForm").addEventListener("change", syncBel);
+  $("belForm").addEventListener("submit", (e) => { e.preventDefault(); if (saveBel()) { $("dlgBel").close(); toast("Belegung gespeichert"); } });
+  $("dlgBel").addEventListener("click", (e) => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.id === "blTake") { const bel = saveBel(); if (bel) { $("dlgBel").close(); takeOver(bel); } }
+    else if (t.id === "blOpenG") { const prev = belegungen.find((y) => y.id === belEditId); const bu = prev && linkedBuchung(prev); $("dlgBel").close(); if (bu) { setView("gratis"); openDetail(bu.id); } }
+    else if (t.id === "blDel") { belConfirmDel = true; renderBelFoot(); }
+    else if (t.id === "blDelNo") { belConfirmDel = false; renderBelFoot(); }
+    else if (t.id === "blDelYes") {
+      const prev = belegungen.find((y) => y.id === belEditId);
+      belegungen = belegungen.filter((y) => y.id !== belEditId);
+      const bu = prev && linkedBuchung(prev);
+      try { saveKal(); if (bu) { delete bu.belegungId; saveLocal(); } } catch (err) { return; }
+      $("dlgBel").close(); render(); toast("Belegung gelöscht");
+    }
+  });
+  $("kal").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-bel]"); if (b) { openBel(b.dataset.bel); return; }
+    const c = e.target.closest(".kc"); if (c) openBel(null, { flaecheId: c.dataset.fl, start: c.dataset.w });
+  });
+  $("uList").addEventListener("click", (e) => {
+    const t = e.target.closest("[data-take]"); if (!t) return;
+    const bel = belegungen.find((x) => x.id === t.dataset.take); if (bel) takeOver(bel);
+  });
+  $("kPrev").addEventListener("click", () => { kalStart = addWeeks(kalStart, -4); renderKal(); });
+  $("kNext").addEventListener("click", () => { kalStart = addWeeks(kalStart, 4); renderKal(); });
+  $("kToday").addEventListener("click", () => { kalStart = mondayOf(today()); renderKal(); });
+
+  /* Flächen verwalten */
+  let flDraft = [];
+  function openFl() { flDraft = flaechen.map((f) => ({ ...f })); renderFl(); $("flErr").hidden = true; $("dlgFl").showModal(); }
+  function renderFl() {
+    $("flList").innerHTML = flDraft.map((f, i) => {
+      const used = belegungen.filter((b) => b.flaecheId === f.id).length;
+      return `<div class="flrow">
+        <label class="f">Name<input data-i="${i}" data-k="name" value="${esc(f.name)}" autocomplete="off"></label>
+        <label class="f">Art<select data-i="${i}" data-k="typ">${Object.entries(TYPEN).map(([k, l]) => `<option value="${k}" ${f.typ === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+        <button type="button" class="btn ghost small" data-rm="${i}" ${used ? `disabled title="Hat ${used} Belegung(en)"` : ""}>${used ? `${used} belegt` : "Entfernen"}</button>
+      </div>`;
+    }).join("") || `<div class="note" style="margin:0">Noch keine Flächen.</div>`;
+  }
+  $("flList").addEventListener("input", (e) => { const t = e.target; if (t.dataset.i != null) flDraft[+t.dataset.i][t.dataset.k] = t.value; });
+  $("flList").addEventListener("change", (e) => { const t = e.target; if (t.dataset.i != null) flDraft[+t.dataset.i][t.dataset.k] = t.value; });
+  $("flList").addEventListener("click", (e) => { const t = e.target.closest("[data-rm]"); if (t && !t.disabled) { flDraft.splice(+t.dataset.rm, 1); renderFl(); } });
+  $("flAdd").addEventListener("click", () => { flDraft.push({ id: "fl" + uid(), name: `Fläche ${flDraft.length + 1}`, typ: "Standard" }); renderFl(); });
+  $("flSave").addEventListener("click", () => {
+    if (flDraft.some((f) => !f.name.trim())) { $("flErr").textContent = "Jede Fläche braucht einen Namen."; $("flErr").hidden = false; return; }
+    flaechen = flDraft.map((f) => ({ ...f, name: f.name.trim() }));
+    try { saveKal(); } catch (e) { return; }
+    $("dlgFl").close(); renderKal(); toast("Flächen gespeichert");
+  });
+  $("btnFl").addEventListener("click", openFl);
+
+  /* Reiter */
+  function setView(v) {
+    view = v === "kalender" ? "kalender" : "gratis";
+    $("viewKal").hidden = view !== "kalender"; $("viewGratis").hidden = view !== "gratis";
+    $("tabKal").setAttribute("aria-selected", view === "kalender"); $("tabGratis").setAttribute("aria-selected", view === "gratis");
+    $("btnNew").textContent = view === "kalender" ? "+ Fläche belegen" : "+ Neue Gratisware";
+    try { localStorage.setItem("gratiswaren-ansicht", view); } catch (e) {}
+    if (location.hash !== "#" + view) history.replaceState(null, "", "#" + view);
+  }
+  document.querySelector(".tabs").addEventListener("click", (e) => { const t = e.target.closest("[data-view]"); if (t) setView(t.dataset.view); });
+  window.addEventListener("hashchange", () => setView(location.hash.slice(1)));
 
   /* ---------- Allgemein ---------- */
   let tt;
   function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 2200); }
   document.querySelectorAll("dialog").forEach((d) => d.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) d.close(); }));
-  $("btnNew").addEventListener("click", () => openForm(null));
+  $("btnNew").addEventListener("click", () => view === "kalender" ? openBel(null) : openForm(null));
   $("list").addEventListener("click", (e) => { const r = e.target.closest(".row"); if (r) openDetail(r.dataset.id); });
   $("chips").addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (c) { filter = c.dataset.f; render(); } });
   $("q").addEventListener("input", (e) => { query = e.target.value; render(); });
 
-  render();
   connect();
+  let startView = location.hash.slice(1);
+  if (!startView) { try { startView = localStorage.getItem("gratiswaren-ansicht") || ""; } catch (e) {} }
+  setView(startView || "kalender");
 })();
 </script>
 <script>

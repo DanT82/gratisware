@@ -1,6 +1,6 @@
 // Hält die App-Dateien auf dem Gerät, damit sie ohne Internet startet.
 // Bei einer neuen App-Version die Nummer erhöhen.
-const CACHE = "gratiswaren-v1";
+const CACHE = "gratiswaren-v2";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (e) => {
