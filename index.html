@@ -193,6 +193,15 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
 .kon a { color: var(--accent); text-decoration: none; font-weight: 500 }
 .kon a:hover { text-decoration: underline }
 
+/* Telefonbuch */
+.telgrp { font-family: var(--f-display); font-weight: 600; font-size: 18px; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); margin: 14px 0 0; display: flex; justify-content: space-between; align-items: baseline; gap: 10px }
+.telgrp:first-child { margin-top: 0 }
+.telgrp button { font-family: var(--f-body); text-transform: none; letter-spacing: 0 }
+.kon { background: var(--surface) }
+.kon .acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end }
+.kon .confirm { grid-column: 1 / -1; margin-top: 6px }
+@media (max-width: 560px) { .kon { grid-template-columns: 1fr } .kon .acts { justify-content: flex-start } }
+
 /* Überfällig */
 .alert { display: flex; width: 100%; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; text-align: left; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; cursor: pointer; font-size: 14px }
 .alert b { font-weight: 600 }
@@ -269,6 +278,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     <button class="tab" type="button" role="tab" id="tabKal" data-view="kalender" aria-selected="false">Aktionskalender</button>
     <button class="tab" type="button" role="tab" id="tabGratis" data-view="gratis" aria-selected="true">Gratisware</button>
     <button class="tab" type="button" role="tab" id="tabLief" data-view="lieferanten" aria-selected="false">Lieferanten</button>
+    <button class="tab" type="button" role="tab" id="tabTel" data-view="telefon" aria-selected="false">Telefonbuch</button>
   </nav>
 
   <section id="viewKal" hidden>
@@ -312,6 +322,13 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     <div class="empty"><strong>Aktionen werden geladen …</strong>Hier erscheinen deine vereinbarten Gratiswaren.</div>
   </div>
   <p class="note">Kassenregal = 20 % · Standardaktion = 10 % · abweichende Quote selbst eintragen. Anspruch = ganze Gratis-Einheiten aus dem Gratiswert, der Rest bleibt als Restwert stehen.</p>
+  </section>
+
+  <section id="viewTel" hidden>
+    <div class="toolbar" style="margin-top:0">
+      <input class="search" id="tq" type="search" placeholder="Suchen: Name, Lieferant, Telefon …" aria-label="Telefonbuch durchsuchen">
+    </div>
+    <div class="list" id="telList"></div>
   </section>
 
   <section id="viewLief" hidden>
@@ -637,7 +654,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const ob = $("overdueBox"); ob.hidden = !over.length;
     if (over.length) ob.innerHTML = `<span><b>${over.length} ${over.length === 1 ? "Gratisware ist" : "Gratiswaren sind"} überfällig.</b> Noch nicht geliefert: ${fmt(r2(over.reduce((s, r) => s + r.c.restAnspruch * (num(r.b.gPreis) || 0), 0)))}. Zeit, beim Lieferanten nachzuhaken.</span><span>${filter === "nachhaken" ? "Alle zeigen" : "Anzeigen ›"}</span>`;
     $("tabGratis").innerHTML = "Gratisware" + (over.length ? `<b class="red" title="überfällig">${over.length}</b>` : "");
-    renderLief();
+    renderLief(); renderTel();
     $("chips").innerHTML = FILTERS.filter(([k]) => k === "alle" || counts[k] || filter === k)
       .map(([k, l]) => `<button type="button" class="chip" data-f="${k}" aria-pressed="${filter === k}">${l}<b>${counts[k]}</b></button>`).join("");
 
@@ -1241,7 +1258,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     konEditId = id || null; konConfirmDel = false;
     const k = id ? kontakte.find((x) => x.id === id) : { lieferant: lief || "", name: "", telefon: "", email: "", notiz: "", haupt: lief ? !kontakteVon(lief).length : false };
     if (!k) return;
-    $("kTitle").textContent = id ? "Ansprechpartner bearbeiten" : "Neuer Ansprechpartner";
+    $("kTitle").textContent = id ? "Kontakt bearbeiten" : "Neuer Kontakt";
     ["lieferant", "name", "telefon", "email", "notiz"].forEach((f) => $("k_" + f).value = k[f] || "");
     $("k_haupt").checked = !!k.haupt; $("k_err").hidden = true;
     renderKonFoot();
@@ -1250,7 +1267,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   }
   function renderKonFoot() {
     $("k_foot").innerHTML = konConfirmDel
-      ? `<div class="confirm">Ansprechpartner löschen? <button type="button" class="btn danger small" id="kDelYes">Ja, löschen</button><button type="button" class="btn small" id="kDelNo">Behalten</button></div>`
+      ? `<div class="confirm">Kontakt löschen? <button type="button" class="btn danger small" id="kDelYes">Ja, löschen</button><button type="button" class="btn small" id="kDelNo">Behalten</button></div>`
       : `${konEditId ? `<button type="button" class="btn ghost" id="kDel">Löschen</button>` : `<span></span>`}<button type="submit" class="btn primary">Speichern</button>`;
   }
   $("konForm").addEventListener("submit", (e) => {
@@ -1271,15 +1288,49 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       }
       Object.assign(prev, k);
     } else kontakte.push({ id: uid(), ...k });
-    saveExtras(); render(); $("dlgKon").close(); toast("Ansprechpartner gespeichert");
+    saveExtras(); render(); $("dlgKon").close(); toast("Kontakt gespeichert");
   });
   $("dlgKon").addEventListener("click", (e) => {
     const t = e.target.closest("button"); if (!t) return;
     if (t.id === "kDel") { konConfirmDel = true; renderKonFoot(); }
     else if (t.id === "kDelNo") { konConfirmDel = false; renderKonFoot(); }
-    else if (t.id === "kDelYes") { kontakte = kontakte.filter((x) => x.id !== konEditId); saveExtras(); render(); $("dlgKon").close(); toast("Ansprechpartner gelöscht"); }
+    else if (t.id === "kDelYes") { kontakte = kontakte.filter((x) => x.id !== konEditId); saveExtras(); render(); $("dlgKon").close(); toast("Kontakt gelöscht"); }
   });
   $("btnKonNew").addEventListener("click", () => openKon(null));
+
+  /* ---------- Telefonbuch ---------- */
+  let telQuery = "", telDelId = null;
+  function konCard(k, actions) {
+    return `<div class="kon">
+      <div><div class="t">${esc(k.name)}${k.haupt ? '<span class="tagx">Haupt</span>' : ""}</div>
+        ${k.notiz ? `<div class="s">${esc(k.notiz)}</div>` : ""}
+        <div class="links">${k.telefon ? `<a href="tel:${esc(k.telefon.replace(/[^+\d]/g, ""))}">${esc(k.telefon)}</a>` : ""}${k.email ? `<a href="mailto:${esc(k.email)}">${esc(k.email)}</a>` : ""}${!k.telefon && !k.email ? '<span class="s">Telefon und E-Mail noch nicht eingetragen</span>' : ""}</div></div>
+      <div class="acts">${actions}</div>
+      ${telDelId === k.id ? `<div class="confirm">${esc(k.name)} (${esc(k.lieferant)}) löschen? <button type="button" class="btn danger small" data-teldelyes="${esc(k.id)}">Ja, löschen</button><button type="button" class="btn small" data-teldelno="1">Behalten</button></div>` : ""}
+    </div>`;
+  }
+  function renderTel() {
+    const q = telQuery.trim().toLowerCase();
+    const list = kontakte.filter((k) => !q || [k.name, k.lieferant, k.telefon, k.email, k.notiz].join(" ").toLowerCase().includes(q));
+    if (!kontakte.length) { $("telList").innerHTML = `<div class="empty"><strong>Noch keine Kontakte</strong>Lege mit „+ Neuer Kontakt“ den ersten Ansprechpartner an. Namen, die du bei einer Aktion einträgst, landen auch automatisch hier.</div>`; return; }
+    if (!list.length) { $("telList").innerHTML = `<div class="empty"><strong>Kein Kontakt gefunden</strong>Suche anpassen.</div>`; return; }
+    const groups = new Map();
+    list.forEach((k) => { const key = lkey(k.lieferant); if (!groups.has(key)) groups.set(key, { name: k.lieferant, ks: [] }); groups.get(key).ks.push(k); });
+    $("telList").innerHTML = [...groups.values()].sort((a, b) => a.name.localeCompare(b.name, "de")).map((g) =>
+      `<div class="telgrp"><span>${esc(g.name)}</span><button type="button" class="btn ghost small" data-konnew="${esc(g.name)}">+ Kontakt</button></div>`
+      + g.ks.sort((a, b) => (b.haupt ? 1 : 0) - (a.haupt ? 1 : 0) || a.name.localeCompare(b.name, "de"))
+          .map((k) => konCard(k, `<button type="button" class="btn small" data-konedit="${esc(k.id)}">Bearbeiten</button><button type="button" class="btn ghost small" data-teldel="${esc(k.id)}">Löschen</button>`)).join("")
+    ).join("");
+  }
+  $("tq").addEventListener("input", (e) => { telQuery = e.target.value; renderTel(); });
+  $("telList").addEventListener("click", (e) => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.dataset.konedit) openKon(t.dataset.konedit);
+    else if (t.dataset.konnew) openKon(null, t.dataset.konnew);
+    else if (t.dataset.teldel) { telDelId = t.dataset.teldel; renderTel(); }
+    else if (t.dataset.teldelno) { telDelId = null; renderTel(); }
+    else if (t.dataset.teldelyes) { kontakte = kontakte.filter((x) => x.id !== t.dataset.teldelyes); telDelId = null; saveExtras(); render(); toast("Kontakt gelöscht"); }
+  });
 
   /* ---------- Lieferanten ---------- */
   let liefQuery = "", liefKey = null;
@@ -1323,12 +1374,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const L = (a, v, cls = "") => `<div class="ln ${cls}"><span>${a}</span><span>${v}</span></div>`;
     const ks = kontakteVon(g.name);
     let h = `<div><div class="legend" style="margin-bottom:8px;justify-content:space-between;align-items:center"><b style="color:var(--fg);font-family:var(--f-display);font-size:17px;letter-spacing:.04em;text-transform:uppercase">Ansprechpartner</b><button type="button" class="btn small" data-konnew="${esc(g.name)}">+ Ansprechpartner</button></div><div class="lief">`
-      + (ks.map((k) => `<div class="kon">
-          <div><div class="t">${esc(k.name)}${k.haupt ? '<span class="tagx">Haupt</span>' : ""}</div>
-            ${k.notiz ? `<div class="s">${esc(k.notiz)}</div>` : ""}
-            <div class="links">${k.telefon ? `<a href="tel:${esc(k.telefon.replace(/[^+\d]/g, ""))}">${esc(k.telefon)}</a>` : ""}${k.email ? `<a href="mailto:${esc(k.email)}">${esc(k.email)}</a>` : ""}${!k.telefon && !k.email ? '<span class="s">Telefon und E-Mail noch nicht eingetragen</span>' : ""}</div></div>
-          <button type="button" class="btn ghost small" data-konedit="${esc(k.id)}">Bearbeiten</button>
-        </div>`).join("") || `<div class="note" style="margin:0">Noch kein Ansprechpartner eingetragen.</div>`) + `</div></div>`;
+      + (ks.map((k) => konCard(k, `<button type="button" class="btn ghost small" data-konedit="${esc(k.id)}">Bearbeiten</button>`)).join("") || `<div class="note" style="margin:0">Noch kein Ansprechpartner eingetragen.</div>`) + `</div></div>`;
     h += `<div class="calc">${L("Gratiswert gesamt", fmt(g.wert))}${L("Davon verbucht", fmt(g.verbucht))}${L("Noch offen", fmt(g.offen), "sum big")}`;
     if (g.rest > 0) h += L("darin Restwerte (unter einer ganzen Einheit)", fmt(g.rest));
     if (g.rest > 0) { const byArt = {}; g.rows.forEach((r) => { if (r.c.restwert > 0 && num(r.b.gPreis)) { const k = r.b.gratisartikel; byArt[k] = byArt[k] || { sum: 0, preis: num(r.b.gPreis), e: r.b.gEinheit }; byArt[k].sum += r.c.restwert; } });
@@ -1594,10 +1640,10 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
 
   /* Reiter */
   function setView(v) {
-    view = ["kalender", "lieferanten"].includes(v) ? v : "gratis";
-    $("viewKal").hidden = view !== "kalender"; $("viewGratis").hidden = view !== "gratis"; $("viewLief").hidden = view !== "lieferanten";
-    $("tabKal").setAttribute("aria-selected", view === "kalender"); $("tabGratis").setAttribute("aria-selected", view === "gratis"); $("tabLief").setAttribute("aria-selected", view === "lieferanten");
-    $("btnNew").textContent = view === "kalender" ? "+ Fläche belegen" : "+ Neue Gratisware";
+    view = ["kalender", "lieferanten", "telefon"].includes(v) ? v : "gratis";
+    $("viewKal").hidden = view !== "kalender"; $("viewGratis").hidden = view !== "gratis"; $("viewLief").hidden = view !== "lieferanten"; $("viewTel").hidden = view !== "telefon";
+    $("tabKal").setAttribute("aria-selected", view === "kalender"); $("tabGratis").setAttribute("aria-selected", view === "gratis"); $("tabLief").setAttribute("aria-selected", view === "lieferanten"); $("tabTel").setAttribute("aria-selected", view === "telefon");
+    $("btnNew").textContent = view === "kalender" ? "+ Fläche belegen" : view === "telefon" ? "+ Neuer Kontakt" : "+ Neue Gratisware";
     try { localStorage.setItem("gratiswaren-ansicht", view); } catch (e) {}
     if (location.hash !== "#" + view) history.replaceState(null, "", "#" + view);
   }
@@ -1608,7 +1654,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   let tt;
   function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 2200); }
   document.querySelectorAll("dialog").forEach((d) => d.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) d.close(); }));
-  $("btnNew").addEventListener("click", () => view === "kalender" ? openBel(null) : openForm(null));
+  $("btnNew").addEventListener("click", () => view === "kalender" ? openBel(null) : view === "telefon" ? openKon(null) : openForm(null));
   $("list").addEventListener("click", (e) => { const r = e.target.closest(".row"); if (r) openDetail(r.dataset.id); });
   $("chips").addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (c) { filter = c.dataset.f; render(); } });
   $("q").addEventListener("input", (e) => { query = e.target.value; render(); });
