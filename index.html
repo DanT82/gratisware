@@ -193,6 +193,22 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
 .kon a { color: var(--accent); text-decoration: none; font-weight: 500 }
 .kon a:hover { text-decoration: underline }
 
+/* Feiertage & Sprung */
+.jump { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: -2px 0 10px; font-size: 13px; color: var(--muted) }
+.jump select { padding: 6px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); color: var(--fg); font-size: 14px; max-width: 100% }
+.jump #jFei { flex: 1 1 220px; min-width: 0 }
+.kh .ev { display: block; margin-top: 3px; font-size: 11px; font-weight: 600; color: var(--danger); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.kh .ev.anl { color: var(--accent) }
+.kh.now .ev { color: var(--tag-fg) }
+.kh.ziel { box-shadow: inset 0 0 0 2px var(--accent) }
+.kc.fei { background: color-mix(in srgb, var(--danger) 6%, transparent) }
+.hints { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; margin-bottom: 14px }
+.hint-c { text-align: left; border: 1px solid var(--line); border-left: 4px solid var(--c); border-radius: 6px; background: var(--surface); padding: 9px 12px; cursor: pointer; font-size: 13px; color: var(--fg); min-width: 0 }
+.hint-c:hover { border-color: var(--muted); border-left-color: var(--c) }
+.hint-c .t { font-weight: 600; font-size: 14px }
+.hint-c .s { color: var(--muted) }
+.hint-c .f { color: var(--c); font-weight: 500; margin-top: 2px }
+
 /* Telefonbuch */
 .telgrp { font-family: var(--f-display); font-weight: 600; font-size: 18px; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); margin: 14px 0 0; display: flex; justify-content: space-between; align-items: baseline; gap: 10px }
 .telgrp:first-child { margin-top: 0 }
@@ -282,6 +298,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   </nav>
 
   <section id="viewKal" hidden>
+    <div class="hints" id="kHints" hidden></div>
     <div class="kalbar">
       <div class="weeknav">
         <button class="btn small" type="button" id="kPrev" aria-label="4 Wochen zurück">‹ 4 Wochen</button>
@@ -290,6 +307,12 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
         <span class="rng" id="kRange"></span>
       </div>
       <button class="btn small" type="button" id="btnFl">Flächen verwalten</button>
+    </div>
+    <div class="jump">
+      <span>Springe zu</span>
+      <select id="jKw" aria-label="Kalenderwoche"></select>
+      <select id="jJahr" aria-label="Jahr"></select>
+      <select id="jFei" aria-label="Feiertag oder Anlass"></select>
     </div>
     <div class="kalscroll"><div class="kal" id="kal"></div></div>
     <div class="legend klegend">
@@ -368,17 +391,28 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     <div class="dlg-h"><h2 id="kTitle">Ansprechpartner</h2><button class="btn ghost" type="button" data-close>Schließen</button></div>
     <div class="dlg-b">
       <fieldset>
-        <label class="f wide">Lieferant<input id="k_lieferant" autocomplete="off" list="dlLieferanten"></label>
+        <label class="f wide">Lieferant <span class="h">optional, z. B. leer lassen für Techniker oder Großhandel</span><input id="k_lieferant" autocomplete="off" list="dlLieferanten"></label>
         <label class="f wide">Name<input id="k_name" autocomplete="off" placeholder="z. B. Herr Meier"></label>
         <label class="f">Telefon<input id="k_telefon" type="tel" inputmode="tel" autocomplete="off"></label>
         <label class="f">E-Mail<input id="k_email" type="email" inputmode="email" autocomplete="off"></label>
         <label class="f wide">Notiz <span class="h">optional, z. B. „kommt dienstags“, Gebiet, Vertretung</span><input id="k_notiz" autocomplete="off"></label>
-        <label class="chk wide" style="grid-column:1/-1"><input type="checkbox" id="k_haupt">Hauptansprechpartner für diesen Lieferanten</label>
+        <label class="chk wide" style="grid-column:1/-1" id="k_hauptWrap"><input type="checkbox" id="k_haupt"><span id="k_hauptTxt">Hauptansprechpartner für diesen Lieferanten</span></label>
+        <div class="note" id="k_weitere" style="grid-column:1/-1;margin:0" hidden></div>
       </fieldset>
       <div class="err" id="k_err" hidden></div>
     </div>
     <div class="dlg-f" id="k_foot"></div>
   </form>
+</dialog>
+
+<!-- Kontakt aus dem Telefonbuch zuordnen -->
+<dialog id="dlgPick" aria-labelledby="pTitle">
+  <div class="dlg-h"><div><div class="eyebrow" id="pEyebrow"></div><h2 id="pTitle">Aus Telefonbuch hinzufügen</h2></div><button class="btn ghost" type="button" data-close>Schließen</button></div>
+  <div class="dlg-b">
+    <input class="search" id="pq" type="search" placeholder="Name, Lieferant oder Telefon suchen …" aria-label="Telefonbuch durchsuchen">
+    <div class="lief" id="pickList"></div>
+  </div>
+  <div class="dlg-f"><span class="note" style="margin:0">Der Kontakt bleibt bei seinen bisherigen Lieferanten.</span><button class="btn" type="button" id="pNew">Neuen Kontakt anlegen</button></div>
 </dialog>
 
 <!-- Artikel & Preise -->
@@ -502,6 +536,10 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       <legend>Einstellungen</legend>
       <label class="f">Nachhaken nach … Wochen <span class="h">gezählt ab Ende der Aktion</span><input id="set_wochen" type="number" inputmode="numeric" min="1" max="26" step="1"></label>
       <label class="f">Absender für Aufstellungen<input id="set_absender" autocomplete="off"></label>
+      <label class="f">Bundesland <span class="h">für regionale Feiertage im Kalender</span><select id="set_land">
+        <option value="">Nur bundesweite Feiertage</option><option value="BW">Baden-Württemberg</option><option value="BY">Bayern</option><option value="BE">Berlin</option><option value="BB">Brandenburg</option><option value="HB">Bremen</option><option value="HH">Hamburg</option><option value="HE">Hessen</option><option value="MV">Mecklenburg-Vorpommern</option><option value="NI">Niedersachsen</option><option value="NW">Nordrhein-Westfalen</option><option value="RP">Rheinland-Pfalz</option><option value="SL">Saarland</option><option value="SN">Sachsen</option><option value="ST">Sachsen-Anhalt</option><option value="SH">Schleswig-Holstein</option><option value="TH">Thüringen</option>
+      </select></label>
+      <label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="set_anl">Anlässe zeigen (Karneval, Valentinstag, Muttertag, Oktoberfest, Heiligabend, Silvester)</label>
       <div><button class="btn small" type="button" id="btnArt2">Artikel &amp; Preise verwalten</button></div>
     </fieldset>
     <legend style="margin:6px 0 -8px">Abgleich iPad &amp; iPhone</legend>
@@ -888,6 +926,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   function openData() {
     renderSync();
     $("set_wochen").value = settings.wochen; $("set_absender").value = settings.absender;
+    $("set_land").value = settings.land || ""; $("set_anl").checked = settings.anlaesse !== false;
     $("restoreAsk").hidden = true;
     $("storeInfo").textContent = `${items.length} ${items.length === 1 ? "Aktion" : "Aktionen"} auf diesem Gerät gespeichert.`;
     $("dlgData").showModal();
@@ -922,7 +961,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       items = pendingRestore.list;
       if (pendingRestore.fl) { flaechen = pendingRestore.fl; belegungen = pendingRestore.bl; }
       if (pendingRestore.art) artikel = pendingRestore.art;
-      if (pendingRestore.kon) kontakte = pendingRestore.kon;
+      if (pendingRestore.kon) kontakte = normAll(pendingRestore.kon);
       if (pendingRestore.set) settings = { ...settings, ...pendingRestore.set };
       saveExtras(); fillArtList();
       pendingRestore = null;
@@ -978,6 +1017,94 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     return belegungen.find((o) => o.id !== b.id && o.flaecheId === b.flaecheId && o.start <= end && b.start <= belEnd(o));
   }
 
+  /* Feiertage & Anlässe: bewegliche Termine hängen an Ostern */
+  const pad = (n) => String(n).padStart(2, "0");
+  const WT = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+  const wtag = (iso) => WT[day(iso).getUTCDay()];
+  function ostern(y) {          // Gaußsche Osterformel (gregorianisch)
+    const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const mo = Math.floor((h + l - 7 * m + 114) / 31), da = ((h + l - 7 * m + 114) % 31) + 1;
+    return `${y}-${pad(mo)}-${pad(da)}`;
+  }
+  const feiCache = {};
+  function feiertage(y) {
+    const land = settings.land || "", anl = settings.anlaesse !== false, key = y + land + anl;
+    if (feiCache[key]) return feiCache[key];
+    const E = ostern(y), D = (m, d) => `${y}-${pad(m)}-${pad(d)}`, inL = (...ls) => ls.includes(land);
+    const F = (d, n, s) => ({ d, n, s: s || n, typ: "feiertag" }), A = (d, n, s) => ({ d, n, s: s || n, typ: "anlass" });
+    const nachWt = (iso, wt) => { let x = addDays(iso, 1); while (day(x).getUTCDay() !== wt) x = addDays(x, 1); return x; };
+    const list = [
+      F(D(1, 1), "Neujahr"), F(addDays(E, -2), "Karfreitag"), F(E, "Ostersonntag", "Ostern"), F(addDays(E, 1), "Ostermontag", "Ostern"),
+      F(D(5, 1), "Tag der Arbeit", "1. Mai"), F(addDays(E, 39), "Christi Himmelfahrt / Vatertag", "Vatertag"),
+      F(addDays(E, 49), "Pfingstsonntag", "Pfingsten"), F(addDays(E, 50), "Pfingstmontag", "Pfingsten"),
+      F(D(10, 3), "Tag der Deutschen Einheit", "3. Oktober"), F(D(12, 25), "1. Weihnachtstag", "Weihnachten"), F(D(12, 26), "2. Weihnachtstag", "Weihnachten")
+    ];
+    if (inL("BW", "BY", "ST")) list.push(F(D(1, 6), "Heilige Drei Könige", "Hl. 3 Könige"));
+    if (inL("BE", "MV")) list.push(F(D(3, 8), "Internationaler Frauentag", "Frauentag"));
+    if (inL("BW", "BY", "HE", "NW", "RP", "SL")) list.push(F(addDays(E, 60), "Fronleichnam"));
+    if (inL("SL", "BY")) list.push(F(D(8, 15), "Mariä Himmelfahrt"));
+    if (inL("TH")) list.push(F(D(9, 20), "Weltkindertag"));
+    if (inL("BB", "HB", "HH", "MV", "NI", "SN", "ST", "SH", "TH")) list.push(F(D(10, 31), "Reformationstag"));
+    if (inL("BW", "BY", "NW", "RP", "SL")) list.push(F(D(11, 1), "Allerheiligen"));
+    if (inL("SN")) { let x = D(11, 22); while (day(x).getUTCDay() !== 3) x = addDays(x, -1); list.push(F(x, "Buß- und Bettag")); }
+    if (anl) list.push(
+      A(addDays(E, -52), "Weiberfastnacht (Karneval)", "Karneval"), A(addDays(E, -48), "Rosenmontag", "Karneval"),
+      A(D(2, 14), "Valentinstag"), A(addDays(nachWt(D(4, 30), 0), 7), "Muttertag"),
+      A(nachWt(D(9, 15), 6), "Oktoberfest-Anstich", "Oktoberfest"), A(D(12, 24), "Heiligabend"), A(D(12, 31), "Silvester"));
+    return (feiCache[key] = list.sort((a, b) => a.d.localeCompare(b.d)));
+  }
+  function eventsBetween(a, b) {   // a, b: ISO-Datum, inklusive
+    const out = [];
+    for (let y = +a.slice(0, 4); y <= +b.slice(0, 4); y++) feiertage(y).forEach((e) => { if (e.d >= a && e.d <= b) out.push(e); });
+    return out;
+  }
+  const weekEvents = (w) => eventsBetween(w, addDays(w, 6));
+  const uniq = (arr) => [...new Set(arr)];
+  const isoMonday = (y, w) => addWeeks(mondayOf(`${y}-01-04`), w - 1);
+  const weeksInYear = (y) => isoWeek(`${y}-12-28`).w;
+  const freieFlaechen = (w) => flaechen.filter((f) => !belegungen.some((b) => b.flaecheId === f.id && b.start <= w && belEnd(b) >= w));
+  let zielWeek = null;
+  function jumpTo(w, vorlauf) {
+    zielWeek = w; kalStart = vorlauf ? addWeeks(w, -1) : w;
+    renderKal(); $("kal").parentElement.scrollLeft = 0;
+  }
+  function renderJump() {
+    const focus = zielWeek && zielWeek >= kalStart && zielWeek <= addWeeks(kalStart, KAL_N - 1) ? zielWeek : kalStart;
+    const fw = isoWeek(focus), yNow = isoWeek(today()).y;
+    const years = uniq([yNow - 1, yNow, yNow + 1, yNow + 2, fw.y]).sort();
+    $("jJahr").innerHTML = years.map((y) => `<option value="${y}" ${y === fw.y ? "selected" : ""}>${y}</option>`).join("");
+    $("jKw").innerHTML = Array.from({ length: weeksInYear(fw.y) }, (_, i) => `<option value="${i + 1}" ${i + 1 === fw.w ? "selected" : ""}>KW ${i + 1}</option>`).join("");
+    const from = `${yNow}-01-01`, to = `${yNow + 1}-12-31`, t = today();
+    const evs = eventsBetween(from, to).filter((e) => e.d >= addDays(t, -60));
+    let html = `<option value="">Feiertag oder Anlass …</option>`, yy = null;
+    evs.forEach((e) => {
+      const y = e.d.slice(0, 4);
+      if (y !== yy) { html += (yy ? "</optgroup>" : "") + `<optgroup label="${y}">`; yy = y; }
+      html += `<option value="${e.d}">${esc(e.n)} · ${wtag(e.d)} ${dDE(e.d)} · KW ${kw(e.d)}</option>`;
+    });
+    $("jFei").innerHTML = html + (yy ? "</optgroup>" : "");
+  }
+  function renderHints() {
+    const cur = mondayOf(today()), bis = addWeeks(cur, 10);
+    const groups = new Map();
+    eventsBetween(today(), addDays(bis, 6)).forEach((e) => { const w = mondayOf(e.d); if (!groups.has(w)) groups.set(w, []); groups.get(w).push(e); });
+    const list = [...groups.entries()].slice(0, 4);
+    $("kHints").hidden = !list.length || !flaechen.length;
+    $("kHints").innerHTML = list.map(([w, evs]) => {
+      const frei = freieFlaechen(w), diff = weekDiff(cur, w);
+      const wann = diff === 0 ? "diese Woche" : diff === 1 ? "nächste Woche" : `in ${diff} Wochen`;
+      const namen = uniq(evs.map((e) => e.n)).join(", ");
+      const tage = evs.map((e) => `${wtag(e.d)} ${shortDE(e.d)}`).join(", ");
+      const col = !frei.length ? "var(--ok)" : diff <= 3 ? "var(--danger)" : "var(--warn)";
+      return `<button type="button" class="hint-c" data-jump="${w}" style="--c:${col}">
+        <div class="t">${esc(namen)}</div>
+        <div class="s">KW ${kw(w)} · ${tage} · ${wann}</div>
+        <div class="f">${frei.length ? `Noch frei: ${frei.map((f) => esc(f.name)).join(", ")}` : "Alle Flächen belegt"}</div>
+      </button>`;
+    }).join("");
+  }
+
   function renderKal() {
     const cur = mondayOf(today());
     const weeks = Array.from({ length: KAL_N }, (_, i) => addWeeks(kalStart, i));
@@ -987,7 +1114,9 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const kal = $("kal"); kal.style.setProperty("--n", KAL_N);
     let h = `<div class="kcorner" style="grid-row:1;grid-column:1">Fläche</div>`;
     weeks.forEach((w, i) => {
-      h += `<div class="kh ${w === cur ? "now" : ""}" style="grid-row:1;grid-column:${i + 2}"><b>KW ${kw(w)}</b>${shortDE(w)}–${shortDE(addDays(w, 6))}</div>`;
+      const evs = weekEvents(w), fei = evs.filter((e) => e.typ === "feiertag");
+      const ev = evs.length ? `<span class="ev ${fei.length ? "" : "anl"}" title="${esc(evs.map((e) => `${e.n} (${wtag(e.d)} ${shortDE(e.d)})`).join(", "))}">${esc(uniq(evs.map((e) => e.s)).join(" · "))}</span>` : "";
+      h += `<div class="kh ${w === cur ? "now" : ""} ${w === zielWeek ? "ziel" : ""}" style="grid-row:1;grid-column:${i + 2}"><b>KW ${kw(w)}</b>${shortDE(w)}–${shortDE(addDays(w, 6))}${ev}</div>`;
     });
     flaechen.forEach((f, fi) => {
       const row = fi + 2, covered = new Array(KAL_N).fill(false);
@@ -1007,11 +1136,12 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
           </button></div>`;
       });
       weeks.forEach((w, i) => {
-        if (!covered[i]) h += `<button type="button" class="kc ${w === cur ? "now" : ""}" style="grid-row:${row};grid-column:${i + 2}" data-fl="${esc(f.id)}" data-w="${w}" aria-label="${esc(f.name)} in KW ${kw(w)} belegen">+</button>`;
+        if (!covered[i]) h += `<button type="button" class="kc ${w === cur ? "now" : weekEvents(w).some((e) => e.typ === "feiertag") ? "fei" : ""}" style="grid-row:${row};grid-column:${i + 2}" data-fl="${esc(f.id)}" data-w="${w}" aria-label="${esc(f.name)} in KW ${kw(w)} belegen">+</button>`;
       });
     });
     if (!flaechen.length) h += `<div style="grid-row:2;grid-column:1 / -1;padding:24px;color:var(--muted)">Noch keine Aktionsflächen. Lege sie über „Flächen verwalten“ an.</div>`;
     kal.innerHTML = h;
+    renderJump(); renderHints();
 
     // Belegungen ohne Gratisware
     const open = belegungen.filter((b) => !linkedBuchung(b)).sort((a, b) => a.start.localeCompare(b.start));
@@ -1116,9 +1246,13 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const t = e.target.closest("[data-take]"); if (!t) return;
     const bel = belegungen.find((x) => x.id === t.dataset.take); if (bel) takeOver(bel);
   });
-  $("kPrev").addEventListener("click", () => { kalStart = addWeeks(kalStart, -4); renderKal(); });
-  $("kNext").addEventListener("click", () => { kalStart = addWeeks(kalStart, 4); renderKal(); });
-  $("kToday").addEventListener("click", () => { kalStart = mondayOf(today()); renderKal(); });
+  $("kPrev").addEventListener("click", () => { kalStart = addWeeks(kalStart, -4); zielWeek = null; renderKal(); });
+  $("jKw").addEventListener("change", () => jumpTo(isoMonday(+$("jJahr").value, +$("jKw").value)));
+  $("jJahr").addEventListener("change", () => { const y = +$("jJahr").value; jumpTo(isoMonday(y, Math.min(+$("jKw").value, weeksInYear(y)))); });
+  $("jFei").addEventListener("change", () => { const d = $("jFei").value; if (d) jumpTo(mondayOf(d), true); });
+  $("kHints").addEventListener("click", (e) => { const t = e.target.closest("[data-jump]"); if (t) jumpTo(t.dataset.jump, true); });
+  $("kNext").addEventListener("click", () => { kalStart = addWeeks(kalStart, 4); zielWeek = null; renderKal(); });
+  $("kToday").addEventListener("click", () => { kalStart = mondayOf(today()); zielWeek = null; renderKal(); });
 
   /* Flächen verwalten */
   let flDraft = [];
@@ -1147,15 +1281,18 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
 
   /* ---------- Einstellungen & Artikel ---------- */
   const SET_KEY = "gratiswaren-einstellungen", ART_KEY = "gratiswaren-artikel", KON_KEY = "gratiswaren-kontakte";
-  let kontakte = [];         // {id, lieferant, name, telefon, email, notiz, haupt}
-  let settings = { wochen: 3, absender: "Edeka Wehrmann · Getränke" };
+  let kontakte = [];         // {id, name, telefon, email, notiz, lieferant, weitere[], hauptFuer[]}
+  let settings = { wochen: 3, absender: "Edeka Wehrmann · Getränke", land: "", anlaesse: true };
   let artikel = [];          // {id, name, einheit, preis, ve?, veName?}
   function loadExtras() {
     try { settings = { ...settings, ...(JSON.parse(localStorage.getItem(SET_KEY) || "{}") || {}) }; } catch (e) {}
     try { const a = JSON.parse(localStorage.getItem(ART_KEY) || "[]"); artikel = Array.isArray(a) ? a : []; } catch (e) {}
-    if (!artikel.length) items.forEach(learnArtikel);   // aus bisherigen Einträgen lernen
-    try { const k = JSON.parse(localStorage.getItem(KON_KEY) || "[]"); kontakte = Array.isArray(k) ? k : []; } catch (e) {}
-    if (!kontakte.length) { [...items, ...belegungen].forEach((x) => learnKontakt(x.lieferant, x.kontakt, false)); saveExtras(); }
+    try { kontakte = normAll(JSON.parse(localStorage.getItem(KON_KEY) || "[]")); } catch (e) {}
+    // Erst alles laden, dann aus bisherigen Einträgen lernen – sonst überschreibt das Speichern noch nicht geladene Listen
+    let learned = false;
+    if (!artikel.length) { items.forEach((b) => learnArtikel(b, false)); learned = true; }
+    if (!kontakte.length) { [...items, ...belegungen].forEach((x) => learnKontakt(x.lieferant, x.kontakt, false)); learned = true; }
+    if (learned) saveExtras();
     fillArtList();
   }
   function saveExtras() {
@@ -1170,12 +1307,12 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const ex = findArt(a.name);
     if (ex) Object.assign(ex, a, { name: ex.name, id: ex.id }); else artikel.push({ id: uid(), ...a });
   }
-  function learnArtikel(b) {
+  function learnArtikel(b, save = true) {
     if (b.beispiel) return;
     upsertArt({ name: (b.gratisartikel || "").trim(), einheit: b.gEinheit || "Kiste", preis: num(b.gPreis) });
     if (b.einheit === "Display") upsertArt({ name: (b.bestellartikel || "").trim(), einheit: "Display", preis: num(b.preis), ve: num(b.ve), veName: b.veName });
     else upsertArt({ name: (b.bestellartikel || "").trim(), einheit: b.einheit, preis: num(b.preis) });
-    saveExtras(); fillArtList();
+    if (save) { saveExtras(); fillArtList(); }
   }
   function fillArtList() {
     $("dlArtikel").innerHTML = [...artikel].sort((a, b) => a.name.localeCompare(b.name, "de"))
@@ -1197,6 +1334,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   });
   $("set_wochen").addEventListener("change", () => { const w = Math.round(num($("set_wochen").value)); if (w >= 1 && w <= 26) { settings.wochen = w; saveExtras(); render(); toast(`Nachhaken nach ${w} ${w === 1 ? "Woche" : "Wochen"}`); } else $("set_wochen").value = settings.wochen; });
   $("set_absender").addEventListener("change", () => { settings.absender = $("set_absender").value.trim(); saveExtras(); });
+  $("set_land").addEventListener("change", () => { settings.land = $("set_land").value; saveExtras(); renderKal(); toast(settings.land ? "Regionale Feiertage übernommen" : "Nur bundesweite Feiertage"); });
+  $("set_anl").addEventListener("change", () => { settings.anlaesse = $("set_anl").checked; saveExtras(); renderKal(); });
 
   /* Artikel verwalten */
   let artDraft = [], artQuery = "";
@@ -1230,13 +1369,47 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   $("btnArt").addEventListener("click", openArt);
   $("btnArt2").addEventListener("click", () => { $("dlgData").close(); openArt(); });
 
-  /* ---------- Ansprechpartner ---------- */
-  const kontakteVon = (lief) => kontakte.filter((k) => lkey(k.lieferant) === lkey(lief)).sort((a, b) => (b.haupt ? 1 : 0) - (a.haupt ? 1 : 0) || a.name.localeCompare(b.name, "de"));
-  const hauptKontakt = (lief) => { const ks = kontakteVon(lief); return ks.find((k) => k.haupt) || (ks.length === 1 ? ks[0] : null); };
+  /* ---------- Ansprechpartner ----------
+     Ein Kontakt hat eine Haupt-Zuordnung (lieferant), kann für weitere Lieferanten zuständig sein (weitere)
+     und ist ggf. Hauptansprechpartner für einzelne Lieferanten (hauptFuer, Namen in Kleinschrift). */
+  function normKon(k) {
+    const n = { telefon: "", email: "", notiz: "", lieferant: "", ...k };
+    if (!Array.isArray(n.weitere)) n.weitere = [];
+    if (!Array.isArray(n.hauptFuer)) n.hauptFuer = n.haupt && n.lieferant ? [lkey(n.lieferant)] : [];
+    delete n.haupt;
+    return n;
+  }
+  const normAll = (list) => (Array.isArray(list) ? list : []).filter((k) => k && k.name).map(normKon);
+  const konLiefs = (k) => [k.lieferant, ...(k.weitere || [])].filter(Boolean);
+  const gehoertZu = (k, lief) => konLiefs(k).some((l) => lkey(l) === lkey(lief));
+  const isHaupt = (k, lief) => !!lief && (k.hauptFuer || []).includes(lkey(lief));
+  const kontakteVon = (lief) => kontakte.filter((k) => gehoertZu(k, lief)).sort((a, b) => (isHaupt(b, lief) ? 1 : 0) - (isHaupt(a, lief) ? 1 : 0) || a.name.localeCompare(b.name, "de"));
+  const hauptKontakt = (lief) => { const ks = kontakteVon(lief); return ks.find((k) => isHaupt(k, lief)) || (ks.length === 1 ? ks[0] : null); };
+  function setHaupt(k, lief, on) {
+    const key = lkey(lief); if (!key) return;
+    if (on) kontakte.forEach((x) => { x.hauptFuer = (x.hauptFuer || []).filter((h) => h !== key); });
+    k.hauptFuer = (k.hauptFuer || []).filter((h) => h !== key);
+    if (on) k.hauptFuer.push(key);
+  }
+  function linkKontakt(k, lief) {
+    if (!lief || gehoertZu(k, lief)) return;
+    if (!k.lieferant) k.lieferant = lief; else k.weitere = [...(k.weitere || []), lief];
+    if (kontakteVon(lief).length === 1) setHaupt(k, lief, true);
+  }
+  function unlinkKontakt(k, lief) {
+    const key = lkey(lief);
+    const rest = konLiefs(k).filter((l) => lkey(l) !== key);
+    k.lieferant = rest[0] || ""; k.weitere = rest.slice(1);
+    k.hauptFuer = (k.hauptFuer || []).filter((h) => h !== key);
+  }
   function learnKontakt(lief, name, save = true) {
     lief = String(lief || "").trim(); name = String(name || "").trim();
-    if (!lief || !name || kontakte.some((k) => lkey(k.lieferant) === lkey(lief) && lkey(k.name) === lkey(name))) return;
-    kontakte.push({ id: uid(), lieferant: lief, name, telefon: "", email: "", notiz: "", haupt: !kontakteVon(lief).length });
+    if (!lief || !name || kontakte.some((k) => gehoertZu(k, lief) && lkey(k.name) === lkey(name))) return;
+    // Gibt es den Namen schon ohne Zuordnung im Telefonbuch, wird er zugeordnet statt doppelt angelegt
+    const frei = kontakte.find((k) => !k.lieferant && lkey(k.name) === lkey(name));
+    const k = frei || normKon({ id: uid(), name });
+    if (!frei) kontakte.push(k);
+    linkKontakt(k, lief);
     if (save) saveExtras();
   }
   // Vorschläge passend zum eingetragenen Lieferanten
@@ -1254,17 +1427,27 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   });
 
   let konEditId = null, konConfirmDel = false;
+  function syncKonHaupt() {
+    const l = $("k_lieferant").value.trim();
+    $("k_hauptWrap").hidden = !l;
+    $("k_hauptTxt").textContent = `Hauptansprechpartner für ${l || "diesen Lieferanten"}`;
+  }
   function openKon(id, lief) {
     konEditId = id || null; konConfirmDel = false;
-    const k = id ? kontakte.find((x) => x.id === id) : { lieferant: lief || "", name: "", telefon: "", email: "", notiz: "", haupt: lief ? !kontakteVon(lief).length : false };
+    const k = id ? kontakte.find((x) => x.id === id) : normKon({ lieferant: lief || "", name: "" });
     if (!k) return;
     $("kTitle").textContent = id ? "Kontakt bearbeiten" : "Neuer Kontakt";
     ["lieferant", "name", "telefon", "email", "notiz"].forEach((f) => $("k_" + f).value = k[f] || "");
-    $("k_haupt").checked = !!k.haupt; $("k_err").hidden = true;
-    renderKonFoot();
+    $("k_haupt").checked = id ? isHaupt(k, k.lieferant) : !!lief && !kontakteVon(lief).length;
+    const w = id ? (k.weitere || []) : [];
+    $("k_weitere").hidden = !w.length;
+    $("k_weitere").textContent = w.length ? `Auch zuständig für: ${w.join(", ")}. Zuordnungen änderst du im Lieferanten-Fenster.` : "";
+    $("k_err").hidden = true;
+    syncKonHaupt(); renderKonFoot();
     $("dlgKon").showModal();
-    $(k.lieferant ? "k_name" : "k_lieferant").focus();
+    $(id || lief ? "k_name" : "k_lieferant").focus();
   }
+  $("k_lieferant").addEventListener("input", syncKonHaupt);
   function renderKonFoot() {
     $("k_foot").innerHTML = konConfirmDel
       ? `<div class="confirm">Kontakt löschen? <button type="button" class="btn danger small" id="kDelYes">Ja, löschen</button><button type="button" class="btn small" id="kDelNo">Behalten</button></div>`
@@ -1272,22 +1455,28 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   }
   $("konForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    const k = { lieferant: $("k_lieferant").value.trim(), name: $("k_name").value.trim(), telefon: $("k_telefon").value.trim(), email: $("k_email").value.trim(), notiz: $("k_notiz").value.trim(), haupt: $("k_haupt").checked };
-    const err = !k.lieferant ? "Bitte den Lieferanten eintragen." : !k.name ? "Bitte einen Namen eintragen."
-      : kontakte.some((x) => x.id !== konEditId && lkey(x.lieferant) === lkey(k.lieferant) && lkey(x.name) === lkey(k.name)) ? `${k.name} gibt es bei ${k.lieferant} schon.` : "";
+    const k = { lieferant: $("k_lieferant").value.trim(), name: $("k_name").value.trim(), telefon: $("k_telefon").value.trim(), email: $("k_email").value.trim(), notiz: $("k_notiz").value.trim() };
+    const haupt = $("k_haupt").checked;
+    const dup = kontakte.find((x) => x.id !== konEditId && lkey(x.name) === lkey(k.name) && (k.lieferant ? gehoertZu(x, k.lieferant) : !x.lieferant));
+    const err = !k.name ? "Bitte einen Namen eintragen." : dup ? (k.lieferant ? `${k.name} gibt es bei ${k.lieferant} schon.` : `${k.name} steht schon ohne Zuordnung im Telefonbuch.`) : "";
     if (err) { $("k_err").textContent = err; $("k_err").hidden = false; return; }
-    const prev = konEditId ? kontakte.find((x) => x.id === konEditId) : null;
-    if (k.haupt) kontakte.forEach((x) => { if (lkey(x.lieferant) === lkey(k.lieferant)) x.haupt = false; });
-    if (prev) {
+    let target = konEditId ? kontakte.find((x) => x.id === konEditId) : null;
+    if (target) {
       // Umbenennen auch in bestehenden Einträgen nachziehen
-      if (lkey(prev.name) !== lkey(k.name) || lkey(prev.lieferant) !== lkey(k.lieferant)) {
+      if (lkey(target.name) !== lkey(k.name)) {
         let changed = false;
-        items.forEach((b) => { if (lkey(b.lieferant) === lkey(prev.lieferant) && lkey(b.kontakt) === lkey(prev.name)) { b.kontakt = k.name; changed = true; } });
-        belegungen.forEach((b) => { if (lkey(b.lieferant) === lkey(prev.lieferant) && lkey(b.kontakt) === lkey(prev.name)) b.kontakt = k.name; });
+        items.forEach((b) => { if (gehoertZu(target, b.lieferant) && lkey(b.kontakt) === lkey(target.name)) { b.kontakt = k.name; changed = true; } });
+        belegungen.forEach((b) => { if (gehoertZu(target, b.lieferant) && lkey(b.kontakt) === lkey(target.name)) b.kontakt = k.name; });
         try { if (changed) saveLocal(); saveKal(); } catch (er) {}
       }
-      Object.assign(prev, k);
-    } else kontakte.push({ id: uid(), ...k });
+      if (lkey(target.lieferant) !== lkey(k.lieferant)) {
+        target.hauptFuer = (target.hauptFuer || []).filter((h) => h !== lkey(target.lieferant));
+        target.weitere = (target.weitere || []).filter((l) => lkey(l) !== lkey(k.lieferant));
+        if (!k.lieferant && target.weitere.length) k.lieferant = target.weitere.shift();
+      }
+      Object.assign(target, k);
+    } else { target = normKon({ id: uid(), ...k }); kontakte.push(target); }
+    if (target.lieferant) setHaupt(target, target.lieferant, haupt);
     saveExtras(); render(); $("dlgKon").close(); toast("Kontakt gespeichert");
   });
   $("dlgKon").addEventListener("click", (e) => {
@@ -1298,35 +1487,62 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   });
   $("btnKonNew").addEventListener("click", () => openKon(null));
 
+  /* Kontakt aus dem Telefonbuch einem Lieferanten zuordnen */
+  let pickLief = "", pickQuery = "";
+  function openPick(lief) { pickLief = lief; pickQuery = ""; $("pq").value = ""; $("pEyebrow").textContent = lief; renderPick(); $("dlgPick").showModal(); }
+  function renderPick() {
+    const q = pickQuery.trim().toLowerCase();
+    const avail = kontakte.filter((k) => !gehoertZu(k, pickLief));
+    const list = avail.filter((k) => !q || [k.name, ...konLiefs(k), k.telefon, k.email, k.notiz].join(" ").toLowerCase().includes(q))
+      .sort((a, b) => a.name.localeCompare(b.name, "de"));
+    $("pickList").innerHTML = list.map((k) => `<div class="kon">
+        <div><div class="t">${esc(k.name)}</div>
+          <div class="s">${konLiefs(k).length ? esc(konLiefs(k).join(", ")) : "Ohne Zuordnung"}${k.telefon ? " · " + esc(k.telefon) : ""}</div>
+          ${k.notiz ? `<div class="s">${esc(k.notiz)}</div>` : ""}</div>
+        <div class="acts"><button type="button" class="btn primary small" data-pick="${esc(k.id)}">Hinzufügen</button></div>
+      </div>`).join("")
+      || `<div class="empty" style="padding:18px">${!kontakte.length ? "Das Telefonbuch ist noch leer." : !avail.length ? `Alle Kontakte aus dem Telefonbuch sind schon bei ${esc(pickLief)}.` : "Kein Kontakt gefunden."}</div>`;
+  }
+  $("pq").addEventListener("input", (e) => { pickQuery = e.target.value; renderPick(); });
+  $("pickList").addEventListener("click", (e) => {
+    const t = e.target.closest("[data-pick]"); if (!t) return;
+    const k = kontakte.find((x) => x.id === t.dataset.pick); if (!k) return;
+    linkKontakt(k, pickLief); saveExtras(); render(); $("dlgPick").close();
+    toast(`${k.name} ist jetzt bei ${pickLief} eingetragen`);
+  });
+  $("pNew").addEventListener("click", () => { $("dlgPick").close(); openKon(null, pickLief); });
+
   /* ---------- Telefonbuch ---------- */
   let telQuery = "", telDelId = null;
-  function konCard(k, actions) {
+  function konCard(k, actions, lief) {
+    const andere = konLiefs(k).filter((l) => lkey(l) !== lkey(lief));
     return `<div class="kon">
-      <div><div class="t">${esc(k.name)}${k.haupt ? '<span class="tagx">Haupt</span>' : ""}</div>
+      <div><div class="t">${esc(k.name)}${isHaupt(k, lief) ? '<span class="tagx">Haupt</span>' : ""}</div>
         ${k.notiz ? `<div class="s">${esc(k.notiz)}</div>` : ""}
+        ${andere.length ? `<div class="s">${lief ? "Auch für" : "Zuständig für"}: ${esc(andere.join(", "))}</div>` : ""}
         <div class="links">${k.telefon ? `<a href="tel:${esc(k.telefon.replace(/[^+\d]/g, ""))}">${esc(k.telefon)}</a>` : ""}${k.email ? `<a href="mailto:${esc(k.email)}">${esc(k.email)}</a>` : ""}${!k.telefon && !k.email ? '<span class="s">Telefon und E-Mail noch nicht eingetragen</span>' : ""}</div></div>
       <div class="acts">${actions}</div>
-      ${telDelId === k.id ? `<div class="confirm">${esc(k.name)} (${esc(k.lieferant)}) löschen? <button type="button" class="btn danger small" data-teldelyes="${esc(k.id)}">Ja, löschen</button><button type="button" class="btn small" data-teldelno="1">Behalten</button></div>` : ""}
+      ${telDelId === k.id ? `<div class="confirm">${esc(k.name)}${k.lieferant ? ` (${esc(k.lieferant)})` : ""} ganz löschen? <button type="button" class="btn danger small" data-teldelyes="${esc(k.id)}">Ja, löschen</button><button type="button" class="btn small" data-teldelno="1">Behalten</button></div>` : ""}
     </div>`;
   }
   function renderTel() {
     const q = telQuery.trim().toLowerCase();
-    const list = kontakte.filter((k) => !q || [k.name, k.lieferant, k.telefon, k.email, k.notiz].join(" ").toLowerCase().includes(q));
-    if (!kontakte.length) { $("telList").innerHTML = `<div class="empty"><strong>Noch keine Kontakte</strong>Lege mit „+ Neuer Kontakt“ den ersten Ansprechpartner an. Namen, die du bei einer Aktion einträgst, landen auch automatisch hier.</div>`; return; }
+    const list = kontakte.filter((k) => !q || [k.name, ...konLiefs(k), k.telefon, k.email, k.notiz].join(" ").toLowerCase().includes(q));
+    if (!kontakte.length) { $("telList").innerHTML = `<div class="empty"><strong>Noch keine Kontakte</strong>Lege mit „+ Neuer Kontakt“ den ersten Kontakt an. Namen, die du bei einer Aktion einträgst, landen auch automatisch hier.</div>`; return; }
     if (!list.length) { $("telList").innerHTML = `<div class="empty"><strong>Kein Kontakt gefunden</strong>Suche anpassen.</div>`; return; }
     const groups = new Map();
-    list.forEach((k) => { const key = lkey(k.lieferant); if (!groups.has(key)) groups.set(key, { name: k.lieferant, ks: [] }); groups.get(key).ks.push(k); });
-    $("telList").innerHTML = [...groups.values()].sort((a, b) => a.name.localeCompare(b.name, "de")).map((g) =>
-      `<div class="telgrp"><span>${esc(g.name)}</span><button type="button" class="btn ghost small" data-konnew="${esc(g.name)}">+ Kontakt</button></div>`
-      + g.ks.sort((a, b) => (b.haupt ? 1 : 0) - (a.haupt ? 1 : 0) || a.name.localeCompare(b.name, "de"))
-          .map((k) => konCard(k, `<button type="button" class="btn small" data-konedit="${esc(k.id)}">Bearbeiten</button><button type="button" class="btn ghost small" data-teldel="${esc(k.id)}">Löschen</button>`)).join("")
+    list.forEach((k) => { const key = lkey(k.lieferant); if (!groups.has(key)) groups.set(key, { key, name: k.lieferant, ks: [] }); groups.get(key).ks.push(k); });
+    $("telList").innerHTML = [...groups.values()].sort((a, b) => (a.key ? 0 : 1) - (b.key ? 0 : 1) || a.name.localeCompare(b.name, "de")).map((g) =>
+      `<div class="telgrp"><span>${g.key ? esc(g.name) : "Ohne Zuordnung"}</span><button type="button" class="btn ghost small" data-konnew="${esc(g.name)}">+ Kontakt</button></div>`
+      + g.ks.sort((a, b) => (isHaupt(b, g.name) ? 1 : 0) - (isHaupt(a, g.name) ? 1 : 0) || a.name.localeCompare(b.name, "de"))
+          .map((k) => konCard(k, `<button type="button" class="btn small" data-konedit="${esc(k.id)}">Bearbeiten</button><button type="button" class="btn ghost small" data-teldel="${esc(k.id)}">Löschen</button>`, g.name)).join("")
     ).join("");
   }
   $("tq").addEventListener("input", (e) => { telQuery = e.target.value; renderTel(); });
   $("telList").addEventListener("click", (e) => {
     const t = e.target.closest("button"); if (!t) return;
     if (t.dataset.konedit) openKon(t.dataset.konedit);
-    else if (t.dataset.konnew) openKon(null, t.dataset.konnew);
+    else if (t.dataset.konnew != null) openKon(null, t.dataset.konnew);
     else if (t.dataset.teldel) { telDelId = t.dataset.teldel; renderTel(); }
     else if (t.dataset.teldelno) { telDelId = null; renderTel(); }
     else if (t.dataset.teldelyes) { kontakte = kontakte.filter((x) => x.id !== t.dataset.teldelyes); telDelId = null; saveExtras(); render(); toast("Kontakt gelöscht"); }
@@ -1340,7 +1556,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const get = (name) => { const k = lkey(name) || "–"; if (!m.has(k)) m.set(k, { key: k, name: String(name || "").trim() || "Ohne Lieferant", rows: [], bels: [], kontakte: new Set() }); return m.get(k); };
     items.forEach((b) => { const g = get(b.lieferant); g.rows.push({ b, c: calcFull(b) }); if (b.kontakt) g.kontakte.add(b.kontakt); });
     belegungen.forEach((x) => { const g = get(x.lieferant); g.bels.push(x); if (x.kontakt) g.kontakte.add(x.kontakt); });
-    kontakte.forEach((k) => { if (!k.lieferant) return; const g = get(k.lieferant); g.kontakte.add(k.name); });
+    kontakte.forEach((k) => konLiefs(k).forEach((l) => get(l).kontakte.add(k.name)));
     return [...m.values()].map((g) => {
       const sum = (f) => r2(g.rows.reduce((s, r) => s + (f(r) || 0), 0));
       g.wert = sum((r) => r.c.gratiswert); g.verbucht = sum((r) => r.c.verbucht); g.offen = sum((r) => r.c.offen);
@@ -1373,8 +1589,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     $("lEyebrow").textContent = "Lieferant";
     const L = (a, v, cls = "") => `<div class="ln ${cls}"><span>${a}</span><span>${v}</span></div>`;
     const ks = kontakteVon(g.name);
-    let h = `<div><div class="legend" style="margin-bottom:8px;justify-content:space-between;align-items:center"><b style="color:var(--fg);font-family:var(--f-display);font-size:17px;letter-spacing:.04em;text-transform:uppercase">Ansprechpartner</b><button type="button" class="btn small" data-konnew="${esc(g.name)}">+ Ansprechpartner</button></div><div class="lief">`
-      + (ks.map((k) => konCard(k, `<button type="button" class="btn ghost small" data-konedit="${esc(k.id)}">Bearbeiten</button>`)).join("") || `<div class="note" style="margin:0">Noch kein Ansprechpartner eingetragen.</div>`) + `</div></div>`;
+    let h = `<div><div class="legend" style="margin-bottom:8px;justify-content:space-between;align-items:center"><b style="color:var(--fg);font-family:var(--f-display);font-size:17px;letter-spacing:.04em;text-transform:uppercase">Ansprechpartner</b><span class="actions"><button type="button" class="btn small" data-konpick="${esc(g.name)}">+ Aus Telefonbuch</button><button type="button" class="btn ghost small" data-konnew="${esc(g.name)}">+ Neu</button></span></div><div class="lief">`
+      + (ks.map((k) => konCard(k, `<button type="button" class="btn small" data-konedit="${esc(k.id)}">Bearbeiten</button>${ks.length > 1 && !isHaupt(k, g.name) ? `<button type="button" class="btn ghost small" data-konhaupt="${esc(k.id)}">Als Haupt</button>` : ""}<button type="button" class="btn ghost small" data-konunlink="${esc(k.id)}">Entfernen</button>`, g.name)).join("") || `<div class="note" style="margin:0">Noch kein Ansprechpartner eingetragen. Wähle einen aus dem Telefonbuch oder lege einen neuen an.</div>`) + `</div></div>`;
     h += `<div class="calc">${L("Gratiswert gesamt", fmt(g.wert))}${L("Davon verbucht", fmt(g.verbucht))}${L("Noch offen", fmt(g.offen), "sum big")}`;
     if (g.rest > 0) h += L("darin Restwerte (unter einer ganzen Einheit)", fmt(g.rest));
     if (g.rest > 0) { const byArt = {}; g.rows.forEach((r) => { if (r.c.restwert > 0 && num(r.b.gPreis)) { const k = r.b.gratisartikel; byArt[k] = byArt[k] || { sum: 0, preis: num(r.b.gPreis), e: r.b.gEinheit }; byArt[k].sum += r.c.restwert; } });
@@ -1418,7 +1634,13 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   $("lBody").addEventListener("click", (e) => {
     const t = e.target.closest("[data-open]"); if (t) { $("dlgLief").close(); openDetail(t.dataset.open); return; }
     const ed = e.target.closest("[data-konedit]"); if (ed) { openKon(ed.dataset.konedit); return; }
-    const nw = e.target.closest("[data-konnew]"); if (nw) openKon(null, nw.dataset.konnew);
+    const nw = e.target.closest("[data-konnew]"); if (nw) { openKon(null, nw.dataset.konnew); return; }
+    const pk = e.target.closest("[data-konpick]"); if (pk) { openPick(pk.dataset.konpick); return; }
+    const g = lieferanten().find((x) => x.key === liefKey); if (!g) return;
+    const hp = e.target.closest("[data-konhaupt]");
+    if (hp) { const k = kontakte.find((x) => x.id === hp.dataset.konhaupt); if (k) { setHaupt(k, g.name, true); saveExtras(); render(); toast(`${k.name} ist jetzt Hauptansprechpartner`); } return; }
+    const ul = e.target.closest("[data-konunlink]");
+    if (ul) { const k = kontakte.find((x) => x.id === ul.dataset.konunlink); if (k) { unlinkKontakt(k, g.name); saveExtras(); render(); toast(`${k.name} ist nicht mehr bei ${g.name}. Der Kontakt bleibt im Telefonbuch.`); } }
   });
   $("lShare").addEventListener("click", async () => {
     const g = lieferanten().find((x) => x.key === liefKey); if (!g) return;
@@ -1515,7 +1737,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       applyRemote(() => {
         if (m.flaechen && Array.isArray(m.flaechen.list)) flaechen = m.flaechen.list;
         if (m.artikel && Array.isArray(m.artikel.list)) artikel = m.artikel.list;
-        if (m.kontakte && Array.isArray(m.kontakte.list)) kontakte = m.kontakte.list;
+        if (m.kontakte && Array.isArray(m.kontakte.list)) kontakte = normAll(m.kontakte.list);
         if (m.einstellungen) settings = { ...settings, ...m.einstellungen };
       });
     }, onErr));
@@ -1538,7 +1760,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     if (rMe.kontakte && Array.isArray(rMe.kontakte.list)) {
       const m = new Map(kontakte.map((k) => [lkey(k.lieferant) + "|" + lkey(k.name), k]));
       rMe.kontakte.list.forEach((k) => { const key = lkey(k.lieferant) + "|" + lkey(k.name), ex = m.get(key); m.set(key, ex ? { ...ex, ...Object.fromEntries(Object.entries(k).filter(([, v]) => v !== "" && v != null)) } : k); });
-      kontakte = [...m.values()];
+      kontakte = normAll([...m.values()]);
     }
     if (rMe.artikel && Array.isArray(rMe.artikel.list)) { const m = new Map(artikel.map((a) => [artKey(a.name), a])); rMe.artikel.list.forEach((a) => m.set(artKey(a.name), a)); artikel = [...m.values()]; }
     if (rMe.einstellungen) settings = { ...settings, ...rMe.einstellungen };
