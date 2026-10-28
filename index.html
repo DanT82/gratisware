@@ -178,6 +178,18 @@ label.f.wide { grid-column: 1 / -1 }
 textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size: 12px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); padding: 8px }
 @media (prefers-reduced-motion: no-preference) { .row, .btn, .chip { transition: border-color .12s, filter .12s } }
 
+/* Überfällig */
+.alert { display: flex; width: 100%; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; text-align: left; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; cursor: pointer; font-size: 14px }
+.alert b { font-weight: 600 }
+.alert span:last-child { font-weight: 600; white-space: nowrap }
+.tab b.red { background: var(--danger-bg); color: var(--danger) }
+.artrow { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: end }
+.artrow input, .artrow select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); width: 100%; min-width: 0 }
+.artrow .h { grid-column: 1 / -1; font-size: 12px; color: var(--muted); margin-top: -4px }
+@media (max-width: 560px) { .artrow { grid-template-columns: 1fr 1fr } .artrow label:first-child { grid-column: 1 / -1 } }
+.lrow.click { cursor: pointer; text-align: left; background: var(--surface); width: 100%; font: inherit; color: inherit }
+.lrow.click:hover { border-color: var(--muted) }
+
 /* Reiter */
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 18px; overflow-x: auto }
 .tab { border: 0; background: none; padding: 10px 14px 9px; border-bottom: 3px solid transparent; font-family: var(--f-display); font-weight: 600; font-size: 19px; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); cursor: pointer; white-space: nowrap }
@@ -230,7 +242,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       <h1>Gratiswaren-Kontrolle</h1>
     </div>
     <div class="actions">
-      <button class="btn" id="btnData" type="button">Daten &amp; Sicherung</button>
+      <button class="btn" id="btnData" type="button">Einstellungen</button>
       <button class="btn primary" id="btnNew" type="button">+ Neue Gratisware</button>
     </div>
   </header>
@@ -239,7 +251,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
 
   <nav class="tabs" role="tablist" aria-label="Bereiche">
     <button class="tab" type="button" role="tab" id="tabKal" data-view="kalender" aria-selected="false">Aktionskalender</button>
-    <button class="tab" type="button" role="tab" id="tabGratis" data-view="gratis" aria-selected="true">Gratiswaren-Kontrolle</button>
+    <button class="tab" type="button" role="tab" id="tabGratis" data-view="gratis" aria-selected="true">Gratisware</button>
+    <button class="tab" type="button" role="tab" id="tabLief" data-view="lieferanten" aria-selected="false">Lieferanten</button>
   </nav>
 
   <section id="viewKal" hidden>
@@ -265,6 +278,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   </section>
 
   <section id="viewGratis">
+  <button type="button" class="alert" id="overdueBox" hidden></button>
   <section class="kpis" aria-label="Übersicht">
     <div class="kpi total"><div class="lbl">Gratiswert gesamt</div><div class="val" id="kTotal">–</div><div class="sub" id="kTotalSub">&nbsp;</div></div>
     <div class="kpi done"><div class="lbl">Davon bereits verbucht</div><div class="val" id="kDone">–</div><div class="sub" id="kDoneSub">&nbsp;</div></div>
@@ -283,7 +297,49 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   </div>
   <p class="note">Kassenregal = 20 % · Standardaktion = 10 % · abweichende Quote selbst eintragen. Anspruch = ganze Gratis-Einheiten aus dem Gratiswert, der Rest bleibt als Restwert stehen.</p>
   </section>
+
+  <section id="viewLief" hidden>
+    <div class="toolbar" style="margin-top:0">
+      <input class="search" id="lq" type="search" placeholder="Lieferant suchen …" aria-label="Lieferant suchen">
+      <button class="btn small" type="button" id="btnArt">Artikel &amp; Preise</button>
+    </div>
+    <div class="list" id="liefList"></div>
+    <p class="note">Antippen für alle Aktionen eines Lieferanten und eine Aufstellung zum Verschicken an den Außendienst.</p>
+  </section>
 </div>
+
+<!-- Lieferant -->
+<dialog id="dlgLief" aria-labelledby="lTitle">
+  <div class="dlg-h"><div><div class="eyebrow" id="lEyebrow">Lieferant</div><h2 id="lTitle"></h2></div><button class="btn ghost" type="button" data-close>Schließen</button></div>
+  <div class="dlg-b" id="lBody"></div>
+  <div class="dlg-f">
+    <label class="chk"><input type="checkbox" id="lAll">Auch erledigte Aktionen aufführen</label>
+    <button class="btn primary" type="button" id="lShare">Aufstellung teilen</button>
+  </div>
+</dialog>
+
+<!-- Text zum Kopieren -->
+<dialog id="dlgText" aria-labelledby="tTitle">
+  <div class="dlg-h"><h2 id="tTitle">Aufstellung</h2><button class="btn ghost" type="button" data-close>Schließen</button></div>
+  <div class="dlg-b">
+    <p style="margin:0">Text kopieren und in Mail, WhatsApp oder Notizen einfügen.</p>
+    <textarea class="csv" id="tText" readonly style="height:260px;font-family:var(--f-body);font-size:14px"></textarea>
+  </div>
+  <div class="dlg-f"><span></span><button class="btn primary" type="button" id="tCopy">Kopieren</button></div>
+</dialog>
+
+<!-- Artikel & Preise -->
+<dialog id="dlgArt" aria-labelledby="aTitle">
+  <div class="dlg-h"><h2 id="aTitle">Artikel &amp; Preise</h2><button class="btn ghost" type="button" data-close>Schließen</button></div>
+  <div class="dlg-b">
+    <p style="margin:0">Die App merkt sich jeden Artikel mit Preis, den du bei einer Gratisware einträgst. Beim nächsten Mal schlägt sie ihn vor und füllt Einheit und Preis aus. Hier kannst du Preise ändern oder Artikel löschen.</p>
+    <input class="search" id="aq" type="search" placeholder="Artikel suchen …" aria-label="Artikel suchen">
+    <div class="lief" id="artList"></div>
+    <div><button class="btn" type="button" id="artAdd">+ Artikel hinzufügen</button></div>
+    <div class="err" id="artErr" hidden></div>
+  </div>
+  <div class="dlg-f"><button class="btn ghost" type="button" data-close>Abbrechen</button><button class="btn primary" type="button" id="artSave">Speichern</button></div>
+</dialog>
 
 <!-- Belegung -->
 <dialog id="dlgBel" aria-labelledby="bTitle">
@@ -301,7 +357,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
         <legend>Mieter</legend>
         <label class="f">Lieferant<input id="bl_lieferant" autocomplete="off" list="dlLieferanten"></label>
         <label class="f">Kontakt <span class="h">optional</span><input id="bl_kontakt" autocomplete="off"></label>
-        <label class="f wide">Artikel / Aktion<input id="bl_artikel" autocomplete="off" placeholder="z. B. Weihnachtsbier-Display"></label>
+        <label class="f wide">Artikel / Aktion<input id="bl_artikel" list="dlArtikel" autocomplete="off" placeholder="z. B. Weihnachtsbier-Display"></label>
         <label class="f wide">Notiz <span class="h">optional</span><input id="bl_notiz" autocomplete="off"></label>
       </fieldset>
       <div class="err" id="bl_err" hidden></div>
@@ -346,7 +402,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
 
       <fieldset>
         <legend>Bestellung</legend>
-        <label class="f wide">Bestellartikel<input id="f_bestellartikel" required autocomplete="off" placeholder="z. B. Weihnachtsbier-Display"></label>
+        <label class="f wide">Bestellartikel<input id="f_bestellartikel" list="dlArtikel" required autocomplete="off" placeholder="z. B. Weihnachtsbier-Display"></label>
         <label class="f">Bestellmenge<input id="f_menge" type="number" inputmode="decimal" min="0" step="1"></label>
         <label class="f">Bestelleinheit<select id="f_einheit">
           <option>Display</option><option>Kiste</option><option>Palette</option><option>Karton</option><option>Sixpack</option><option>Stück</option>
@@ -360,7 +416,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
 
       <fieldset>
         <legend>Gratisware</legend>
-        <label class="f wide">Gratisartikel<input id="f_gratisartikel" required autocomplete="off" placeholder="z. B. Barre Pils 24 × 0,33 l"></label>
+        <label class="f wide">Gratisartikel<input id="f_gratisartikel" list="dlArtikel" required autocomplete="off" placeholder="z. B. Barre Pils 24 × 0,33 l"></label>
         <label class="f">Gratis-Einheit<select id="f_gEinheit">
           <option>Kiste</option><option>Sixpack</option><option>Karton</option><option>Palette</option><option>Stück</option>
         </select></label>
@@ -387,8 +443,15 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
 
 <!-- Daten & Sicherung -->
 <dialog id="dlgData" aria-labelledby="cTitle">
-  <div class="dlg-h"><h2 id="cTitle">Daten &amp; Sicherung</h2><button class="btn ghost" type="button" data-close>Schließen</button></div>
+  <div class="dlg-h"><h2 id="cTitle">Einstellungen &amp; Sicherung</h2><button class="btn ghost" type="button" data-close>Schließen</button></div>
   <div class="dlg-b">
+    <fieldset>
+      <legend>Einstellungen</legend>
+      <label class="f">Nachhaken nach … Wochen <span class="h">gezählt ab Ende der Aktion</span><input id="set_wochen" type="number" inputmode="numeric" min="1" max="26" step="1"></label>
+      <label class="f">Absender für Aufstellungen<input id="set_absender" autocomplete="off"></label>
+      <div><button class="btn small" type="button" id="btnArt2">Artikel &amp; Preise verwalten</button></div>
+    </fieldset>
+    <legend style="margin:6px 0 -8px">Sicherung</legend>
     <p style="margin:0">Alle Einträge sind nur auf diesem Gerät gespeichert. Mach ab und zu eine Sicherung, zum Beispiel in iCloud Drive. Damit kannst du die Daten auch auf ein anderes Gerät übertragen.</p>
     <div class="actions">
       <button class="btn primary" type="button" id="btnBackup">Sicherung speichern</button>
@@ -402,6 +465,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
 </dialog>
 
 <datalist id="dlLieferanten"></datalist>
+<datalist id="dlArtikel"></datalist>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -463,6 +527,18 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const key = fehlt.length ? "fehlt" : unverbucht ? "buchen" : status === "Verbucht" ? "fertig" : "offen";
     return { isDisplay, quote, bestellwert, gratiswert, anspruch, restwert, geliefert, verbuchtMenge, verbucht, geliefertWert, offen, status, cls, key, fehlt, restAnspruch: anspruch != null ? Math.max(0, anspruch - geliefert) : null };
   }
+  /* Überfällig: Aktion vorbei, Nachhak-Frist abgelaufen, Gratisware noch nicht vollständig geliefert */
+  function refDate(b) { const x = belOf(b); return x ? addDays(belEnd(x), 6) : b.datum || null; }
+  function calcFull(b) {
+    const c = calc(b), ref = refDate(b);
+    c.due = ref ? addDays(ref, 7 * (num(settings.wochen) || 3)) : null;
+    c.over = false;
+    if (c.due && !c.fehlt.length && c.anspruch > 0 && c.geliefert < c.anspruch && today() > c.due) {
+      c.over = true; c.tage = Math.round((day(today()) - day(c.due)) / 864e5);
+      c.status = `Überfällig seit ${c.tage} ${c.tage === 1 ? "Tag" : "Tagen"}`; c.cls = "st-fehlt"; c.key = "nachhaken";
+    }
+    return c;
+  }
   const pct = (q) => q == null ? "–" : nf.format(r2(q * 100)) + " %";
   const units = (n, e) => `${nf.format(n)} ${e === "Kiste" && n !== 1 ? "Kisten" : e === "Palette" && n !== 1 ? "Paletten" : e === "Karton" && n !== 1 ? "Kartons" : e === "Sixpack" && n !== 1 ? "Sixpacks" : e === "Flasche" && n !== 1 ? "Flaschen" : e === "Dose" && n !== 1 ? "Dosen" : e === "Display" && n !== 1 ? "Displays" : e}`;
 
@@ -481,7 +557,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   async function remove(id) { items = items.filter((x) => x.id !== id); saveLocal(); render(); }
   function connect() {
     store = "local"; items = loadLocal();
-    loadKal();
+    loadKal(); loadExtras();
     let seeded = false; try { seeded = !!localStorage.getItem(SEEDED); } catch (e) {}
     if (!items.length && !seeded) {
       items = [{ id: "beispiel-weihnachtsbier", beispiel: true, lieferant: "Beispiel-Lieferant", kontakt: "", datum: today(), bestellartikel: "Weihnachtsbier-Display", menge: 6, einheit: "Display", ve: 60, veName: "Sixpack", preis: 6.49, aktion: "Kassenregal", quote: null, gratisartikel: "Barre Pils 24 × 0,33 l", gEinheit: "Kiste", gPreis: 17.99, notiz: "Beispiel – bearbeiten oder löschen", lieferungen: [], erstellt: new Date().toISOString() }];
@@ -494,10 +570,10 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   }
 
   /* ---------- Übersicht ---------- */
-  const FILTERS = [["alle", "Alle"], ["offen", "Offen"], ["buchen", "Zu verbuchen"], ["fertig", "Verbucht"], ["fehlt", "Angaben fehlen"]];
+  const FILTERS = [["alle", "Alle"], ["nachhaken", "Nachhaken"], ["offen", "Offen"], ["buchen", "Zu verbuchen"], ["fertig", "Verbucht"], ["fehlt", "Angaben fehlen"]];
   function render() {
     renderKal();
-    const rows = items.map((b) => ({ b, c: calc(b) }));
+    const rows = items.map((b) => ({ b, c: calcFull(b) }));
     let total = 0, done = 0, waiting = 0;
     rows.forEach(({ c }) => { if (c.gratiswert != null) { total += c.gratiswert; done += c.verbucht; waiting += Math.max(0, c.geliefertWert - c.verbucht); } });
     total = r2(total); done = r2(done); const open = r2(Math.max(0, total - done));
@@ -511,8 +587,13 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     $("barDone").style.width = total ? (done / total * 100) + "%" : "0";
     $("barWait").style.width = total ? (waiting / total * 100) + "%" : "0";
 
-    const counts = { alle: rows.length, offen: 0, buchen: 0, fertig: 0, fehlt: 0 };
+    const counts = { alle: rows.length, nachhaken: 0, offen: 0, buchen: 0, fertig: 0, fehlt: 0 };
     rows.forEach((r) => counts[r.c.key]++);
+    const over = rows.filter((r) => r.c.over);
+    const ob = $("overdueBox"); ob.hidden = !over.length;
+    if (over.length) ob.innerHTML = `<span><b>${over.length} ${over.length === 1 ? "Gratisware ist" : "Gratiswaren sind"} überfällig.</b> Noch nicht geliefert: ${fmt(r2(over.reduce((s, r) => s + r.c.restAnspruch * (num(r.b.gPreis) || 0), 0)))}. Zeit, beim Lieferanten nachzuhaken.</span><span>${filter === "nachhaken" ? "Alle zeigen" : "Anzeigen ›"}</span>`;
+    $("tabGratis").innerHTML = "Gratisware" + (over.length ? `<b class="red" title="überfällig">${over.length}</b>` : "");
+    renderLief();
     $("chips").innerHTML = FILTERS.filter(([k]) => k === "alle" || counts[k] || filter === k)
       .map(([k, l]) => `<button type="button" class="chip" data-f="${k}" aria-pressed="${filter === k}">${l}<b>${counts[k]}</b></button>`).join("");
 
@@ -523,7 +604,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const shown = rows
       .filter((r) => filter === "alle" || r.c.key === filter)
       .filter((r) => !q || [r.b.lieferant, r.b.kontakt, r.b.bestellartikel, r.b.gratisartikel, r.b.notiz].join(" ").toLowerCase().includes(q))
-      .sort((a, b) => ({ buchen: 0, fehlt: 1, offen: 2, fertig: 3 }[a.c.key] - { buchen: 0, fehlt: 1, offen: 2, fertig: 3 }[b.c.key]) || String(b.b.datum || "").localeCompare(String(a.b.datum || "")));
+      .sort((a, b) => ({ nachhaken: -1, buchen: 0, fehlt: 1, offen: 2, fertig: 3 }[a.c.key] - { nachhaken: -1, buchen: 0, fehlt: 1, offen: 2, fertig: 3 }[b.c.key]) || String(b.b.datum || "").localeCompare(String(a.b.datum || "")));
 
     const list = $("list");
     if (store === "loading") return;
@@ -620,6 +701,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
         if (bel) { bel.buchungId = item.id; saveKal(); }
         pendingBelId = null;
       }
+      learnArtikel(item);
       await persist(item); $("dlgForm").close(); toast(prev ? "Gespeichert" : "Gratisware angelegt"); if (prev && detailId === item.id) renderDetail(); }
     catch (err) { $("fErr").textContent = "Speichern fehlgeschlagen: " + (err?.message || err) + ". Bitte erneut versuchen."; $("fErr").hidden = false; }
     finally { $("fSave").disabled = false; }
@@ -631,7 +713,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   function renderDetail() {
     const b = items.find((x) => x.id === detailId);
     if (!b) { if ($("dlgDetail").open) $("dlgDetail").close(); return; }
-    const c = calc(b);
+    const c = calcFull(b);
     $("dEyebrow").innerHTML = `${esc(b.lieferant || "Ohne Lieferant")}${b.kontakt ? " · " + esc(b.kontakt) : ""} <span class="pill ${c.cls}" style="margin-left:6px">${c.status}</span>`;
     $("dTitle").textContent = b.bestellartikel || "Aktion";
     const L = (a, v, cls = "") => `<div class="ln ${cls}"><span>${a}</span><span>${v}</span></div>`;
@@ -651,6 +733,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     h += L("Geliefert", c.anspruch != null ? `${nf.format(c.geliefert)} von ${nf.format(c.anspruch)}` : nf.format(c.geliefert), "sum");
     h += L("Davon verbucht", fmt(c.verbucht));
     h += L("Noch offen", fmt(c.offen), "big");
+    if (c.due && c.restAnspruch > 0) h += L(c.over ? "Überfällig seit" : "Nachhaken ab", dDE(c.due));
     if (c.fehlt.length) h += `<div class="hint">Es fehlt noch: ${c.fehlt.join(", ")}.</div>`;
     h += `</div>`;
 
@@ -722,7 +805,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const head = ["Abgemacht am", "Lieferant", "Kontakt", "Bestellartikel", "Gratisartikel", "Aktion", "Quote %", "Bestellmenge", "Bestelleinheit", "VE je Display", "Verkaufseinheit", "Preis je Einheit €", "Bestellwert €", "Gratiswert €", "Gratis-Einheit", "Preis je Gratis-Einheit €", "Anspruch", "Restwert €", "Geliefert", "Verbucht €", "Offen €", "Status", "Lieferungen", "Aktionsfläche"];
     const lines = [head.join(";")];
     items.forEach((b) => {
-      const c = calc(b);
+      const c = calcFull(b);
       const lf = (b.lieferungen || []).map((l) => `${dDE(l.datum)} ${l.menge} ${b.gEinheit}${l.lieferschein ? " LS " + l.lieferschein : ""}${l.verbucht ? " (verbucht " + dDE(l.verbuchtAm) + ")" : " (nicht verbucht)"}`).join(" | ");
       lines.push([dDE(b.datum), b.lieferant, b.kontakt, b.bestellartikel, b.gratisartikel, b.aktion === "Eigene" ? "Eigene Quote" : b.aktion, n(c.quote != null ? r2(c.quote * 100) : ""), n(b.menge), b.einheit, n(c.isDisplay ? b.ve : ""), c.isDisplay ? b.veName : "", n(b.preis), n(c.bestellwert), n(c.gratiswert), b.gEinheit, n(b.gPreis), n(c.anspruch), n(c.restwert), n(c.geliefert), n(c.verbucht), n(c.offen), c.status, lf, belOf(b) ? `${flName(belOf(b).flaecheId)} ${belRange(belOf(b))}` : ""].map(q).join(";"));
     });
@@ -742,6 +825,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     return true;
   }
   function openData() {
+    $("set_wochen").value = settings.wochen; $("set_absender").value = settings.absender;
     $("restoreAsk").hidden = true;
     $("storeInfo").textContent = `${items.length} ${items.length === 1 ? "Aktion" : "Aktionen"} auf diesem Gerät gespeichert.`;
     $("dlgData").showModal();
@@ -752,7 +836,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     if (await saveFile(`gratiswaren_${today()}.csv`, csv(), "text/csv")) toast("Export erstellt");
   });
   $("btnBackup").addEventListener("click", async () => {
-    const data = JSON.stringify({ app: "gratiswaren-kontrolle", version: 2, gesichert: new Date().toISOString(), buchungen: items, flaechen, belegungen }, null, 1);
+    const data = JSON.stringify({ app: "gratiswaren-kontrolle", version: 2, gesichert: new Date().toISOString(), buchungen: items, flaechen, belegungen, artikel, einstellungen: settings }, null, 1);
     if (await saveFile(`gratiswaren_sicherung_${today()}.json`, data, "application/json")) toast("Sicherung erstellt");
   });
   let pendingRestore = null;
@@ -765,7 +849,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       const list = Array.isArray(o) ? o : o.buchungen;
       if (!Array.isArray(list) || list.some((x) => !x || typeof x !== "object" || !x.id)) throw new Error();
       const fl = Array.isArray(o.flaechen) ? o.flaechen : null, bl = Array.isArray(o.belegungen) ? o.belegungen : [];
-      pendingRestore = { list, fl, bl };
+      pendingRestore = { list, fl, bl, art: Array.isArray(o.artikel) ? o.artikel : null, set: o.einstellungen && typeof o.einstellungen === "object" ? o.einstellungen : null };
       ask.innerHTML = `Sicherung mit ${list.length} ${list.length === 1 ? "Aktion" : "Aktionen"}${fl ? ` und ${bl.length} ${bl.length === 1 ? "Belegung" : "Belegungen"}` : ""} laden? Die Einträge auf diesem Gerät werden ersetzt. <button type="button" class="btn danger small" id="rsYes">Ja, ersetzen</button><button type="button" class="btn small" id="rsNo">Abbrechen</button>`;
     } catch (err) { pendingRestore = null; ask.textContent = "Diese Datei ist keine gültige Sicherung der Gratiswaren-App."; }
     ask.hidden = false;
@@ -775,6 +859,9 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     if (t.id === "rsYes" && pendingRestore) {
       items = pendingRestore.list;
       if (pendingRestore.fl) { flaechen = pendingRestore.fl; belegungen = pendingRestore.bl; }
+      if (pendingRestore.art) artikel = pendingRestore.art;
+      if (pendingRestore.set) settings = { ...settings, ...pendingRestore.set };
+      saveExtras(); fillArtList();
       pendingRestore = null;
       try { saveLocal(); saveKal(); } catch (err) { return; }
       render(); $("dlgData").close(); toast("Sicherung geladen");
@@ -844,7 +931,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       belegungen.filter((b) => b.flaecheId === f.id && b.start <= last && belEnd(b) >= weeks[0]).forEach((b) => {
         const a = Math.max(0, weekDiff(kalStart, b.start)), e = Math.min(KAL_N - 1, weekDiff(kalStart, belEnd(b)));
         for (let i = a; i <= e; i++) covered[i] = true;
-        const bu = linkedBuchung(b), c = bu ? calc(bu) : null;
+        const bu = linkedBuchung(b), c = bu ? calcFull(bu) : null;
         const cls = c ? c.cls : "nolink";
         const cut = (b.start < weeks[0] ? " cut-l" : "") + (belEnd(b) > last ? " cut-r" : "");
         const state = c ? c.status : "Gratisware fehlt";
@@ -905,7 +992,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     let h = `<div class="ln"><span>Zeitraum</span><span>${belRange(b)}</span></div>
       <div class="ln"><span>von – bis</span><span>${dDE(b.start)} – ${dDE(addDays(belEnd(b), 6))}</span></div>
       <div class="ln"><span>Gratisquote der Fläche</span><span>${f?.typ === "Standard" ? "10 %" : "20 %"}</span></div>`;
-    if (bu) h += `<div class="ln sum"><span>Gratiswaren-Kontrolle</span><span>${fmt(calc(bu).gratiswert)} · ${calc(bu).status}</span></div>`;
+    if (bu) h += `<div class="ln sum"><span>Gratiswaren-Kontrolle</span><span>${fmt(calcFull(bu).gratiswert)} · ${calcFull(bu).status}</span></div>`;
     if (x) h += `<div class="hint" style="color:var(--danger)">Überschneidung: ${esc(flName(x.flaecheId))} ist in ${belRange(x)} schon an ${esc(x.lieferant || "jemanden")} vergeben.</div>`;
     $("bl_info").innerHTML = h;
   }
@@ -994,11 +1081,185 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   });
   $("btnFl").addEventListener("click", openFl);
 
+  /* ---------- Einstellungen & Artikel ---------- */
+  const SET_KEY = "gratiswaren-einstellungen", ART_KEY = "gratiswaren-artikel";
+  let settings = { wochen: 3, absender: "Edeka Wehrmann · Getränke" };
+  let artikel = [];          // {id, name, einheit, preis, ve?, veName?}
+  function loadExtras() {
+    try { settings = { ...settings, ...(JSON.parse(localStorage.getItem(SET_KEY) || "{}") || {}) }; } catch (e) {}
+    try { const a = JSON.parse(localStorage.getItem(ART_KEY) || "[]"); artikel = Array.isArray(a) ? a : []; } catch (e) {}
+    if (!artikel.length) items.forEach(learnArtikel);   // aus bisherigen Einträgen lernen
+    fillArtList();
+  }
+  function saveExtras() {
+    try { localStorage.setItem(SET_KEY, JSON.stringify(settings)); localStorage.setItem(ART_KEY, JSON.stringify(artikel)); }
+    catch (e) { toast("Speichern auf dem Gerät fehlgeschlagen."); }
+  }
+  const artKey = (n) => String(n || "").trim().toLowerCase();
+  const findArt = (n) => artikel.find((a) => artKey(a.name) === artKey(n));
+  function upsertArt(a) {
+    if (!a.name || !(num(a.preis) > 0)) return;
+    const ex = findArt(a.name);
+    if (ex) Object.assign(ex, a, { name: ex.name, id: ex.id }); else artikel.push({ id: uid(), ...a });
+  }
+  function learnArtikel(b) {
+    if (b.beispiel) return;
+    upsertArt({ name: (b.gratisartikel || "").trim(), einheit: b.gEinheit || "Kiste", preis: num(b.gPreis) });
+    if (b.einheit === "Display") upsertArt({ name: (b.bestellartikel || "").trim(), einheit: "Display", preis: num(b.preis), ve: num(b.ve), veName: b.veName });
+    else upsertArt({ name: (b.bestellartikel || "").trim(), einheit: b.einheit, preis: num(b.preis) });
+    saveExtras(); fillArtList();
+  }
+  function fillArtList() {
+    $("dlArtikel").innerHTML = [...artikel].sort((a, b) => a.name.localeCompare(b.name, "de"))
+      .map((a) => `<option value="${esc(a.name)}">${a.einheit === "Display" && a.ve ? `Display · ${nf.format(a.ve)} ${esc(a.veName || "")} à ${fmt(a.preis)}` : `${esc(a.einheit)} · ${fmt(a.preis)}`}</option>`).join("");
+  }
+  // Auswahl eines bekannten Artikels füllt Einheit und Preis
+  $("f_gratisartikel").addEventListener("change", () => {
+    const a = findArt($("f_gratisartikel").value); if (!a) return;
+    if (a.einheit !== "Display") { $("f_gEinheit").value = a.einheit; $("f_gPreis").value = a.preis; }
+    else if (a.veName) { $("f_gEinheit").value = [...$("f_gEinheit").options].some((o) => o.value === a.veName) ? a.veName : $("f_gEinheit").value; $("f_gPreis").value = a.preis; }
+    syncForm(); toast(`Preis übernommen: ${fmt(a.preis)} je ${$("f_gEinheit").value}`);
+  });
+  $("f_bestellartikel").addEventListener("change", () => {
+    const a = findArt($("f_bestellartikel").value); if (!a) return;
+    if ([...$("f_einheit").options].some((o) => o.value === a.einheit)) $("f_einheit").value = a.einheit;
+    if (a.einheit === "Display") { if (a.ve) $("f_ve").value = a.ve; if (a.veName) $("f_veName").value = a.veName; }
+    $("f_preis").value = a.preis;
+    syncForm(); toast(`Preis übernommen: ${fmt(a.preis)}`);
+  });
+  $("set_wochen").addEventListener("change", () => { const w = Math.round(num($("set_wochen").value)); if (w >= 1 && w <= 26) { settings.wochen = w; saveExtras(); render(); toast(`Nachhaken nach ${w} ${w === 1 ? "Woche" : "Wochen"}`); } else $("set_wochen").value = settings.wochen; });
+  $("set_absender").addEventListener("change", () => { settings.absender = $("set_absender").value.trim(); saveExtras(); });
+
+  /* Artikel verwalten */
+  let artDraft = [], artQuery = "";
+  const EINHEITEN = ["Kiste", "Sixpack", "Karton", "Palette", "Display", "Flasche", "Dose", "Stück"];
+  function openArt() { artDraft = artikel.map((a) => ({ ...a })); artQuery = ""; $("aq").value = ""; $("artErr").hidden = true; renderArt(); $("dlgArt").showModal(); }
+  function renderArt() {
+    const q = artQuery.trim().toLowerCase();
+    const idx = artDraft.map((a, i) => i).filter((i) => !q || artDraft[i].name.toLowerCase().includes(q))
+      .sort((a, b) => (artDraft[a]._neu ? -1 : 0) - (artDraft[b]._neu ? -1 : 0) || artDraft[a].name.localeCompare(artDraft[b].name, "de"));
+    $("artList").innerHTML = idx.map((i) => { const a = artDraft[i]; return `<div class="artrow">
+        <label class="f">Artikel<input data-i="${i}" data-k="name" value="${esc(a.name)}" autocomplete="off"></label>
+        <label class="f">Einheit<select data-i="${i}" data-k="einheit">${EINHEITEN.map((e) => `<option ${a.einheit === e ? "selected" : ""}>${e}</option>`).join("")}</select></label>
+        <label class="f">${a.einheit === "Display" ? "€ je VE" : "Preis €"}<input data-i="${i}" data-k="preis" type="number" inputmode="decimal" step="0.01" min="0" value="${a.preis ?? ""}"></label>
+        <button type="button" class="btn ghost small" data-rm="${i}">Löschen</button>
+        ${a.einheit === "Display" && a.ve ? `<div class="h">${nf.format(a.ve)} ${esc(a.veName || "")} je Display</div>` : ""}
+      </div>`; }).join("") || `<div class="note" style="margin:0">${artDraft.length ? "Kein Artikel gefunden." : "Noch keine Artikel. Sie kommen automatisch dazu, sobald du eine Gratisware mit Preisen speicherst."}</div>`;
+  }
+  $("aq").addEventListener("input", (e) => { artQuery = e.target.value; renderArt(); });
+  $("artList").addEventListener("input", (e) => { const t = e.target; if (t.dataset.i != null && t.tagName === "INPUT") artDraft[+t.dataset.i][t.dataset.k] = t.dataset.k === "preis" ? num(t.value) : t.value; });
+  $("artList").addEventListener("change", (e) => { const t = e.target; if (t.tagName === "SELECT") { artDraft[+t.dataset.i].einheit = t.value; renderArt(); } });
+  $("artList").addEventListener("click", (e) => { const t = e.target.closest("[data-rm]"); if (t) { artDraft.splice(+t.dataset.rm, 1); renderArt(); } });
+  $("artAdd").addEventListener("click", () => { artDraft.push({ id: uid(), name: "", einheit: "Kiste", preis: null, _neu: true }); artQuery = ""; $("aq").value = ""; renderArt(); const f = $("artList").querySelector('input[data-k="name"]'); if (f) f.focus(); });
+  $("artSave").addEventListener("click", () => {
+    const clean = artDraft.filter((a) => a.name.trim() || num(a.preis));
+    if (clean.some((a) => !a.name.trim())) { $("artErr").textContent = "Jeder Artikel braucht einen Namen."; $("artErr").hidden = false; return; }
+    const seen = new Set();
+    for (const a of clean) { const k = artKey(a.name); if (seen.has(k)) { $("artErr").textContent = `„${a.name.trim()}“ steht doppelt in der Liste.`; $("artErr").hidden = false; return; } seen.add(k); }
+    artikel = clean.map(({ _neu, ...a }) => ({ ...a, name: a.name.trim(), preis: num(a.preis) }));
+    saveExtras(); fillArtList(); $("dlgArt").close(); toast("Artikel gespeichert");
+  });
+  $("btnArt").addEventListener("click", openArt);
+  $("btnArt2").addEventListener("click", () => { $("dlgData").close(); openArt(); });
+
+  /* ---------- Lieferanten ---------- */
+  let liefQuery = "", liefKey = null;
+  const lkey = (n) => String(n || "").trim().toLowerCase();
+  function lieferanten() {
+    const m = new Map();
+    const get = (name) => { const k = lkey(name) || "–"; if (!m.has(k)) m.set(k, { key: k, name: String(name || "").trim() || "Ohne Lieferant", rows: [], bels: [], kontakte: new Set() }); return m.get(k); };
+    items.forEach((b) => { const g = get(b.lieferant); g.rows.push({ b, c: calcFull(b) }); if (b.kontakt) g.kontakte.add(b.kontakt); });
+    belegungen.forEach((x) => { const g = get(x.lieferant); g.bels.push(x); if (x.kontakt) g.kontakte.add(x.kontakt); });
+    return [...m.values()].map((g) => {
+      const sum = (f) => r2(g.rows.reduce((s, r) => s + (f(r) || 0), 0));
+      g.wert = sum((r) => r.c.gratiswert); g.verbucht = sum((r) => r.c.verbucht); g.offen = sum((r) => r.c.offen);
+      g.rest = sum((r) => r.c.restwert); g.over = g.rows.filter((r) => r.c.over).length;
+      g.next = g.bels.filter((x) => belEnd(x) >= mondayOf(today())).sort((a, b) => a.start.localeCompare(b.start))[0] || null;
+      return g;
+    }).sort((a, b) => b.over - a.over || b.offen - a.offen || a.name.localeCompare(b.name, "de"));
+  }
+  function renderLief() {
+    const q = liefQuery.trim().toLowerCase();
+    const all = lieferanten(), list = all.filter((g) => !q || g.name.toLowerCase().includes(q) || [...g.kontakte].join(" ").toLowerCase().includes(q));
+    $("tabLief").textContent = "Lieferanten";
+    if (!all.length) { $("liefList").innerHTML = `<div class="empty"><strong>Noch keine Lieferanten</strong>Sie erscheinen hier, sobald du eine Gratisware oder eine Belegung anlegst.</div>`; return; }
+    if (!list.length) { $("liefList").innerHTML = `<div class="empty"><strong>Kein Lieferant gefunden</strong>Suche anpassen.</div>`; return; }
+    $("liefList").innerHTML = list.map((g) => `<button type="button" class="row" data-lief="${esc(g.key)}">
+      <div class="c-main"><div class="t">${esc(g.name)}</div>
+        <div class="s">${[...g.kontakte].map(esc).join(", ") || "Kein Kontakt eingetragen"}</div>
+        <div class="s">${g.rows.length} ${g.rows.length === 1 ? "Aktion" : "Aktionen"}${g.next ? ` · nächste Fläche: ${esc(flName(g.next.flaecheId))}, ${belRange(g.next)}` : ""}</div></div>
+      <div><div class="k">Gratiswert</div><div class="v">${fmt(g.wert)}</div></div>
+      <div><div class="k">Verbucht</div><div class="v">${fmt(g.verbucht)}</div></div>
+      <div><div class="k">Noch offen</div><div class="v">${fmt(g.offen)}</div>${g.rest > 0 ? `<div class="s num">davon Restwerte ${fmt(g.rest)}</div>` : ""}</div>
+      <div class="c-status">${g.over ? `<span class="pill st-fehlt">${g.over} überfällig</span>` : g.offen > 0 ? `<span class="pill st-offen">Offen</span>` : g.rows.length ? `<span class="pill st-fertig">Erledigt</span>` : `<span class="pill st-offen">Nur geplant</span>`}</div>
+    </button>`).join("");
+    if (liefKey && $("dlgLief").open) renderLiefDetail();
+  }
+  function renderLiefDetail() {
+    const g = lieferanten().find((x) => x.key === liefKey);
+    if (!g) { $("dlgLief").close(); return; }
+    $("lTitle").textContent = g.name;
+    $("lEyebrow").textContent = [...g.kontakte].join(", ") || "Lieferant";
+    const L = (a, v, cls = "") => `<div class="ln ${cls}"><span>${a}</span><span>${v}</span></div>`;
+    let h = `<div class="calc">${L("Gratiswert gesamt", fmt(g.wert))}${L("Davon verbucht", fmt(g.verbucht))}${L("Noch offen", fmt(g.offen), "sum big")}`;
+    if (g.rest > 0) h += L("darin Restwerte (unter einer ganzen Einheit)", fmt(g.rest));
+    if (g.rest > 0) { const byArt = {}; g.rows.forEach((r) => { if (r.c.restwert > 0 && num(r.b.gPreis)) { const k = r.b.gratisartikel; byArt[k] = byArt[k] || { sum: 0, preis: num(r.b.gPreis), e: r.b.gEinheit }; byArt[k].sum += r.c.restwert; } });
+      Object.entries(byArt).forEach(([k, v]) => { const n = Math.floor(v.sum / v.preis + 1e-9); if (n >= 1) h += `<div class="hint" style="color:var(--ok)">Die Restwerte für ${esc(k)} ergeben zusammen ${units(n, v.e)}. Die kannst du einfordern.</div>`; }); }
+    h += `</div><div class="lief">`;
+    const rows = [...g.rows].sort((a, b) => ({ nachhaken: -1, buchen: 0, fehlt: 1, offen: 2, fertig: 3 }[a.c.key] - { nachhaken: -1, buchen: 0, fehlt: 1, offen: 2, fertig: 3 }[b.c.key]) || String(b.b.datum || "").localeCompare(String(a.b.datum || "")));
+    rows.forEach(({ b, c }) => {
+      h += `<button type="button" class="lrow click" data-open="${esc(b.id)}" style="grid-template-columns:minmax(0,1fr) auto">
+        <div><b>${esc(b.bestellartikel || "–")}</b>
+          <div class="s">${b.datum ? dDE(b.datum) : ""}${belOf(b) ? " · " + esc(flName(belOf(b).flaecheId)) + " " + belRange(belOf(b)) : ""} · ${c.anspruch != null ? `${nf.format(c.geliefert)} von ${units(c.anspruch, b.gEinheit)} geliefert` : "Angaben fehlen"} · offen ${fmt(c.offen)}</div></div>
+        <span class="pill ${c.cls}">${c.status}</span></button>`;
+    });
+    g.bels.filter((x) => !linkedBuchung(x)).forEach((x) => {
+      h += `<div class="lrow" style="grid-template-columns:minmax(0,1fr) auto"><div><b>${esc(x.artikel || "Belegung")}</b><div class="s">${esc(flName(x.flaecheId))} · ${belRange(x)} · noch keine Gratisware angelegt</div></div><span class="pill st-offen">Geplant</span></div>`;
+    });
+    $("lBody").innerHTML = h + `</div>`;
+  }
+  function liefText(g, alle) {
+    const lines = [`Gratiswaren-Aufstellung: ${g.name}`, [settings.absender, `Stand ${dDE(today())}`].filter(Boolean).join(" · "), ""];
+    const rows = g.rows.filter((r) => alle || r.c.offen > 0 || r.c.key !== "fertig");
+    let offenSumme = 0;
+    rows.forEach(({ b, c }) => {
+      const wo = belOf(b) ? ` (${flName(belOf(b).flaecheId)}, ${belRange(belOf(b))})` : b.datum ? ` (vom ${dDE(b.datum)})` : "";
+      lines.push(`• ${b.bestellartikel || "Aktion"}${wo}`);
+      if (c.anspruch != null) {
+        lines.push(`  Vereinbart: ${units(c.anspruch, b.gEinheit)} ${b.gratisartikel || ""} (Gratiswert ${fmt(c.gratiswert)})`);
+        lines.push(`  Geliefert: ${units(c.geliefert, b.gEinheit)}`);
+        if (c.restAnspruch > 0) { lines.push(`  Noch offen: ${units(c.restAnspruch, b.gEinheit)} = ${fmt(r2(c.restAnspruch * num(b.gPreis)))}${c.over ? ` – überfällig seit ${dDE(c.due)}` : ""}`); offenSumme += c.restAnspruch * num(b.gPreis); }
+        else lines.push(`  Vollständig geliefert, danke!`);
+      } else lines.push(`  Gratiswert: ${fmt(c.gratiswert)}`);
+      lines.push("");
+    });
+    if (!rows.length) lines.push("Aktuell ist nichts offen. Vielen Dank!", "");
+    if (offenSumme > 0) lines.push(`Noch offene Gratisware gesamt: ${fmt(r2(offenSumme))}`);
+    return lines.join("\n").trim();
+  }
+  $("liefList").addEventListener("click", (e) => { const r = e.target.closest("[data-lief]"); if (!r) return; liefKey = r.dataset.lief; $("lAll").checked = false; renderLiefDetail(); $("dlgLief").showModal(); });
+  $("lq").addEventListener("input", (e) => { liefQuery = e.target.value; renderLief(); });
+  $("lBody").addEventListener("click", (e) => { const t = e.target.closest("[data-open]"); if (t) { $("dlgLief").close(); openDetail(t.dataset.open); } });
+  $("lShare").addEventListener("click", async () => {
+    const g = lieferanten().find((x) => x.key === liefKey); if (!g) return;
+    const text = liefText(g, $("lAll").checked);
+    if (navigator.share) {
+      try { await navigator.share({ title: `Gratiswaren ${g.name}`, text }); return; }
+      catch (err) { if (err && err.name === "AbortError") return; }
+    }
+    $("tText").value = text; $("dlgText").showModal();
+  });
+  $("tCopy").addEventListener("click", () => {
+    const ta = $("tText");
+    navigator.clipboard.writeText(ta.value).then(() => toast("Kopiert"), () => { ta.focus(); ta.select(); toast("Text markiert – jetzt kopieren"); });
+  });
+  $("overdueBox").addEventListener("click", () => { filter = filter === "nachhaken" ? "alle" : "nachhaken"; render(); });
+
   /* Reiter */
   function setView(v) {
-    view = v === "kalender" ? "kalender" : "gratis";
-    $("viewKal").hidden = view !== "kalender"; $("viewGratis").hidden = view !== "gratis";
-    $("tabKal").setAttribute("aria-selected", view === "kalender"); $("tabGratis").setAttribute("aria-selected", view === "gratis");
+    view = ["kalender", "lieferanten"].includes(v) ? v : "gratis";
+    $("viewKal").hidden = view !== "kalender"; $("viewGratis").hidden = view !== "gratis"; $("viewLief").hidden = view !== "lieferanten";
+    $("tabKal").setAttribute("aria-selected", view === "kalender"); $("tabGratis").setAttribute("aria-selected", view === "gratis"); $("tabLief").setAttribute("aria-selected", view === "lieferanten");
     $("btnNew").textContent = view === "kalender" ? "+ Fläche belegen" : "+ Neue Gratisware";
     try { localStorage.setItem("gratiswaren-ansicht", view); } catch (e) {}
     if (location.hash !== "#" + view) history.replaceState(null, "", "#" + view);
