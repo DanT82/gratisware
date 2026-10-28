@@ -768,11 +768,23 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     if (c.bestellwert == null) h += `<div class="hint">Bestellmenge${isD ? ", Einheiten je Display" : ""} und Preis eintragen.</div>`;
     $("fCalc").innerHTML = h;
   }
-  function openForm(id, prefill, belId) {
+  // Vorlage für eine Kopie: alle Angaben außer Lieferungen, Verknüpfung zur Fläche und Zeitstempeln
+  const COPY_FIELDS = ["lieferant", "kontakt", "bestellartikel", "menge", "einheit", "ve", "veName", "preis", "aktion", "quote", "gratisartikel", "gEinheit", "gPreis"];
+  function vorlageAus(b) { const o = {}; COPY_FIELDS.forEach((k) => { if (b[k] != null) o[k] = b[k]; }); return o; }
+  function copyBuchung(id) {
+    const b = items.find((x) => x.id === id); if (!b) return;
+    // Hinweis „Fläche · KW“ der alten Belegung nicht mitkopieren
+    const x = belOf(b);
+    let notiz = b.notiz || "";
+    if (x) notiz = notiz.replace(`${flName(x.flaecheId)} · ${belRange(x)}`, "").replace(/^\s*·\s*/, "").trim();
+    openForm(null, { ...vorlageAus(b), datum: today(), notiz }, null, "Gratisware kopieren");
+    toast("Kopie: Datum und Mengen prüfen, dann speichern");
+  }
+  function openForm(id, prefill, belId, title) {
     editingId = id || null;
     pendingBelId = id ? null : (belId || null);
     const b = id ? items.find((x) => x.id === id) : null;
-    $("fTitle").textContent = b ? "Gratisware bearbeiten" : prefill ? "Belegung übernehmen" : "Neue Gratisware";
+    $("fTitle").textContent = b ? "Gratisware bearbeiten" : title || (prefill ? "Belegung übernehmen" : "Neue Gratisware");
     $("fErr").hidden = true;
     fillForm(b || { datum: today(), einheit: "Display", veName: "Sixpack", gEinheit: "Kiste", aktion: "Kassenregal", ...(prefill || {}) });
     $("dlgForm").showModal();
@@ -860,7 +872,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     $("dFoot").innerHTML = confirmDel
       ? `<div class="confirm">Diese Gratisware mit allen Lieferungen löschen? <button type="button" class="btn danger small" id="dDelYes">Ja, löschen</button><button type="button" class="btn small" id="dDelNo">Behalten</button></div>`
       : `<button type="button" class="btn ghost" id="dDel">Löschen</button>
-         <div class="actions">${lief.some((l) => !l.verbucht) ? `<button type="button" class="btn" id="dBookAll">Alle Lieferungen verbuchen</button>` : ""}<button type="button" class="btn" id="dEdit">Bearbeiten</button></div>`;
+         <div class="actions">${lief.some((l) => !l.verbucht) ? `<button type="button" class="btn" id="dBookAll">Alle Lieferungen verbuchen</button>` : ""}<button type="button" class="btn" id="dCopy">Kopieren</button><button type="button" class="btn" id="dEdit">Bearbeiten</button></div>`;
   }
   async function updateLief(fn) {
     const b = items.find((x) => x.id === detailId); if (!b) return;
@@ -885,6 +897,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const t = e.target.closest("button"); if (!t) return;
     if (t.dataset.dell != null) { const i = +t.dataset.dell; updateLief((ls) => ls.filter((_, k) => k !== i)); toast("Lieferung entfernt"); }
     else if (t.id === "dEdit") { $("dlgDetail").close(); openForm(detailId); }
+    else if (t.id === "dCopy") { const id = detailId; $("dlgDetail").close(); copyBuchung(id); }
     else if (t.id === "dBookAll") { updateLief((ls) => ls.map((l) => l.verbucht ? l : { ...l, verbucht: true, verbuchtAm: today() })); toast("Alle Lieferungen verbucht"); }
     else if (t.id === "dDel") { confirmDel = true; renderDetail(); }
     else if (t.id === "dDelNo") { confirmDel = false; renderDetail(); }
@@ -1155,13 +1168,16 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   }
 
   /* Belegung anlegen / ändern */
-  let belEditId = null, belConfirmDel = false;
+  let belEditId = null, belConfirmDel = false, belCopy = null;   // belCopy: Vorlage beim Kopieren
   function openBel(id, preset) {
-    belEditId = id || null; belConfirmDel = false;
-    const b = id ? belegungen.find((x) => x.id === id) : { flaecheId: preset?.flaecheId || flaechen[0]?.id, start: preset?.start || mondayOf(today()), wochen: 1 };
+    belEditId = id || null; belConfirmDel = false; belCopy = preset?.copy || null;
+    const src = belCopy;
+    const b = id ? belegungen.find((x) => x.id === id)
+      : src ? { flaecheId: preset.flaecheId || src.flaecheId, start: preset.start, wochen: src.wochen || 1, lieferant: src.lieferant, kontakt: src.kontakt, artikel: src.artikel, notiz: src.notiz }
+      : { flaecheId: preset?.flaecheId || flaechen[0]?.id, start: preset?.start || mondayOf(today()), wochen: 1 };
     if (!b) return;
     if (!flaechen.length) { openFl(); return; }
-    $("bTitle").textContent = id ? "Belegung" : "Fläche belegen";
+    $("bTitle").textContent = id ? "Belegung" : src ? "Belegung kopieren" : "Fläche belegen";
     $("bl_flaeche").innerHTML = flaechen.map((f) => `<option value="${esc(f.id)}">${esc(f.name)} (${TYPEN[f.typ] || ""})</option>`).join("");
     const cur = mondayOf(today());
     const opts = new Set(Array.from({ length: 70 }, (_, i) => addWeeks(cur, i - 16)));
@@ -1187,6 +1203,10 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       <div class="ln"><span>von – bis</span><span>${dDE(b.start)} – ${dDE(addDays(belEnd(b), 6))}</span></div>
       <div class="ln"><span>Gratisquote der Fläche</span><span>${f?.typ === "Standard" ? "10 %" : "20 %"}</span></div>`;
     if (bu) h += `<div class="ln sum"><span>Gratiswaren-Kontrolle</span><span>${fmt(calcFull(bu).gratiswert)} · ${calcFull(bu).status}</span></div>`;
+    if (belCopy) {
+      const vb = linkedBuchung(belCopy);
+      h += `<div class="hint">Kopie von ${esc(flName(belCopy.flaecheId))}, ${belRange(belCopy)}/${isoWeek(belCopy.start).y}. Woche und Fläche kannst du oben ändern.${vb ? " Mengen und Preise der Gratisware werden beim Anlegen aus der Vorlage übernommen." : ""}</div>`;
+    }
     if (x) h += `<div class="hint" style="color:var(--danger)">Überschneidung: ${esc(flName(x.flaecheId))} ist in ${belRange(x)} schon an ${esc(x.lieferant || "jemanden")} vergeben.</div>`;
     $("bl_info").innerHTML = h;
   }
@@ -1198,6 +1218,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       ? `<div class="confirm">Belegung löschen?${bu ? " Der Eintrag in der Gratiswaren-Kontrolle bleibt erhalten." : ""} <button type="button" class="btn danger small" id="blDelYes">Ja, löschen</button><button type="button" class="btn small" id="blDelNo">Behalten</button></div>`
       : `${prev ? `<button type="button" class="btn ghost" id="blDel">Löschen</button>` : `<span></span>`}
          <div class="actions">
+           ${prev ? `<button type="button" class="btn" id="blCopy">Kopieren</button>` : ""}
            <button type="submit" class="btn${bu ? " primary" : ""}">Speichern</button>
            ${bu ? `<button type="button" class="btn" id="blOpenG">Gratisware öffnen</button>`
                 : `<button type="button" class="btn primary" id="blTake">Speichern &amp; Gratisware anlegen</button>`}
@@ -1213,11 +1234,13 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     render();
     return belegungen.find((x) => x.id === b.id);
   }
-  function takeOver(bel) {
+  function takeOver(bel, vorlage) {
     const f = flById(bel.flaecheId);
+    const typAktion = f?.typ === "Standard" ? "Standard" : "Kassenregal";
     openForm(null, {
-      lieferant: bel.lieferant, kontakt: bel.kontakt, bestellartikel: bel.artikel, datum: bel.start,
-      aktion: f?.typ === "Standard" ? "Standard" : "Kassenregal",
+      ...(vorlage ? vorlageAus(vorlage) : {}),
+      lieferant: bel.lieferant, kontakt: bel.kontakt, bestellartikel: (vorlage && vorlage.bestellartikel) || bel.artikel, datum: bel.start,
+      aktion: vorlage && vorlage.aktion === "Eigene" ? "Eigene" : typAktion,
       notiz: [`${flName(bel.flaecheId)} · ${belRange(bel)}`, bel.notiz].filter(Boolean).join(" · ")
     }, bel.id);
   }
@@ -1226,7 +1249,13 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   $("belForm").addEventListener("submit", (e) => { e.preventDefault(); const bel = saveBel(); if (bel) { learnKontakt(bel.lieferant, bel.kontakt); $("dlgBel").close(); toast("Belegung gespeichert"); } });
   $("dlgBel").addEventListener("click", (e) => {
     const t = e.target.closest("button"); if (!t) return;
-    if (t.id === "blTake") { const bel = saveBel(); if (bel) { learnKontakt(bel.lieferant, bel.kontakt); $("dlgBel").close(); takeOver(bel); } }
+    if (t.id === "blTake") { const vorlage = belCopy && linkedBuchung(belCopy); const bel = saveBel(); if (bel) { learnKontakt(bel.lieferant, bel.kontakt); $("dlgBel").close(); belCopy = null; takeOver(bel, vorlage); } }
+    else if (t.id === "blCopy") {
+      const src = belegungen.find((y) => y.id === belEditId); if (!src) return;
+      const { w, y } = isoWeek(src.start);
+      const ziel = isoMonday(y + 1, Math.min(w, weeksInYear(y + 1)));   // gleiche KW im nächsten Jahr
+      $("dlgBel").close(); openBel(null, { copy: src, start: ziel });
+    }
     else if (t.id === "blOpenG") { const prev = belegungen.find((y) => y.id === belEditId); const bu = prev && linkedBuchung(prev); $("dlgBel").close(); if (bu) { setView("gratis"); openDetail(bu.id); } }
     else if (t.id === "blDel") { belConfirmDel = true; renderBelFoot(); }
     else if (t.id === "blDelNo") { belConfirmDel = false; renderBelFoot(); }
