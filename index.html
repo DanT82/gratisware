@@ -178,6 +178,13 @@ label.f.wide { grid-column: 1 / -1 }
 textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size: 12px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); padding: 8px }
 @media (prefers-reduced-motion: no-preference) { .row, .btn, .chip { transition: border-color .12s, filter .12s } }
 
+/* Abgleich */
+.sync { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 12px; font-size: 13px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; color: var(--muted) }
+.sync::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--muted)) }
+.syncform { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; align-items: end }
+.syncform .actions { grid-column: 1 / -1 }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font-size: 13px }
+
 /* Überfällig */
 .alert { display: flex; width: 100%; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; text-align: left; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; cursor: pointer; font-size: 14px }
 .alert b { font-weight: 600 }
@@ -242,6 +249,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       <h1>Gratiswaren-Kontrolle</h1>
     </div>
     <div class="actions">
+      <button class="sync" id="syncChip" type="button" hidden></button>
       <button class="btn" id="btnData" type="button">Einstellungen</button>
       <button class="btn primary" id="btnNew" type="button">+ Neue Gratisware</button>
     </div>
@@ -451,8 +459,10 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       <label class="f">Absender für Aufstellungen<input id="set_absender" autocomplete="off"></label>
       <div><button class="btn small" type="button" id="btnArt2">Artikel &amp; Preise verwalten</button></div>
     </fieldset>
+    <legend style="margin:6px 0 -8px">Abgleich iPad &amp; iPhone</legend>
+    <div id="syncBox"></div>
     <legend style="margin:6px 0 -8px">Sicherung</legend>
-    <p style="margin:0">Alle Einträge sind nur auf diesem Gerät gespeichert. Mach ab und zu eine Sicherung, zum Beispiel in iCloud Drive. Damit kannst du die Daten auch auf ein anderes Gerät übertragen.</p>
+    <p style="margin:0" id="backupInfo">Mach ab und zu eine Sicherung, zum Beispiel in iCloud Drive. Damit hast du deine Daten auch dann, wenn etwas schiefgeht.</p>
     <div class="actions">
       <button class="btn primary" type="button" id="btnBackup">Sicherung speichern</button>
       <button class="btn" type="button" id="btnRestore">Sicherung laden …</button>
@@ -468,6 +478,9 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
 <datalist id="dlArtikel"></datalist>
 <div class="toast" id="toast" hidden></div>
 
+<script src="fb-app.js"></script>
+<script src="fb-auth.js"></script>
+<script src="fb-firestore.js"></script>
 <script>
 (function () {
   "use strict";
@@ -548,6 +561,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   function saveLocal() {
     try { localStorage.setItem(LS_KEY, JSON.stringify(items)); }
     catch (e) { toast("Speichern auf dem Gerät fehlgeschlagen. Bitte eine Sicherung machen."); throw e; }
+    pushCollection("buchungen", items);
   }
   async function persist(item) {
     const i = items.findIndex((x) => x.id === item.id);
@@ -567,6 +581,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     catch (e) { const b = $("banner"); b.hidden = false; b.textContent = "Dieser Browser erlaubt kein Speichern (privates Fenster?). Einträge gehen beim Schließen verloren."; }
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
     render();
+    fbInit();
   }
 
   /* ---------- Übersicht ---------- */
@@ -825,6 +840,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     return true;
   }
   function openData() {
+    renderSync();
     $("set_wochen").value = settings.wochen; $("set_absender").value = settings.absender;
     $("restoreAsk").hidden = true;
     $("storeInfo").textContent = `${items.length} ${items.length === 1 ? "Aktion" : "Aktionen"} auf diesem Gerät gespeichert.`;
@@ -907,6 +923,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   function saveKal() {
     try { localStorage.setItem(FL_KEY, JSON.stringify(flaechen)); localStorage.setItem(BEL_KEY, JSON.stringify(belegungen)); }
     catch (e) { toast("Speichern auf dem Gerät fehlgeschlagen. Bitte eine Sicherung machen."); throw e; }
+    pushCollection("belegungen", belegungen); pushMeta("flaechen", { list: flaechen });
   }
   function linkedBuchung(b) { return b.buchungId ? items.find((x) => x.id === b.buchungId) : null; }
   function conflict(b) {
@@ -1094,6 +1111,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   function saveExtras() {
     try { localStorage.setItem(SET_KEY, JSON.stringify(settings)); localStorage.setItem(ART_KEY, JSON.stringify(artikel)); }
     catch (e) { toast("Speichern auf dem Gerät fehlgeschlagen."); }
+    pushMeta("artikel", { list: artikel }); pushMeta("einstellungen", settings);
   }
   const artKey = (n) => String(n || "").trim().toLowerCase();
   const findArt = (n) => artikel.find((a) => artKey(a.name) === artKey(n));
@@ -1254,6 +1272,203 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     navigator.clipboard.writeText(ta.value).then(() => toast("Kopiert"), () => { ta.focus(); ta.select(); toast("Text markiert – jetzt kopieren"); });
   });
   $("overdueBox").addEventListener("click", () => { filter = filter === "nachhaken" ? "alle" : "nachhaken"; render(); });
+
+  /* ---------- Abgleich zwischen Geräten (Firebase) ----------
+     Jede Änderung wird zusätzlich in Firestore gespeichert. Firestore hält eine Kopie auf dem Gerät,
+     merkt sich Änderungen ohne Netz und überträgt sie, sobald wieder Verbindung besteht. */
+  const FB_CONFIG = {
+    apiKey: "AIzaSyBNA7NhqkFdKXhTKXnEpj5cUPO9acbbAJ0",
+    authDomain: "gratisware-ba0db.firebaseapp.com",
+    projectId: "gratisware-ba0db",
+    storageBucket: "gratisware-ba0db.firebasestorage.app",
+    messagingSenderId: "1004419186622",
+    appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
+  };
+  const SYNC_KEY = "gratiswaren-sync-uid";
+  let fdb = null, fauth = null, user = null, syncOn = false, linking = false, pending = 0, syncErr = "", authMsg = "", unsubs = [];
+  const remote = { buchungen: new Map(), belegungen: new Map(), meta: new Map() };
+  const clean = (o) => JSON.parse(JSON.stringify(o));
+  const stable = (o) => JSON.stringify(o, (k, v) => v && typeof v === "object" && !Array.isArray(v) ? Object.keys(v).sort().reduce((r, x) => (r[x] = v[x], r), {}) : v);
+  const uref = () => fdb.collection("users").doc(user.uid);
+
+  function fbInit() {
+    if (!window.firebase) { renderSync(); return; }
+    try {
+      firebase.initializeApp(FB_CONFIG);
+      fdb = firebase.firestore();
+      fdb.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+      fauth = firebase.auth();
+      fauth.onAuthStateChanged(onUser);
+    } catch (e) { fdb = null; fauth = null; }
+    renderSync();
+  }
+  function track(promise) {
+    pending++; renderSync();
+    promise.then(() => { syncErr = ""; }, (err) => {
+      syncErr = err && err.code === "permission-denied" ? "Zugriff verweigert. Bitte die Firestore-Regeln prüfen." : "Übertragung fehlgeschlagen: " + (err && err.message || err);
+      toast(syncErr);
+    }).finally(() => { pending--; renderSync(); });
+  }
+  function pushCollection(name, arr) {
+    if (!syncOn) return;
+    const map = remote[name], ids = new Set();
+    arr.forEach((o) => {
+      if (!o || !o.id) return;
+      ids.add(o.id);
+      const data = clean(o), js = stable(data);
+      if (map.get(o.id) !== js) { map.set(o.id, js); track(uref().collection(name).doc(o.id).set(data)); }
+    });
+    [...map.keys()].forEach((id) => { if (!ids.has(id)) { map.delete(id); track(uref().collection(name).doc(id).delete()); } });
+  }
+  function pushMeta(name, data) {
+    if (!syncOn) return;
+    const d = clean(data), js = stable(d);
+    if (remote.meta.get(name) !== js) { remote.meta.set(name, js); track(uref().collection("meta").doc(name).set(d)); }
+  }
+  // Daten von Firestore übernehmen, ohne sie gleich zurückzuschicken
+  function applyRemote(fn) {
+    const was = syncOn; syncOn = false;
+    try { fn(); localStorage.setItem(LS_KEY, JSON.stringify(items)); localStorage.setItem(FL_KEY, JSON.stringify(flaechen)); localStorage.setItem(BEL_KEY, JSON.stringify(belegungen));
+      localStorage.setItem(SET_KEY, JSON.stringify(settings)); localStorage.setItem(ART_KEY, JSON.stringify(artikel)); } catch (e) {}
+    syncOn = was;
+    fillArtList(); render();
+    if (detailId && $("dlgDetail").open) renderDetail();
+  }
+  function stopListeners() { unsubs.forEach((u) => { try { u(); } catch (e) {} }); unsubs = []; }
+  function startListeners() {
+    stopListeners();
+    const onErr = (err) => { syncErr = err && err.code === "permission-denied" ? "Zugriff verweigert. Bitte die Firestore-Regeln prüfen." : "Abgleich unterbrochen: " + (err && err.message || err); renderSync(); };
+    unsubs.push(uref().collection("buchungen").onSnapshot((snap) => {
+      const arr = snap.docs.map((d) => ({ ...d.data(), id: d.id }));
+      remote.buchungen = new Map(arr.map((o) => [o.id, stable(clean(o))]));
+      applyRemote(() => { items = arr; });
+    }, onErr));
+    unsubs.push(uref().collection("belegungen").onSnapshot((snap) => {
+      const arr = snap.docs.map((d) => ({ ...d.data(), id: d.id }));
+      remote.belegungen = new Map(arr.map((o) => [o.id, stable(clean(o))]));
+      applyRemote(() => { belegungen = arr; });
+    }, onErr));
+    unsubs.push(uref().collection("meta").onSnapshot((snap) => {
+      const m = {}; snap.docs.forEach((d) => { m[d.id] = d.data(); remote.meta.set(d.id, stable(clean(d.data()))); });
+      applyRemote(() => {
+        if (m.flaechen && Array.isArray(m.flaechen.list)) flaechen = m.flaechen.list;
+        if (m.artikel && Array.isArray(m.artikel.list)) artikel = m.artikel.list;
+        if (m.einstellungen) settings = { ...settings, ...m.einstellungen };
+      });
+    }, onErr));
+  }
+  // Beim ersten Anmelden auf einem Gerät: Daten vom Gerät und aus der Cloud zusammenführen
+  async function firstLink() {
+    linking = true; renderSync();
+    const [bu, be, me] = await Promise.all(["buchungen", "belegungen", "meta"].map((n) => uref().collection(n).get()));
+    const rBu = bu.docs.map((d) => ({ ...d.data(), id: d.id })), rBe = be.docs.map((d) => ({ ...d.data(), id: d.id }));
+    const rMe = {}; me.docs.forEach((d) => rMe[d.id] = d.data());
+    remote.buchungen = new Map(rBu.map((o) => [o.id, stable(clean(o))]));
+    remote.belegungen = new Map(rBe.map((o) => [o.id, stable(clean(o))]));
+    remote.meta = new Map(Object.entries(rMe).map(([k, v]) => [k, stable(clean(v))]));
+    const cloudHasData = rBu.length || rBe.length;
+    const newer = (a, b) => String(a.geaendert || a.erstellt || "") >= String(b.geaendert || b.erstellt || "") ? a : b;
+    const merge = (local, cloud) => { const m = new Map(cloud.map((o) => [o.id, o])); local.forEach((o) => { if (cloudHasData && o.beispiel) return; m.set(o.id, m.has(o.id) ? newer(m.get(o.id), o) : o); }); return [...m.values()]; };
+    items = merge(items, rBu);
+    belegungen = merge(belegungen, rBe);
+    if (rMe.flaechen && Array.isArray(rMe.flaechen.list)) { const m = new Map(flaechen.map((f) => [f.id, f])); rMe.flaechen.list.forEach((f) => m.set(f.id, f)); flaechen = [...m.values()]; }
+    if (rMe.artikel && Array.isArray(rMe.artikel.list)) { const m = new Map(artikel.map((a) => [artKey(a.name), a])); rMe.artikel.list.forEach((a) => m.set(artKey(a.name), a)); artikel = [...m.values()]; }
+    if (rMe.einstellungen) settings = { ...settings, ...rMe.einstellungen };
+    syncOn = true;
+    saveLocal(); saveKal(); saveExtras();          // schickt alles, was in der Cloud noch fehlt
+    try { localStorage.setItem(SYNC_KEY, user.uid); } catch (e) {}
+    linking = false;
+    fillArtList(); render();
+    toast(cloudHasData ? "Daten zusammengeführt und abgeglichen" : "Deine Daten werden jetzt in die Cloud übertragen");
+  }
+  async function onUser(u) {
+    user = u; syncOn = false; stopListeners(); syncErr = "";
+    if (!u) { renderSync(); return; }
+    let linked = null; try { linked = localStorage.getItem(SYNC_KEY); } catch (e) {}
+    try {
+      if (linked !== u.uid) await firstLink();
+      syncOn = true; startListeners();
+    } catch (err) {
+      linking = false;
+      syncErr = err && err.code === "permission-denied" ? "Zugriff verweigert. Bitte die Firestore-Regeln prüfen." : err && err.code === "unavailable" ? "Keine Verbindung zur Cloud. Beim ersten Anmelden wird Internet gebraucht." : "Abgleich fehlgeschlagen: " + (err && err.message || err);
+    }
+    renderSync();
+  }
+  function authError(err) {
+    const c = err && err.code || "";
+    if (/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)) return "E-Mail oder Passwort stimmt nicht.";
+    if (/email-already-in-use/.test(c)) return "Für diese E-Mail gibt es schon ein Konto. Bitte „Anmelden“ benutzen.";
+    if (/weak-password/.test(c)) return "Das Passwort braucht mindestens 6 Zeichen.";
+    if (/invalid-email/.test(c)) return "Bitte eine gültige E-Mail-Adresse eingeben.";
+    if (/network-request-failed/.test(c)) return "Keine Internetverbindung. Zum Anmelden wird einmal Internet gebraucht.";
+    if (/too-many-requests/.test(c)) return "Zu viele Versuche. Bitte ein paar Minuten warten.";
+    if (/admin-restricted|operation-not-allowed/.test(c)) return "Neue Konten sind in Firebase gesperrt oder die Anmeldung per E-Mail ist nicht eingeschaltet.";
+    return "Anmeldung fehlgeschlagen: " + (err && err.message || err);
+  }
+  function renderSync() {
+    const chip = $("syncChip"), box = $("syncBox");
+    const online = navigator.onLine !== false;
+    let txt, col;
+    if (!fauth) { txt = "Nur auf diesem Gerät"; col = "var(--muted)"; }
+    else if (!user) { txt = "Nicht angemeldet"; col = "var(--muted)"; }
+    else if (syncErr) { txt = "Abgleich gestört"; col = "var(--danger)"; }
+    else if (linking) { txt = "Wird abgeglichen …"; col = "var(--warn)"; }
+    else if (!online) { txt = pending ? `Offline · ${pending} ${pending === 1 ? "Änderung wartet" : "Änderungen warten"}` : "Offline"; col = "var(--warn)"; }
+    else if (pending) { txt = "Wird übertragen …"; col = "var(--warn)"; }
+    else { txt = "Abgeglichen"; col = "var(--ok)"; }
+    chip.hidden = false; chip.textContent = txt; chip.style.setProperty("--c", col);
+    $("backupInfo").textContent = user
+      ? "Deine Daten liegen in der Cloud und auf jedem angemeldeten Gerät. Eine Sicherung als Datei schadet trotzdem nicht."
+      : "Ohne Anmeldung sind alle Einträge nur auf diesem Gerät gespeichert. Mach ab und zu eine Sicherung, zum Beispiel in iCloud Drive.";
+    if (!box || box.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
+    if (!fauth) { box.innerHTML = `<p class="note" style="margin:0">Der Abgleich ist nicht verfügbar. Prüfe, ob die Dateien fb-app.js, fb-auth.js und fb-firestore.js mit hochgeladen sind.</p>`; return; }
+    if (user) {
+      box.innerHTML = `<div class="calc" style="font-family:var(--f-body)">
+          <div class="ln"><span>Angemeldet als</span><span>${esc(user.email || "")}</span></div>
+          <div class="ln"><span>Status</span><span style="color:${col}">${txt}</span></div>
+          ${syncErr ? `<div class="hint" style="color:var(--danger)">${esc(syncErr)}</div>` : ""}
+        </div>
+        <div class="actions" style="margin-top:10px"><button class="btn small" type="button" id="syncOut">Auf diesem Gerät abmelden</button></div>`;
+      return;
+    }
+    box.innerHTML = `<p style="margin:0 0 10px">Melde dich auf iPad und iPhone mit derselben E-Mail an. Dann sind deine Daten auf beiden Geräten gleich. Ohne Netz arbeitest du normal weiter, die Änderungen werden später übertragen.</p>
+      <form class="syncform" id="syncForm" novalidate>
+        <label class="f">E-Mail<input id="sy_mail" type="email" autocomplete="username" inputmode="email"></label>
+        <label class="f">Passwort<input id="sy_pw" type="password" autocomplete="current-password"></label>
+        <div class="actions">
+          <button class="btn primary" type="submit" id="syIn">Anmelden</button>
+          <button class="btn" type="button" id="syNew">Konto anlegen (nur beim ersten Mal)</button>
+          <button class="linkbtn" type="button" id="syReset">Passwort vergessen?</button>
+        </div>
+      </form>
+      <div class="${/E-Mail zum Zurücksetzen/.test(authMsg) ? "note" : "err"}" id="syMsg" ${authMsg ? "" : "hidden"} style="margin-top:8px">${esc(authMsg)}</div>`;
+  }
+  async function doAuth(kind) {
+    const mail = ($("sy_mail") || {}).value?.trim(), pw = ($("sy_pw") || {}).value || "";
+    authMsg = "";
+    if (!mail) { authMsg = "Bitte die E-Mail-Adresse eingeben."; document.activeElement.blur(); renderSync(); return; }
+    try {
+      if (kind === "reset") { await fauth.sendPasswordResetEmail(mail); authMsg = `E-Mail zum Zurücksetzen an ${mail} geschickt.`; }
+      else if (!pw) { authMsg = "Bitte das Passwort eingeben."; }
+      else if (kind === "new") await fauth.createUserWithEmailAndPassword(mail, pw);
+      else await fauth.signInWithEmailAndPassword(mail, pw);
+    } catch (err) { authMsg = authError(err); }
+    if (document.activeElement) document.activeElement.blur();
+    renderSync();
+  }
+  $("syncBox").addEventListener("submit", (e) => { e.preventDefault(); doAuth("in"); });
+  $("syncBox").addEventListener("click", async (e) => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.id === "syNew") doAuth("new");
+    else if (t.id === "syReset") doAuth("reset");
+    else if (t.id === "syncOut") {
+      try { await fauth.signOut(); localStorage.removeItem(SYNC_KEY); } catch (err) {}
+      toast("Abgemeldet. Die Daten bleiben auf diesem Gerät.");
+    }
+  });
+  $("syncChip").addEventListener("click", openData);
+  window.addEventListener("online", renderSync);
+  window.addEventListener("offline", renderSync);
 
   /* Reiter */
   function setView(v) {

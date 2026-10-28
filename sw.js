@@ -1,7 +1,7 @@
 // Hält die App-Dateien auf dem Gerät, damit sie ohne Internet startet.
 // Bei einer neuen App-Version die Nummer erhöhen.
-const CACHE = "gratiswaren-v3";
-const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
+const CACHE = "gratiswaren-v4";
+const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png", "fb-app.js", "fb-auth.js", "fb-firestore.js"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
