@@ -113,6 +113,10 @@ h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 6vw
 .st-buchen { background: var(--warn-bg); color: var(--warn) }
 .st-fertig { background: var(--ok-bg); color: var(--ok) }
 .st-fehlt { background: var(--danger-bg); color: var(--danger) }
+.tagx.anf { background: var(--ok-bg); color: var(--ok) }
+.tagx.noanf { background: var(--warn-bg); color: var(--warn) }
+.anfchk { font-size: 15px; font-weight: 500; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg) }
+.anfchk input { width: 22px; height: 22px }
 .tagx { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; padding: 1px 6px; border-radius: 3px; background: var(--sunken); color: var(--muted); margin-left: 6px; vertical-align: 1px }
 .aktion-kr { color: var(--accent); font-weight: 600 }
 @media (max-width: 760px) {
@@ -476,7 +480,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       <div id="bl_fotos"></div>
       <fieldset>
         <legend>Mieter</legend>
-        <label class="f">Lieferant<input id="bl_lieferant" autocomplete="off" list="dlLieferanten"></label>
+        <label class="f">Lieferant <span class="h">Pflichtfeld – aus der Liste wählen</span><input id="bl_lieferant" autocomplete="off" list="dlLieferanten"></label>
         <label class="f" hidden>Ansprechpartner<input id="bl_kontakt" autocomplete="off"></label>
         <label class="f wide">Artikel (was steht auf dem Platz?)<input id="bl_artikel" list="dlArtikel" autocomplete="off" placeholder="z. B. Weihnachtsbier-Display"></label>
         <label class="f wide">Notiz <span class="h">optional</span><input id="bl_notiz" autocomplete="off"></label>
@@ -506,7 +510,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     <div class="dlg-b">
       <fieldset>
         <legend>Vereinbarung</legend>
-        <label class="f">Lieferant<input id="f_lieferant" required autocomplete="off" list="dlLieferanten"></label>
+        <label class="f">Lieferant <span class="h">Pflichtfeld – aus der Liste wählen</span><input id="f_lieferant" required autocomplete="off" list="dlLieferanten"></label>
         <label class="f">Ansprechpartner <span class="h">optional, z. B. Außendienst</span><input id="f_kontakt" autocomplete="off" list="dlKontakte"></label>
         <label class="f">Abgemacht am<input id="f_datum" type="date"></label>
       </fieldset>
@@ -552,6 +556,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
         </select></label>
         <label class="f"><span id="lblGPreis">Preis je Kiste €</span><input id="f_gPreis" type="number" inputmode="decimal" min="0" step="0.01"></label>
         <label class="f wide">Notiz <span class="h">optional</span><input id="f_notiz" autocomplete="off"></label>
+        <label class="chk anfchk" style="grid-column:1/-1"><input type="checkbox" id="f_angefordert">Gratisware beim Außendienst angefordert</label>
       </fieldset>
 
       <div class="calc" id="fCalc" aria-live="polite"></div>
@@ -713,7 +718,10 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   }
 
   /* ---------- Übersicht ---------- */
-  const FILTERS = [["alle", "Alle"], ["nachhaken", "Nachhaken"], ["offen", "Offen"], ["buchen", "Zu verbuchen"], ["fertig", "Verbucht"], ["fehlt", "Angaben fehlen"]];
+  const FILTERS = [["alle", "Alle"], ["nachhaken", "Nachhaken"], ["anfordern", "Noch anfordern"], ["offen", "Offen"], ["buchen", "Zu verbuchen"], ["fertig", "Verbucht"], ["fehlt", "Angaben fehlen"]];
+  // Offene Gratisware, die noch nicht beim Außendienst angefordert wurde
+  const nochAnfordern = (r) => !r.b.angefordert && r.c.restAnspruch > 0;
+  const anfTag = (b, c) => b.angefordert ? ` <span class="tagx anf" title="${b.angefordertAm ? "am " + dDE(b.angefordertAm) : ""}">Angefordert</span>` : c.restAnspruch > 0 ? ` <span class="tagx noanf">Nicht angefordert</span>` : "";
   function render() {
     renderKal();
     const rows = items.map((b) => ({ b, c: calcFull(b) }));
@@ -730,8 +738,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     $("barDone").style.width = total ? (done / total * 100) + "%" : "0";
     $("barWait").style.width = total ? (waiting / total * 100) + "%" : "0";
 
-    const counts = { alle: rows.length, nachhaken: 0, offen: 0, buchen: 0, fertig: 0, fehlt: 0 };
-    rows.forEach((r) => counts[r.c.key]++);
+    const counts = { alle: rows.length, nachhaken: 0, anfordern: 0, offen: 0, buchen: 0, fertig: 0, fehlt: 0 };
+    rows.forEach((r) => { counts[r.c.key]++; if (nochAnfordern(r)) counts.anfordern++; });
     const over = rows.filter((r) => r.c.over);
     const ob = $("overdueBox"); ob.hidden = !over.length;
     if (over.length) ob.innerHTML = `<span><b>${over.length} ${over.length === 1 ? "Gratisware ist" : "Gratiswaren sind"} überfällig.</b> Noch nicht geliefert: ${fmt(r2(over.reduce((s, r) => s + r.c.restAnspruch * (num(r.b.gPreis) || 0), 0)))}. Zeit, beim Lieferanten nachzuhaken.</span><span>${filter === "nachhaken" ? "Alle zeigen" : "Anzeigen ›"}</span>`;
@@ -745,7 +753,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
 
     const q = query.trim().toLowerCase();
     const shown = rows
-      .filter((r) => filter === "alle" || r.c.key === filter)
+      .filter((r) => filter === "alle" || (filter === "anfordern" ? nochAnfordern(r) : r.c.key === filter))
       .filter((r) => !q || [r.b.lieferant, r.b.kontakt, r.b.bestellartikel, r.b.gratisartikel, r.b.notiz].join(" ").toLowerCase().includes(q))
       .sort((a, b) => ({ nachhaken: -1, buchen: 0, fehlt: 1, offen: 2, fertig: 3 }[a.c.key] - { nachhaken: -1, buchen: 0, fehlt: 1, offen: 2, fertig: 3 }[b.c.key]) || String(b.b.datum || "").localeCompare(String(a.b.datum || "")));
 
@@ -762,7 +770,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       return `<button type="button" class="row" data-id="${esc(b.id)}">
         <div class="c-main"><div class="t">${esc(b.lieferant || "Ohne Lieferant")}${b.beispiel ? '<span class="tagx">Beispiel</span>' : ""}</div>
           <div class="s">${esc(b.bestellartikel || "–")} → ${esc(b.gratisartikel || "–")}</div>
-          <div class="s"><span class="${b.aktion === "Kassenregal" ? "aktion-kr" : ""}">${b.aktion === "Eigene" ? "Eigene Quote" : b.aktion === "Standard" ? "Standardaktion" : "Kassenregal"} · ${pct(c.quote)}</span>${b.datum ? " · " + dDE(b.datum) : ""}${belTag(b)}</div></div>
+          <div class="s"><span class="${b.aktion === "Kassenregal" ? "aktion-kr" : ""}">${b.aktion === "Eigene" ? "Eigene Quote" : b.aktion === "Standard" ? "Standardaktion" : "Kassenregal"} · ${pct(c.quote)}</span>${b.datum ? " · " + dDE(b.datum) : ""}${belTag(b)}</div>
+          <div class="s">${anfTag(b, c).trim()}</div></div>
         <div><div class="k">Gratiswert</div><div class="v">${fmt(c.gratiswert)}</div></div>
         <div><div class="k">Anspruch</div><div class="v">${c.anspruch != null ? units(c.anspruch, b.gEinheit) : "–"}</div>
           <div class="s num">${c.anspruch != null ? "geliefert " + nf.format(c.geliefert) : ""}</div></div>
@@ -772,6 +781,23 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       </button>`;
     }).join("");
   }
+
+  /* ---------- Lieferant prüfen ----------
+     Pflicht und möglichst aus der bekannten Liste: gleiche Schreibweise übernehmen, neuen Namen einmal bestätigen lassen. */
+  function bekannteLieferanten() {
+    const m = new Map(), add = (n) => { const t = String(n || "").trim(); if (t && !m.has(t.toLowerCase())) m.set(t.toLowerCase(), t); };
+    items.forEach((b) => add(b.lieferant)); belegungen.forEach((b) => add(b.lieferant));
+    kontakte.forEach((k) => konLiefs(k).forEach(add));
+    return m;
+  }
+  // Liefert {name} bei bekanntem Lieferanten, {neu:true} bei unbekanntem, {leer:true} wenn nichts eingetragen ist
+  function pruefeLieferant(eingabe) {
+    const t = String(eingabe || "").trim();
+    if (!t) return { leer: true };
+    const known = bekannteLieferanten().get(t.toLowerCase());
+    return known ? { name: known } : { neu: true, name: t };
+  }
+  let neuLiefOk = "", belNeuLiefOk = "", belLastAction = "blSave";
 
   /* ---------- Formular ---------- */
   const F = ["lieferant", "kontakt", "datum", "bestellartikel", "menge", "einheit", "ve", "veName", "preis", "gratisartikel", "gEinheit", "gPreis", "quote", "notiz"];
@@ -784,6 +810,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     return o;
   }
   function fillForm(b) {
+    $("f_angefordert").checked = !!b.angefordert; neuLiefOk = "";
     F.forEach((k) => { const el = $("f_" + k); el.value = b[k] ?? (el.tagName === "SELECT" ? el.options[0].value : ""); });
     document.querySelector(`input[name="aktion"][value="${b.aktion || "Kassenregal"}"]`).checked = true;
     syncForm();
@@ -893,21 +920,33 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     $("f_lieferant").focus();
   }
   $("form").addEventListener("input", syncForm);
+  $("dlgForm").addEventListener("click", (e) => {
+    if (e.target.id !== "fNewLief") return;
+    neuLiefOk = $("f_lieferant").value.trim().toLowerCase(); $("fErr").hidden = true; $("fSave").click();
+  });
   $("form").addEventListener("change", syncForm);
   $("form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const o = readForm();
     const miss = [];
-    if (!o.lieferant) miss.push("Lieferant");
+    const lp = pruefeLieferant(o.lieferant);
+    if (lp.leer) miss.push("Lieferant (aus der Liste wählen)");
     if (!o.bestellartikel) miss.push("Bestellartikel");
     if (!o.gratisartikel) miss.push("Gratisartikel");
     if (o.aktion === "Eigene" && o.quote == null) miss.push("eigene Quote");
-    if (miss.length) { $("fErr").textContent = "Bitte noch ausfüllen: " + miss.join(", ") + "."; $("fErr").hidden = false; return; }
+    if (miss.length) { $("fErr").textContent = "Bitte noch ausfüllen: " + miss.join(", ") + "."; $("fErr").hidden = false; if (lp.leer) $("f_lieferant").focus(); return; }
+    if (lp.neu && neuLiefOk !== lp.name.toLowerCase()) {
+      $("fErr").innerHTML = `„${esc(lp.name)}“ ist noch kein bekannter Lieferant. Bitte aus der Liste wählen oder <button type="button" class="btn small" id="fNewLief">Ja, als neuen Lieferanten anlegen</button>`;
+      $("fErr").hidden = false; return;
+    }
+    o.lieferant = lp.name; $("f_lieferant").value = lp.name;
     const fl = readFormFl();
     if (fl && conflict(fl)) { $("fErr").textContent = "Der gewählte Stellplatz ist in diesem Zeitraum schon belegt. Bitte anderen Stellplatz, andere Woche oder Fläche wählen."; $("fErr").hidden = false; return; }
     const prev = editingId ? items.find((x) => x.id === editingId) : null;
     const item = { ...(prev || {}), ...o, id: editingId || uid(), lieferungen: prev?.lieferungen || [], erstellt: prev?.erstellt || new Date().toISOString(), geaendert: new Date().toISOString() };
     if (prev) delete item.beispiel;
+    item.angefordert = $("f_angefordert").checked;
+    item.angefordertAm = item.angefordert ? (prev && prev.angefordert && prev.angefordertAm ? prev.angefordertAm : today()) : "";
     $("fSave").disabled = true;
     try {
       let bel = formBelId ? belegungen.find((x) => x.id === formBelId) : null;
@@ -948,6 +987,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       <div><span>Aktion</span>${b.aktion === "Eigene" ? "Eigene Quote" : b.aktion === "Standard" ? "Standardaktion" : "Kassenregal"} · ${pct(c.quote)}</div>
       <div><span>Abgemacht am</span>${b.datum ? dDE(b.datum) : "–"}</div>
       <div><span>Gratisartikel</span>${esc(b.gratisartikel || "–")}</div>
+      <div><span>Außendienst</span><label class="chk" style="font-size:14px"><input type="checkbox" data-anf="1" ${b.angefordert ? "checked" : ""}>Angefordert${b.angefordert && b.angefordertAm ? ` am ${dDE(b.angefordertAm)}` : ""}</label></div>
       ${belOf(b) ? `<div><span>Aktionsfläche</span>${esc(flName(belOf(b).flaecheId))} · ${belRange(belOf(b))}</div>` : ""}
       ${b.notiz ? `<div><span>Notiz</span>${esc(b.notiz)}</div>` : ""}
     </div>`;
@@ -995,6 +1035,13 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     try { await persist(next); if (store === "local") renderDetail(); } catch (e) { toast("Speichern fehlgeschlagen. Bitte erneut versuchen."); }
   }
   $("dlgDetail").addEventListener("change", (e) => {
+    if (e.target.dataset.anf != null) {
+      const b = items.find((x) => x.id === detailId); if (!b) return;
+      const on = e.target.checked;
+      persist({ ...b, angefordert: on, angefordertAm: on ? today() : "", geaendert: new Date().toISOString() }).then(() => renderDetail()).catch(() => toast("Speichern fehlgeschlagen."));
+      toast(on ? "Als angefordert markiert" : "Markierung entfernt");
+      return;
+    }
     const i = e.target.dataset.book; if (i == null) return;
     const on = e.target.checked;
     updateLief((ls) => { ls[i].verbucht = on; ls[i].verbuchtAm = on ? today() : ""; return ls; });
@@ -1029,12 +1076,12 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   function csv() {
     const n = (v) => v == null || v === "" ? "" : String(v).replace(".", ",");
     const q = (v) => { const s = String(v ?? ""); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
-    const head = ["Abgemacht am", "Lieferant", "Kontakt", "Bestellartikel", "Gratisartikel", "Aktion", "Quote %", "Bestellmenge", "Bestelleinheit", "VE je Display", "Verkaufseinheit", "Preis je Einheit €", "Bestellwert €", "Gratiswert €", "Gratis-Einheit", "Preis je Gratis-Einheit €", "Anspruch", "Restwert €", "Geliefert", "Verbucht €", "Offen €", "Status", "Lieferungen", "Aktionsfläche"];
+    const head = ["Abgemacht am", "Lieferant", "Kontakt", "Bestellartikel", "Gratisartikel", "Aktion", "Quote %", "Bestellmenge", "Bestelleinheit", "VE je Display", "Verkaufseinheit", "Preis je Einheit €", "Bestellwert €", "Gratiswert €", "Gratis-Einheit", "Preis je Gratis-Einheit €", "Anspruch", "Restwert €", "Geliefert", "Verbucht €", "Offen €", "Status", "Lieferungen", "Aktionsfläche", "Beim Außendienst angefordert"];
     const lines = [head.join(";")];
     items.forEach((b) => {
       const c = calcFull(b);
       const lf = (b.lieferungen || []).map((l) => `${dDE(l.datum)} ${l.menge} ${b.gEinheit}${l.lieferschein ? " LS " + l.lieferschein : ""}${l.verbucht ? " (verbucht " + dDE(l.verbuchtAm) + ")" : " (nicht verbucht)"}`).join(" | ");
-      lines.push([dDE(b.datum), b.lieferant, b.kontakt, b.bestellartikel, b.gratisartikel, b.aktion === "Eigene" ? "Eigene Quote" : b.aktion, n(c.quote != null ? r2(c.quote * 100) : ""), n(b.menge), b.einheit, n(c.isDisplay ? b.ve : ""), c.isDisplay ? b.veName : "", n(b.preis), n(c.bestellwert), n(c.gratiswert), b.gEinheit, n(b.gPreis), n(c.anspruch), n(c.restwert), n(c.geliefert), n(c.verbucht), n(c.offen), c.status, lf, belOf(b) ? `${flName(belOf(b).flaecheId)} ${belRange(belOf(b))}` : ""].map(q).join(";"));
+      lines.push([dDE(b.datum), b.lieferant, b.kontakt, b.bestellartikel, b.gratisartikel, b.aktion === "Eigene" ? "Eigene Quote" : b.aktion, n(c.quote != null ? r2(c.quote * 100) : ""), n(b.menge), b.einheit, n(c.isDisplay ? b.ve : ""), c.isDisplay ? b.veName : "", n(b.preis), n(c.bestellwert), n(c.gratiswert), b.gEinheit, n(b.gPreis), n(c.anspruch), n(c.restwert), n(c.geliefert), n(c.verbucht), n(c.offen), c.status, lf, belOf(b) ? `${flName(belOf(b).flaecheId)} ${belRange(belOf(b))}` : "", b.angefordert ? `ja${b.angefordertAm ? " (" + dDE(b.angefordertAm) + ")" : ""}` : "nein"].map(q).join(";"));
     });
     return "﻿" + lines.join("\r\n");
   }
@@ -1568,7 +1615,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   /* Belegung anlegen / ändern */
   let belEditId = null, belConfirmDel = false, belCopy = null;   // belCopy: Vorlage beim Kopieren
   function openBel(id, preset) {
-    belEditId = id || null; belConfirmDel = false; belCopy = preset?.copy || null;
+    belEditId = id || null; belConfirmDel = false; belCopy = preset?.copy || null; belNeuLiefOk = "";
     const src = belCopy;
     const b = id ? belegungen.find((x) => x.id === id)
       : src ? { flaecheId: preset.flaecheId || src.flaecheId, start: preset.start, wochen: src.wochen || 1, lieferant: src.lieferant, kontakt: src.kontakt, artikel: belArtikel(src), notiz: src.notiz, format: src.format, platz: src.platz }
@@ -1626,14 +1673,20 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
          <div class="actions">
            ${prev ? `<button type="button" class="btn" id="blCopy">Kopieren</button>` : ""}
            ${!prev && lay(flById($("bl_flaeche").value)).plaetze > 1 ? `<button type="button" class="btn" id="blNext">Speichern &amp; weitere Palette</button>` : ""}
-           <button type="submit" class="btn${bu ? " primary" : ""}">Speichern</button>
+           <button type="submit" class="btn${bu ? " primary" : ""}" id="blSave">Speichern</button>
            ${bu ? `<button type="button" class="btn" id="blOpenG">Gratisware öffnen</button>`
                 : `<button type="button" class="btn primary" id="blTake">Speichern &amp; Gratisware anlegen</button>`}
          </div>`;
   }
   function saveBel() {
     const b = readBel();
-    if (!b.lieferant) { $("bl_err").textContent = "Bitte einen Lieferanten eintragen."; $("bl_err").hidden = false; $("bl_lieferant").focus(); return null; }
+    const lp = pruefeLieferant(b.lieferant);
+    if (lp.leer) { $("bl_err").textContent = "Bitte einen Lieferanten aus der Liste wählen."; $("bl_err").hidden = false; $("bl_lieferant").focus(); return null; }
+    if (lp.neu && belNeuLiefOk !== lp.name.toLowerCase()) {
+      $("bl_err").innerHTML = `„${esc(lp.name)}“ ist noch kein bekannter Lieferant. Bitte aus der Liste wählen oder <button type="button" class="btn small" id="blNewLief">Ja, als neuen Lieferanten anlegen</button>`;
+      $("bl_err").hidden = false; return null;
+    }
+    b.lieferant = lp.name; $("bl_lieferant").value = lp.name;
     if (conflict(b)) { $("bl_err").textContent = "Dieser Stellplatz ist in diesem Zeitraum schon belegt. Bitte anderen Stellplatz, andere Woche oder Fläche wählen."; $("bl_err").hidden = false; return null; }
     const i = belegungen.findIndex((x) => x.id === b.id);
     if (i >= 0) belegungen[i] = { ...belegungen[i], ...b }; else belegungen.push({ ...b, erstellt: new Date().toISOString() });
@@ -1673,12 +1726,14 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     fillSlotSelect("bl_slot", "wrapBlSlot", $("bl_flaeche").value, d);
     renderBelFoot();
   });
-  $("belForm").addEventListener("input", () => { $("bl_err").hidden = true; syncBel(); });
+  $("belForm").addEventListener("input", (e) => { if (e.target.id === "bl_lieferant" || !$("bl_err").querySelector("button")) $("bl_err").hidden = true; syncBel(); });
   $("belForm").addEventListener("change", syncBel);
-  $("belForm").addEventListener("submit", (e) => { e.preventDefault(); const bel = saveBel(); if (bel) { learnKontakt(bel.lieferant, bel.kontakt); $("dlgBel").close(); toast("Belegung gespeichert"); } });
+  $("belForm").addEventListener("submit", (e) => { e.preventDefault(); belLastAction = "blSave"; const bel = saveBel(); if (bel) { learnKontakt(bel.lieferant, bel.kontakt); $("dlgBel").close(); toast("Belegung gespeichert"); } });
   $("dlgBel").addEventListener("click", (e) => {
     const t = e.target.closest("button"); if (!t) return;
+    if (t.id === "blNewLief") { belNeuLiefOk = $("bl_lieferant").value.trim().toLowerCase(); $("bl_err").hidden = true; const a = $(belLastAction); if (a) a.click(); return; }
     if (t.id === "blNext") {
+      belLastAction = "blNext";
       const bel = saveBel(); if (!bel) return;
       learnKontakt(bel.lieferant, bel.kontakt);
       const d = defaultSlot(bel.flaecheId, bel.start, bel.wochen, null);
@@ -1688,7 +1743,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       else toast(`Gespeichert – ${flName(bel.flaecheId)} ist in ${belRange(bel)} jetzt voll`);
       return;
     }
-    if (t.id === "blTake") { const vorlage = belCopy && linkedBuchung(belCopy); const bel = saveBel(); if (bel) { learnKontakt(bel.lieferant, bel.kontakt); $("dlgBel").close(); belCopy = null; takeOver(bel, vorlage); } }
+    if (t.id === "blTake") { belLastAction = "blTake"; const vorlage = belCopy && linkedBuchung(belCopy); const bel = saveBel(); if (bel) { learnKontakt(bel.lieferant, bel.kontakt); $("dlgBel").close(); belCopy = null; takeOver(bel, vorlage); } }
     else if (t.id === "blCopy") {
       const src = belegungen.find((y) => y.id === belEditId); if (!src) return;
       const { w, y } = isoWeek(src.start);
