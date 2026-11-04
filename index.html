@@ -1128,6 +1128,18 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     { id: "ap2", name: "Aktionsplatz 2", typ: "Standard", layout: "2EU" },
     { id: "ap3", name: "Aktionsplatz 3", typ: "Standard", layout: "2DUE" },
     { id: "ap4", name: "Aktionsplatz 4", typ: "Standard", layout: "2DUE4V" }];
+  // Flächen „Aktionsplatz 1…4“ ohne Stellplatz-Angabe bekommen einmalig Dans Aufteilung.
+  // Läuft auch nach dem Abgleich, damit eine ältere Liste aus der Cloud es nicht wieder überschreibt.
+  const AP_LAYOUT = { 1: "2EU", 2: "2EU", 3: "2DUE", 4: "2DUE4V" };
+  function migrateFlaechen() {
+    let changed = false;
+    flaechen.forEach((f) => {
+      if (f.layout) return;
+      const m = /^\s*Aktionsplatz\s*([1-4])(?!\d)/i.exec(f.name || "");
+      if (m) { f.layout = AP_LAYOUT[m[1]]; changed = true; }
+    });
+    return changed;
+  }
   function loadKal() {
     try {
       const f = JSON.parse(localStorage.getItem(FL_KEY) || "null");
@@ -1560,7 +1572,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const src = belCopy;
     const b = id ? belegungen.find((x) => x.id === id)
       : src ? { flaecheId: preset.flaecheId || src.flaecheId, start: preset.start, wochen: src.wochen || 1, lieferant: src.lieferant, kontakt: src.kontakt, artikel: belArtikel(src), notiz: src.notiz, format: src.format, platz: src.platz }
-      : { flaecheId: preset?.flaecheId || flaechen[0]?.id, start: preset?.start || mondayOf(today()), wochen: 1 };
+      : { flaecheId: preset?.flaecheId || flaechen[0]?.id, start: preset?.start || mondayOf(today()), wochen: preset?.wochen || 1, lieferant: preset?.lieferant || "" };
     if (!id && b && b.flaecheId && (preset?.slot != null || b.format == null)) {
       const d = defaultSlot(b.flaecheId, b.start, b.wochen, preset?.slot != null ? +preset.slot : null);
       if (d) { b.format = d.format; b.platz = d.platz; }
@@ -1613,6 +1625,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       : `${prev ? `<button type="button" class="btn ghost" id="blDel">Löschen</button>` : `<span></span>`}
          <div class="actions">
            ${prev ? `<button type="button" class="btn" id="blCopy">Kopieren</button>` : ""}
+           ${!prev && lay(flById($("bl_flaeche").value)).plaetze > 1 ? `<button type="button" class="btn" id="blNext">Speichern &amp; weitere Palette</button>` : ""}
            <button type="submit" class="btn${bu ? " primary" : ""}">Speichern</button>
            ${bu ? `<button type="button" class="btn" id="blOpenG">Gratisware öffnen</button>`
                 : `<button type="button" class="btn primary" id="blTake">Speichern &amp; Gratisware anlegen</button>`}
@@ -1658,12 +1671,23 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   $("bl_flaeche").addEventListener("change", () => {
     const d = defaultSlot($("bl_flaeche").value, $("bl_start").value, +$("bl_wochen").value, null, belEditId);
     fillSlotSelect("bl_slot", "wrapBlSlot", $("bl_flaeche").value, d);
+    renderBelFoot();
   });
   $("belForm").addEventListener("input", () => { $("bl_err").hidden = true; syncBel(); });
   $("belForm").addEventListener("change", syncBel);
   $("belForm").addEventListener("submit", (e) => { e.preventDefault(); const bel = saveBel(); if (bel) { learnKontakt(bel.lieferant, bel.kontakt); $("dlgBel").close(); toast("Belegung gespeichert"); } });
   $("dlgBel").addEventListener("click", (e) => {
     const t = e.target.closest("button"); if (!t) return;
+    if (t.id === "blNext") {
+      const bel = saveBel(); if (!bel) return;
+      learnKontakt(bel.lieferant, bel.kontakt);
+      const d = defaultSlot(bel.flaecheId, bel.start, bel.wochen, null);
+      const frei = d && !conflict({ id: "", flaecheId: bel.flaecheId, start: bel.start, wochen: bel.wochen, format: d.format, platz: d.platz });
+      $("dlgBel").close();
+      if (frei) { openBel(null, { flaecheId: bel.flaecheId, start: bel.start, wochen: bel.wochen, slot: d.platz }); toast("Gespeichert – jetzt die nächste Palette"); }
+      else toast(`Gespeichert – ${flName(bel.flaecheId)} ist in ${belRange(bel)} jetzt voll`);
+      return;
+    }
     if (t.id === "blTake") { const vorlage = belCopy && linkedBuchung(belCopy); const bel = saveBel(); if (bel) { learnKontakt(bel.lieferant, bel.kontakt); $("dlgBel").close(); belCopy = null; takeOver(bel, vorlage); } }
     else if (t.id === "blCopy") {
       const src = belegungen.find((y) => y.id === belEditId); if (!src) return;
@@ -1735,11 +1759,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     try { kontakte = normAll(JSON.parse(localStorage.getItem(KON_KEY) || "[]")); } catch (e) {}
     // Erst alles laden, dann aus bisherigen Einträgen lernen – sonst überschreibt das Speichern noch nicht geladene Listen
     let learned = false;
-    if (!settings.apAngelegt) {
-      const neu = AP_DEFAULT.filter((a) => !flaechen.some((f) => f.id === a.id));
-      if (neu.length) { flaechen = [...flaechen, ...neu.map((x) => ({ ...x }))]; try { saveKal(); } catch (e) {} }
-      settings.apAngelegt = true; learned = true;
-    }
+    if (migrateFlaechen()) { try { saveKal(); } catch (e) {} }
     if (!artikel.length) { items.forEach((b) => learnArtikel(b, false)); learned = true; }
     if (!kontakte.length) { [...items, ...belegungen].forEach((x) => learnKontakt(x.lieferant, x.kontakt, false)); learned = true; }
     if (learned) saveExtras();
@@ -2194,6 +2214,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
         if (m.kontakte && Array.isArray(m.kontakte.list)) kontakte = normAll(m.kontakte.list);
         if (m.einstellungen) settings = { ...settings, ...m.einstellungen };
       });
+      if (migrateFlaechen()) { try { saveKal(); } catch (e) {} render(); }
     }, onErr));
   }
   // Beim ersten Anmelden auf einem Gerät: Daten vom Gerät und aus der Cloud zusammenführen
@@ -2211,6 +2232,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     items = merge(items, rBu);
     belegungen = merge(belegungen, rBe);
     if (rMe.flaechen && Array.isArray(rMe.flaechen.list)) { const m = new Map(flaechen.map((f) => [f.id, f])); rMe.flaechen.list.forEach((f) => m.set(f.id, f)); flaechen = [...m.values()]; }
+    migrateFlaechen();
     if (rMe.kontakte && Array.isArray(rMe.kontakte.list)) {
       const m = new Map(kontakte.map((k) => [lkey(k.lieferant) + "|" + lkey(k.name), k]));
       rMe.kontakte.list.forEach((k) => { const key = lkey(k.lieferant) + "|" + lkey(k.name), ex = m.get(key); m.set(key, ex ? { ...ex, ...Object.fromEntries(Object.entries(k).filter(([, v]) => v !== "" && v != null)) } : k); });
