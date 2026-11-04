@@ -258,7 +258,7 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
 .weeknav { display: flex; gap: 6px; align-items: center; flex-wrap: wrap }
 .weeknav .rng { font-family: var(--f-display); font-weight: 600; font-size: 20px; margin-left: 6px }
 .kalscroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); -webkit-overflow-scrolling: touch }
-.kal { --lab: 140px; display: grid; grid-template-columns: var(--lab) repeat(var(--n), minmax(72px, 1fr)); min-width: calc(var(--lab) + var(--n) * 72px) }
+.kal { --lab: 150px; --cw: 150px; display: grid; grid-template-columns: var(--lab) repeat(var(--n), minmax(var(--cw), 1fr)); min-width: calc(var(--lab) + var(--n) * var(--cw)) }
 .kh { padding: 7px 4px; text-align: center; font-size: 11px; color: var(--muted); border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); line-height: 1.2 }
 .kh b { display: block; font-family: var(--f-display); font-size: 18px; color: var(--fg); font-weight: 600 }
 .kh.now { background: var(--tag); color: var(--tag-fg) }
@@ -267,12 +267,15 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
 .kl { padding: 10px; border-bottom: 1px solid var(--line); position: sticky; left: 0; background: var(--surface); z-index: 2; min-width: 0 }
 .kl .t { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; line-height: 1.25 }
 .kl .s { font-size: 12px; color: var(--muted) }
-.kc { border: 0; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); background: transparent; min-height: 74px; cursor: pointer; color: transparent; font-size: 22px; padding: 0 }
+.kc { position: relative; border: 0; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); background: transparent; min-height: var(--rh, 92px); cursor: pointer; color: transparent; font-size: 22px; padding: 0 }
+.kc.sub, .kw.sub { border-bottom-style: dashed }
+.kc .kslot { position: absolute; top: 4px; left: 6px; font-size: 10px; font-weight: 600; letter-spacing: .04em; color: var(--muted); opacity: .75 }
 .kc.now { background: color-mix(in srgb, var(--tag) 10%, transparent) }
 .kc:hover, .kc:focus-visible { background: var(--sunken); color: var(--muted) }
-.kw { border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 6px 4px; display: flex; min-width: 0 }
-.kb { flex: 1; min-width: 0; text-align: left; border-radius: 5px; padding: 6px 8px; font-size: 13px; line-height: 1.25; cursor: pointer; border: 1px solid transparent; overflow: hidden }
-.kb .t { font-weight: 600; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
+.kw { border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 4px; display: flex; min-width: 0; min-height: var(--rh, 92px) }
+.kb { flex: 1; min-width: 0; text-align: left; border-radius: 5px; padding: 5px 8px; font-size: 13px; line-height: 1.25; cursor: pointer; border: 1px solid transparent; overflow: hidden; display: flex; flex-direction: column; gap: 1px }
+.kb .t { font-weight: 700; font-size: 14px; line-height: 1.2; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden }
+.kb.klein .t { -webkit-line-clamp: 2; font-size: 13px }
 .kb .s { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .85 }
 .kb.st-offen, .kb.st-teil { background: var(--open-bg); color: var(--open); border-color: var(--open) }
 .kb.st-buchen { background: var(--warn-bg); color: var(--warn); border-color: var(--warn) }
@@ -286,9 +289,9 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
 h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; letter-spacing: .03em; text-transform: uppercase; margin: 26px 0 10px }
 .urow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface) }
 .urow .s { color: var(--muted); font-size: 13px }
-.flrow { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto; gap: 8px; align-items: end }
+.flrow { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto; gap: 8px; align-items: end; padding-bottom: 10px; border-bottom: 1px solid var(--line) }
 .flrow input, .flrow select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); width: 100%; min-width: 0 }
-@media (max-width: 560px) { .tab { font-size: 16px; padding-inline: 8px } .kal { --lab: 108px } .flrow { grid-template-columns: 1fr 1fr } .flrow .btn { grid-column: 1 / -1 } }
+@media (max-width: 560px) { .tab { font-size: 16px; padding-inline: 8px } .kal { --lab: 108px; --cw: 132px } .flrow { grid-template-columns: 1fr 1fr } .flrow .btn { grid-column: 1 / -1 } }
 </style>
 </head>
 <body>
@@ -465,6 +468,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       <fieldset>
         <legend>Fläche &amp; Zeitraum</legend>
         <label class="f wide">Aktionsfläche<select id="bl_flaeche"></select></label>
+        <label class="f wide" id="wrapBlSlot">Stellplatz<select id="bl_slot"></select></label>
         <label class="f">Ab Kalenderwoche<select id="bl_start"></select></label>
         <label class="f">Dauer<select id="bl_wochen"></select></label>
       </fieldset>
@@ -473,8 +477,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       <fieldset>
         <legend>Mieter</legend>
         <label class="f">Lieferant<input id="bl_lieferant" autocomplete="off" list="dlLieferanten"></label>
-        <label class="f">Ansprechpartner <span class="h">optional</span><input id="bl_kontakt" autocomplete="off" list="dlKontakte"></label>
-        <label class="f wide">Artikel / Aktion<input id="bl_artikel" list="dlArtikel" autocomplete="off" placeholder="z. B. Weihnachtsbier-Display"></label>
+        <label class="f" hidden>Ansprechpartner<input id="bl_kontakt" autocomplete="off"></label>
+        <label class="f wide">Artikel (was steht auf dem Platz?)<input id="bl_artikel" list="dlArtikel" autocomplete="off" placeholder="z. B. Weihnachtsbier-Display"></label>
         <label class="f wide">Notiz <span class="h">optional</span><input id="bl_notiz" autocomplete="off"></label>
       </fieldset>
       <div class="err" id="bl_err" hidden></div>
@@ -505,6 +509,15 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
         <label class="f">Lieferant<input id="f_lieferant" required autocomplete="off" list="dlLieferanten"></label>
         <label class="f">Ansprechpartner <span class="h">optional, z. B. Außendienst</span><input id="f_kontakt" autocomplete="off" list="dlKontakte"></label>
         <label class="f">Abgemacht am<input id="f_datum" type="date"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Aktionsfläche</legend>
+        <label class="f wide">Fläche <span class="h">optional – trägt die Belegung gleich in den Aktionskalender ein</span><select id="f_fl"></select></label>
+        <label class="f wide" id="wrapFlSlot">Stellplatz<select id="f_flSlot"></select></label>
+        <label class="f" id="wrapFlStart">Ab Kalenderwoche<select id="f_flStart"></select></label>
+        <label class="f" id="wrapFlWochen">Dauer<select id="f_flWochen"></select></label>
+        <div class="note" id="f_flInfo" style="grid-column:1/-1;margin:0"></div>
       </fieldset>
 
       <fieldset>
@@ -798,7 +811,62 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     } else if (c.gratiswert != null) h += `<div class="hint">Preis der Gratis-Einheit eintragen, dann zeigt die App die ganzen ${o.gEinheit === "Kiste" ? "Kisten" : "Einheiten"}.</div>`;
     if (c.bestellwert == null) h += `<div class="hint">Bestellmenge${isD ? ", Einheiten je Display" : ""} und Preis eintragen.</div>`;
     $("fCalc").innerHTML = h;
+    syncFormFl();
   }
+  // Aktionsfläche direkt im Formular: legt die Belegung im Kalender an oder ändert sie
+  let formBelId = null;   // verknüpfte Belegung beim Bearbeiten bzw. beim Übernehmen aus dem Kalender
+  function weekOptions(extra) {
+    const cur = mondayOf(today()), set = new Set(Array.from({ length: 70 }, (_, i) => addWeeks(cur, i - 16)));
+    if (extra) set.add(extra);
+    return [...set].sort().map((w) => `<option value="${w}">KW ${kw(w)} · ab ${dDE(w)}</option>`).join("");
+  }
+  function fillFormFl(bel) {
+    $("f_fl").innerHTML = `<option value="">Keine Fläche</option>` + flaechen.map((f) => `<option value="${esc(f.id)}">${esc(f.name)}</option>`).join("");
+    const start = bel ? bel.start : addWeeks(mondayOf(today()), 1);
+    $("f_flStart").innerHTML = weekOptions(start);
+    $("f_flWochen").innerHTML = Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">${i + 1} ${i ? "Wochen" : "Woche"}</option>`).join("");
+    $("f_fl").value = bel ? bel.flaecheId : ""; $("f_flStart").value = start; $("f_flWochen").value = String(bel ? bel.wochen || 1 : 1);
+    fillSlotSelect("f_flSlot", "wrapFlSlot", bel ? bel.flaecheId : "", bel);
+    if (!bel) $("wrapFlSlot").hidden = true;
+  }
+  function readFormFl() {
+    const fl = $("f_fl").value;
+    const [format, platz] = ($("f_flSlot").value || "|0").split("|");
+    return fl ? { id: formBelId || "", flaecheId: fl, start: $("f_flStart").value, wochen: +$("f_flWochen").value, format: format || null, platz: +platz || 0 } : null;
+  }
+  function syncFormFl() {
+    const x = readFormFl();
+    $("wrapFlStart").hidden = !x; $("wrapFlWochen").hidden = !x;
+    if (!x) $("wrapFlSlot").hidden = true; else { $("wrapFlSlot").hidden = $("f_flSlot").options.length <= 1; markSlots("f_flSlot", x.flaecheId, x.start, x.wochen, formBelId); }
+    // In der Auswahl zeigen, welche Fläche im gewählten Zeitraum frei ist
+    const per = { id: formBelId || "", start: $("f_flStart").value, wochen: +$("f_flWochen").value || 1 };
+    [...$("f_fl").options].forEach((o) => {
+      if (!o.value) return;
+      const f = flById(o.value); if (!f) return;
+      const P = lay(f).plaetze, frei = Math.min(...Array.from({ length: per.wochen }, (_, i) => freiePlaetze(f, addWeeks(per.start, i), formBelId)));
+      const t = `${f.name} – ${P > 1 ? `${frei} von ${P} Plätzen frei` : frei ? "frei" : "belegt"}`;
+      if (o.textContent !== t) o.textContent = t;
+    });
+    const info = $("f_flInfo");
+    if (!x) {
+      const had = formBelId && belegungen.some((b) => b.id === formBelId);
+      info.textContent = had ? "Beim Speichern wird die Belegung aus dem Kalender entfernt. Fotos bleiben erhalten." : "Ohne Fläche erscheint die Gratisware nicht im Aktionskalender.";
+      info.style.color = had ? "var(--warn)" : ""; return;
+    }
+    const c = conflict(x);
+    info.textContent = c ? `Überschneidung: ${flName(c.flaecheId)}${belFormat(c) ? ", " + belFormat(c) : ""} ist in ${belRange(c)} schon mit ${belArtikel(c) || c.lieferant || "etwas anderem"} belegt.`
+      : `${flName(x.flaecheId)}${belFormat(x) ? ", " + belFormat(x) : ""}, ${belRange(x)} (${dDE(x.start)} – ${dDE(addDays(belEnd(x), 6))}) ist frei.`;
+    info.style.color = c ? "var(--danger)" : "var(--ok)";
+  }
+  // Fläche bestimmt die Quote (außer bei eigener Quote)
+  $("f_fl").addEventListener("change", () => {
+    const flId = $("f_fl").value;
+    if (flId) fillSlotSelect("f_flSlot", "wrapFlSlot", flId, defaultSlot(flId, $("f_flStart").value, +$("f_flWochen").value, null, formBelId));
+    const f = flById(flId), cur = document.querySelector('input[name="aktion"]:checked').value;
+    if (!f || cur === "Eigene") return;
+    const v = f.typ === "Standard" ? "Standard" : "Kassenregal";
+    if (cur !== v) { document.querySelector(`input[name="aktion"][value="${v}"]`).checked = true; toast(`Quote nach Fläche: ${v === "Standard" ? "10 %" : "20 %"}`); }
+  });
   // Vorlage für eine Kopie: alle Angaben außer Lieferungen, Verknüpfung zur Fläche und Zeitstempeln
   const COPY_FIELDS = ["lieferant", "kontakt", "bestellartikel", "menge", "einheit", "ve", "veName", "preis", "aktion", "quote", "gratisartikel", "gEinheit", "gPreis"];
   function vorlageAus(b) { const o = {}; COPY_FIELDS.forEach((k) => { if (b[k] != null) o[k] = b[k]; }); return o; }
@@ -817,6 +885,9 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const b = id ? items.find((x) => x.id === id) : null;
     $("fTitle").textContent = b ? "Gratisware bearbeiten" : title || (prefill ? "Belegung übernehmen" : "Neue Gratisware");
     $("fErr").hidden = true;
+    const bel = b ? belOf(b) : pendingBelId ? belegungen.find((x) => x.id === pendingBelId) : null;
+    formBelId = bel ? bel.id : null;
+    fillFormFl(bel);
     fillForm(b || { datum: today(), einheit: "Display", veName: "Sixpack", gEinheit: "Kiste", aktion: "Kassenregal", ...(prefill || {}) });
     $("dlgForm").showModal();
     $("f_lieferant").focus();
@@ -832,17 +903,29 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     if (!o.gratisartikel) miss.push("Gratisartikel");
     if (o.aktion === "Eigene" && o.quote == null) miss.push("eigene Quote");
     if (miss.length) { $("fErr").textContent = "Bitte noch ausfüllen: " + miss.join(", ") + "."; $("fErr").hidden = false; return; }
+    const fl = readFormFl();
+    if (fl && conflict(fl)) { $("fErr").textContent = "Der gewählte Stellplatz ist in diesem Zeitraum schon belegt. Bitte anderen Stellplatz, andere Woche oder Fläche wählen."; $("fErr").hidden = false; return; }
     const prev = editingId ? items.find((x) => x.id === editingId) : null;
     const item = { ...(prev || {}), ...o, id: editingId || uid(), lieferungen: prev?.lieferungen || [], erstellt: prev?.erstellt || new Date().toISOString(), geaendert: new Date().toISOString() };
     if (prev) delete item.beispiel;
-    if (!prev && pendingBelId) item.belegungId = pendingBelId;
     $("fSave").disabled = true;
     try {
-      if (!prev && pendingBelId) {
-        const bel = belegungen.find((x) => x.id === pendingBelId);
-        if (bel) { bel.buchungId = item.id; saveKal(); }
-        pendingBelId = null;
-      }
+      let bel = formBelId ? belegungen.find((x) => x.id === formBelId) : null;
+      if (fl) {
+        if (bel) {
+          const altArtikel = prev ? prev.bestellartikel : bel.artikel;
+          Object.assign(bel, { flaecheId: fl.flaecheId, start: fl.start, wochen: fl.wochen, format: fl.format, platz: fl.platz, lieferant: item.lieferant, kontakt: item.kontakt,
+            artikel: !bel.artikel || bel.artikel === altArtikel ? item.bestellartikel : bel.artikel, buchungId: item.id });
+        } else {
+          bel = { id: uid(), flaecheId: fl.flaecheId, start: fl.start, wochen: fl.wochen, format: fl.format, platz: fl.platz, lieferant: item.lieferant, kontakt: item.kontakt,
+            artikel: item.bestellartikel, notiz: "", buchungId: item.id, erstellt: new Date().toISOString() };
+          belegungen.push(bel);
+        }
+        item.belegungId = bel.id; saveKal();
+      } else if (bel) {
+        belegungen = belegungen.filter((x) => x.id !== bel.id); delete item.belegungId; saveKal();
+      } else delete item.belegungId;
+      pendingBelId = null;
       learnArtikel(item); learnKontakt(item.lieferant, item.kontakt);
       await persist(item); $("dlgForm").close(); toast(prev ? "Gespeichert" : "Gratisware angelegt"); if (prev && detailId === item.id) renderDetail(); }
     catch (err) { $("fErr").textContent = "Speichern fehlgeschlagen: " + (err?.message || err) + ". Bitte erneut versuchen."; $("fErr").hidden = false; }
@@ -1040,13 +1123,15 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   const belTag = (b) => { const x = belOf(b); return x ? ` · <span class="tagx" style="margin-left:0">${esc(flName(x.flaecheId))} · ${belRange(x)}</span>` : ""; };
   let kalStart = mondayOf(today());
 
+  const AP_DEFAULT = [
+    { id: "ap1", name: "Aktionsplatz 1", typ: "Standard", layout: "2EU" },
+    { id: "ap2", name: "Aktionsplatz 2", typ: "Standard", layout: "2EU" },
+    { id: "ap3", name: "Aktionsplatz 3", typ: "Standard", layout: "2DUE" },
+    { id: "ap4", name: "Aktionsplatz 4", typ: "Standard", layout: "2DUE4V" }];
   function loadKal() {
     try {
       const f = JSON.parse(localStorage.getItem(FL_KEY) || "null");
-      flaechen = Array.isArray(f) ? f : [
-        { id: "fl1", name: "Kassenregal 1", typ: "Kassenregal" },
-        { id: "fl2", name: "Kassenregal 2", typ: "Kassenregal" },
-        { id: "fl3", name: "Stirnseite Getränke", typ: "Standard" }];
+      flaechen = Array.isArray(f) ? f : AP_DEFAULT.map((x) => ({ ...x }));
       belegungen = JSON.parse(localStorage.getItem(BEL_KEY) || "[]");
       if (!Array.isArray(f)) localStorage.setItem(FL_KEY, JSON.stringify(flaechen));
     } catch (e) { if (!flaechen.length) flaechen = [{ id: "fl1", name: "Kassenregal 1", typ: "Kassenregal" }]; }
@@ -1057,10 +1142,59 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     pushCollection("belegungen", belegungen); pushMeta("flaechen", { list: flaechen });
   }
   function linkedBuchung(b) { return b.buchungId ? items.find((x) => x.id === b.buchungId) : null; }
-  function conflict(b) {
-    const end = belEnd(b);
-    return belegungen.find((o) => o.id !== b.id && o.flaecheId === b.flaecheId && o.start <= end && b.start <= belEnd(o));
+  /* Stellplätze: Jede Fläche hat eine Zahl kleinster Plätze; ein Format (Palette) belegt g davon.
+     Aktionsplatz 4: 4 Viertel-Plätze, ein Düsseldorfer belegt 2 davon (gleiche Grundfläche wie 2 Viertel-Chep). */
+  const LAYOUTS = {
+    "1":      { name: "Ein Feld (ohne Paletten)", plaetze: 1, formate: [{ n: "Fläche", g: 1, k: "" }] },
+    "1EU":    { name: "1 Europalette", plaetze: 1, formate: [{ n: "Europalette", g: 1, k: "EU" }] },
+    "2EU":    { name: "2 Europaletten", plaetze: 2, formate: [{ n: "Europalette", g: 1, k: "EU" }] },
+    "3EU":    { name: "3 Europaletten", plaetze: 3, formate: [{ n: "Europalette", g: 1, k: "EU" }] },
+    "2DUE":   { name: "2 Düsseldorfer Paletten", plaetze: 2, formate: [{ n: "Düsseldorfer", g: 1, k: "DÜ" }] },
+    "2DUE4V": { name: "2 Düsseldorfer oder 4 Viertel-Chep", plaetze: 4, formate: [{ n: "Düsseldorfer", g: 2, k: "DÜ" }, { n: "Viertel-Chep", g: 1, k: "¼" }] },
+    "4V":     { name: "4 Viertel-Chep", plaetze: 4, formate: [{ n: "Viertel-Chep", g: 1, k: "¼" }] }
+  };
+  const lay = (f) => LAYOUTS[f && f.layout] || LAYOUTS["1"];
+  // Wo liegt eine Belegung auf ihrer Fläche? p = erster Platz, g = Anzahl Plätze
+  function belSlot(b) {
+    const L = lay(flById(b.flaecheId));
+    const fm = L.formate.find((x) => x.n === b.format) || L.formate[0];
+    const g = Math.min(fm.g, L.plaetze);
+    let p = Math.max(0, Math.floor(b.platz || 0));
+    if (p + g > L.plaetze) p = 0;
+    return { p, g, fm };
   }
+  // Auswahl „Stellplatz“ für eine Fläche: Wert "Format|Platz"
+  function slotOptions(f) {
+    const L = lay(f), out = [];
+    L.formate.forEach((fm) => {
+      for (let p = 0; p + fm.g <= L.plaetze; p += fm.g)
+        out.push({ v: `${fm.n}|${p}`, l: L.plaetze === 1 ? (fm.n === "Fläche" ? "Ganze Fläche" : fm.n) : `${fm.n} ${p / fm.g + 1}${fm.g > 1 ? ` (Platz ${p + 1}–${p + fm.g})` : ""}`, format: fm.n, platz: p });
+    });
+    return out;
+  }
+  // Ersten freien passenden Stellplatz wählen (für einen angetippten Platz bzw. ganz allgemein)
+  function defaultSlot(flId, start, wochen, idx, exceptId) {
+    const opts = slotOptions(flById(flId));
+    const frei = (o) => !conflict({ id: exceptId || "", flaecheId: flId, start, wochen, format: o.format, platz: o.platz });
+    const deckt = (o) => idx == null || (idx >= o.platz && idx < o.platz + (lay(flById(flId)).formate.find((x) => x.n === o.format).g));
+    return opts.find((o) => deckt(o) && frei(o)) || opts.find((o) => deckt(o)) || opts.find(frei) || opts[0];
+  }
+  function conflict(b) {
+    const end = belEnd(b), s1 = belSlot(b);
+    return belegungen.find((o) => {
+      if (o.id === b.id || o.flaecheId !== b.flaecheId || !(o.start <= end && b.start <= belEnd(o))) return false;
+      const s2 = belSlot(o);
+      return s1.p < s2.p + s2.g && s2.p < s1.p + s1.g;
+    });
+  }
+  // Wie viele Plätze einer Fläche sind in Woche w noch frei?
+  function freiePlaetze(f, w, exceptId) {
+    const L = lay(f), used = new Array(L.plaetze).fill(false);
+    belegungen.filter((b) => b.id !== exceptId && b.flaecheId === f.id && b.start <= w && belEnd(b) >= w).forEach((b) => { const s = belSlot(b); for (let i = s.p; i < s.p + s.g; i++) used[i] = true; });
+    return used.filter((u) => !u).length;
+  }
+  const belArtikel = (b) => b.artikel || (linkedBuchung(b) || {}).bestellartikel || "";
+  const belFormat = (b) => { const L = lay(flById(b.flaecheId)); if (L.plaetze === 1 && L.formate[0].n === "Fläche") return ""; const s = belSlot(b); return `${s.fm.n} ${s.p / s.g + 1}`; };
 
   /* ---------- Fotos pro Fläche und KW ----------
      Bilder liegen in IndexedDB (localStorage ist dafür zu klein): "meta" mit kleinem Vorschaubild, "daten" mit dem großen Bild.
@@ -1320,7 +1454,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   const uniq = (arr) => [...new Set(arr)];
   const isoMonday = (y, w) => addWeeks(mondayOf(`${y}-01-04`), w - 1);
   const weeksInYear = (y) => isoWeek(`${y}-12-28`).w;
-  const freieFlaechen = (w) => flaechen.filter((f) => !belegungen.some((b) => b.flaecheId === f.id && b.start <= w && belEnd(b) >= w));
+  const freieFlaechen = (w) => flaechen.map((f) => ({ f, frei: freiePlaetze(f, w), P: lay(f).plaetze })).filter((x) => x.frei > 0);
   let zielWeek = null;
   function jumpTo(w, vorlauf) {
     zielWeek = w; kalStart = vorlauf ? addWeeks(w, -1) : w;
@@ -1357,7 +1491,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       return `<button type="button" class="hint-c" data-jump="${w}" style="--c:${col}">
         <div class="t">${esc(namen)}</div>
         <div class="s">KW ${kw(w)} · ${tage} · ${wann}</div>
-        <div class="f">${frei.length ? `Noch frei: ${frei.map((f) => esc(f.name)).join(", ")}` : "Alle Flächen belegt"}</div>
+        <div class="f">${frei.length ? `Noch frei: ${frei.map((x) => esc(x.f.name) + (x.P > 1 ? ` (${x.frei} von ${x.P})` : "")).join(", ")}` : "Alle Flächen belegt"}</div>
       </button>`;
     }).join("");
   }
@@ -1375,26 +1509,34 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       const ev = evs.length ? `<span class="ev ${fei.length ? "" : "anl"}" title="${esc(evs.map((e) => `${e.n} (${wtag(e.d)} ${shortDE(e.d)})`).join(", "))}">${esc(uniq(evs.map((e) => e.s)).join(" · "))}</span>` : "";
       h += `<div class="kh ${w === cur ? "now" : ""} ${w === zielWeek ? "ziel" : ""}" style="grid-row:1;grid-column:${i + 2}"><b>KW ${kw(w)}</b>${shortDE(w)}–${shortDE(addDays(w, 6))}${ev}</div>`;
     });
-    flaechen.forEach((f, fi) => {
-      const row = fi + 2, covered = new Array(KAL_N).fill(false);
-      h += `<div class="kl" style="grid-row:${row};grid-column:1"><div class="t">${esc(f.name)}</div><div class="s">${TYPEN[f.typ] || ""}</div></div>`;
+    let row0 = 2;
+    flaechen.forEach((f) => {
+      const L = lay(f), P = L.plaetze, rh = P >= 4 ? 62 : P === 3 ? 78 : 92;
+      const covered = Array.from({ length: P }, () => new Array(KAL_N).fill(false));
+      h += `<div class="kl" style="grid-row:${row0} / span ${P};grid-column:1"><div class="t">${esc(f.name)}</div><div class="s">${L.plaetze > 1 || L.formate[0].n !== "Fläche" ? esc(L.name) + " · " : ""}${TYPEN[f.typ] || ""}</div></div>`;
       belegungen.filter((b) => b.flaecheId === f.id && b.start <= last && belEnd(b) >= weeks[0]).forEach((b) => {
-        const a = Math.max(0, weekDiff(kalStart, b.start)), e = Math.min(KAL_N - 1, weekDiff(kalStart, belEnd(b)));
-        for (let i = a; i <= e; i++) covered[i] = true;
+        const a = Math.max(0, weekDiff(kalStart, b.start)), e = Math.min(KAL_N - 1, weekDiff(kalStart, belEnd(b))), sl = belSlot(b);
+        for (let u = sl.p; u < sl.p + sl.g; u++) for (let i = a; i <= e; i++) covered[u][i] = true;
         const bu = linkedBuchung(b), c = bu ? calcFull(bu) : null;
         const cls = c ? c.cls : "nolink";
         const cut = (b.start < weeks[0] ? " cut-l" : "") + (belEnd(b) > last ? " cut-r" : "");
         const state = c ? c.status : "Gratisware fehlt";
-        h += `<div class="kw" style="grid-row:${row};grid-column:${a + 2} / span ${e - a + 1}">
-          <button type="button" class="kb ${cls}${cut}" data-bel="${esc(b.id)}" aria-label="${esc(f.name)}, ${belRange(b)}: ${esc(b.lieferant)}, ${state}">
-            <div class="t">${esc(b.lieferant || "Ohne Lieferant")}</div>
-            <div class="s">${esc(b.artikel || "")}</div>
-            <div class="s">${belRange(b)} · ${state}${(() => { const n = fotosFuer(b.flaecheId, b.start, b.wochen).length; return n ? ` · ${n} ${n === 1 ? "Foto" : "Fotos"}` : ""; })()}</div>
+        const art = belArtikel(b), fmtTxt = belFormat(b), nF = fotosFuer(b.flaecheId, b.start, b.wochen).length;
+        const klein = sl.g * rh < 80;
+        h += `<div class="kw${sl.p + sl.g < P ? " sub" : ""}" style="--rh:${rh * sl.g}px;grid-row:${row0 + sl.p} / span ${sl.g};grid-column:${a + 2} / span ${e - a + 1}">
+          <button type="button" class="kb ${cls}${cut}${klein ? " klein" : ""}" data-bel="${esc(b.id)}" aria-label="${esc(f.name)}${fmtTxt ? ", " + esc(fmtTxt) : ""}, ${belRange(b)}: ${esc(art || b.lieferant)}, ${state}">
+            <div class="t">${esc(art || b.lieferant || "Ohne Artikel")}</div>
+            ${art ? `<div class="s">${esc(b.lieferant || "")}</div>` : ""}
+            ${klein ? "" : `<div class="s">${[fmtTxt, belRange(b), state, nF ? `${nF} ${nF === 1 ? "Foto" : "Fotos"}` : ""].filter(Boolean).join(" · ")}</div>`}
           </button></div>`;
       });
-      weeks.forEach((w, i) => {
-        if (!covered[i]) h += `<button type="button" class="kc ${w === cur ? "now" : weekEvents(w).some((e) => e.typ === "feiertag") ? "fei" : ""}" style="grid-row:${row};grid-column:${i + 2}" data-fl="${esc(f.id)}" data-w="${w}" aria-label="${esc(f.name)} in KW ${kw(w)} belegen">${(() => { const n = fotosFuer(f.id, w, 1).length; return n ? `<span class="kcf">${n} ${n === 1 ? "Foto" : "Fotos"}</span>` : "+"; })()}</button>`;
+      const slotKurz = (u) => { const base = L.formate.find((x) => x.g === 1) || L.formate[0]; return P > 1 && base.k ? `${base.k} ${u + 1}` : ""; };
+      for (let u = 0; u < P; u++) weeks.forEach((w, i) => {
+        if (covered[u][i]) return;
+        const nF = u === 0 ? fotosFuer(f.id, w, 1).length : 0, sk = slotKurz(u);
+        h += `<button type="button" class="kc${u < P - 1 ? " sub" : ""} ${w === cur ? "now" : weekEvents(w).some((e) => e.typ === "feiertag") ? "fei" : ""}" style="--rh:${rh}px;grid-row:${row0 + u};grid-column:${i + 2}" data-fl="${esc(f.id)}" data-w="${w}" data-slot="${u}" aria-label="${esc(f.name)}${sk ? " " + sk : ""} in KW ${kw(w)} belegen">${sk ? `<span class="kslot">${sk}</span>` : ""}${nF ? `<span class="kcf">${nF} ${nF === 1 ? "Foto" : "Fotos"}</span>` : "+"}</button>`;
       });
+      row0 += P;
     });
     if (!flaechen.length) h += `<div style="grid-row:2;grid-column:1 / -1;padding:24px;color:var(--muted)">Noch keine Aktionsflächen. Lege sie über „Flächen verwalten“ an.</div>`;
     kal.innerHTML = h;
@@ -1404,8 +1546,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const open = belegungen.filter((b) => !linkedBuchung(b)).sort((a, b) => a.start.localeCompare(b.start));
     $("uHead").textContent = open.length ? `Noch nicht übernommen (${open.length})` : "Alle Belegungen übernommen";
     $("uList").innerHTML = open.length ? open.map((b) => `<div class="urow">
-        <div><b>${esc(b.lieferant || "Ohne Lieferant")}</b>${b.artikel ? " · " + esc(b.artikel) : ""}
-          <div class="s">${esc(flName(b.flaecheId))} · ${belRange(b)} · ${dDE(b.start)} – ${dDE(addDays(belEnd(b), 6))}</div></div>
+        <div><b>${esc(belArtikel(b) || "Ohne Artikel")}</b>${b.lieferant ? " · " + esc(b.lieferant) : ""}
+          <div class="s">${esc(flName(b.flaecheId))}${belFormat(b) ? ", " + esc(belFormat(b)) : ""} · ${belRange(b)} · ${dDE(b.start)} – ${dDE(addDays(belEnd(b), 6))}</div></div>
         <button type="button" class="btn primary small" data-take="${esc(b.id)}">In Gratisware übernehmen</button>
       </div>`).join("") : `<div class="empty" style="padding:18px">Jede Belegung hat schon einen Eintrag in der Gratiswaren-Kontrolle.</div>`;
     const tb = $("tabKal"); tb.innerHTML = "Aktionskalender" + (open.length ? `<b title="noch nicht übernommen">${open.length}</b>` : "");
@@ -1417,8 +1559,12 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     belEditId = id || null; belConfirmDel = false; belCopy = preset?.copy || null;
     const src = belCopy;
     const b = id ? belegungen.find((x) => x.id === id)
-      : src ? { flaecheId: preset.flaecheId || src.flaecheId, start: preset.start, wochen: src.wochen || 1, lieferant: src.lieferant, kontakt: src.kontakt, artikel: src.artikel, notiz: src.notiz }
+      : src ? { flaecheId: preset.flaecheId || src.flaecheId, start: preset.start, wochen: src.wochen || 1, lieferant: src.lieferant, kontakt: src.kontakt, artikel: belArtikel(src), notiz: src.notiz, format: src.format, platz: src.platz }
       : { flaecheId: preset?.flaecheId || flaechen[0]?.id, start: preset?.start || mondayOf(today()), wochen: 1 };
+    if (!id && b && b.flaecheId && (preset?.slot != null || b.format == null)) {
+      const d = defaultSlot(b.flaecheId, b.start, b.wochen, preset?.slot != null ? +preset.slot : null);
+      if (d) { b.format = d.format; b.platz = d.platz; }
+    }
     if (!b) return;
     if (!flaechen.length) { openFl(); return; }
     $("bTitle").textContent = id ? "Belegung" : src ? "Belegung kopieren" : "Fläche belegen";
@@ -1429,6 +1575,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     $("bl_start").innerHTML = [...opts].sort().map((w) => `<option value="${w}">KW ${kw(w)} · ab ${dDE(w)}</option>`).join("");
     $("bl_wochen").innerHTML = Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">${i + 1} ${i ? "Wochen" : "Woche"}</option>`).join("");
     $("bl_flaeche").value = b.flaecheId; $("bl_start").value = b.start; $("bl_wochen").value = String(b.wochen || 1);
+    fillSlotSelect("bl_slot", "wrapBlSlot", b.flaecheId, b);
     ["lieferant", "kontakt", "artikel", "notiz"].forEach((k) => $("bl_" + k).value = b[k] || "");
     $("bl_err").hidden = true;
     belFotoKey = ""; syncBel(); renderBelFoot();
@@ -1436,11 +1583,13 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     if (!id) $("bl_lieferant").focus();
   }
   function readBel() {
-    return { id: belEditId || uid(), flaecheId: $("bl_flaeche").value, start: $("bl_start").value, wochen: +$("bl_wochen").value,
+    const [format, platz] = ($("bl_slot").value || "|0").split("|");
+    return { id: belEditId || uid(), flaecheId: $("bl_flaeche").value, start: $("bl_start").value, wochen: +$("bl_wochen").value, format: format || null, platz: +platz || 0,
       lieferant: $("bl_lieferant").value.trim(), kontakt: $("bl_kontakt").value.trim(), artikel: $("bl_artikel").value.trim(), notiz: $("bl_notiz").value.trim() };
   }
   function syncBel() {
     const b = readBel(), f = flById(b.flaecheId), x = conflict(b);
+    markSlots("bl_slot", b.flaecheId, b.start, b.wochen, belEditId);
     const prev = belEditId ? belegungen.find((y) => y.id === belEditId) : null;
     const bu = prev ? linkedBuchung(prev) : null;
     let h = `<div class="ln"><span>Zeitraum</span><span>${belRange(b)}</span></div>
@@ -1451,7 +1600,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       const vb = linkedBuchung(belCopy);
       h += `<div class="hint">Kopie von ${esc(flName(belCopy.flaecheId))}, ${belRange(belCopy)}/${isoWeek(belCopy.start).y}. Woche und Fläche kannst du oben ändern.${vb ? " Mengen und Preise der Gratisware werden beim Anlegen aus der Vorlage übernommen." : ""}</div>`;
     }
-    if (x) h += `<div class="hint" style="color:var(--danger)">Überschneidung: ${esc(flName(x.flaecheId))} ist in ${belRange(x)} schon an ${esc(x.lieferant || "jemanden")} vergeben.</div>`;
+    if (x) h += `<div class="hint" style="color:var(--danger)">Überschneidung: ${esc(flName(x.flaecheId))}${belFormat(x) ? ", " + esc(belFormat(x)) : ""} ist in ${belRange(x)} schon mit ${esc(belArtikel(x) || x.lieferant || "etwas anderem")} belegt.</div>`;
     $("bl_info").innerHTML = h;
     renderBelFotos();
   }
@@ -1472,7 +1621,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   function saveBel() {
     const b = readBel();
     if (!b.lieferant) { $("bl_err").textContent = "Bitte einen Lieferanten eintragen."; $("bl_err").hidden = false; $("bl_lieferant").focus(); return null; }
-    if (conflict(b)) { $("bl_err").textContent = "Die Fläche ist in diesem Zeitraum schon belegt. Bitte andere Woche, Dauer oder Fläche wählen."; $("bl_err").hidden = false; return null; }
+    if (conflict(b)) { $("bl_err").textContent = "Dieser Stellplatz ist in diesem Zeitraum schon belegt. Bitte anderen Stellplatz, andere Woche oder Fläche wählen."; $("bl_err").hidden = false; return null; }
     const i = belegungen.findIndex((x) => x.id === b.id);
     if (i >= 0) belegungen[i] = { ...belegungen[i], ...b }; else belegungen.push({ ...b, erstellt: new Date().toISOString() });
     try { saveKal(); } catch (e) { return null; }
@@ -1486,9 +1635,30 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       ...(vorlage ? vorlageAus(vorlage) : {}),
       lieferant: bel.lieferant, kontakt: bel.kontakt, bestellartikel: (vorlage && vorlage.bestellartikel) || bel.artikel, datum: bel.start,
       aktion: vorlage && vorlage.aktion === "Eigene" ? "Eigene" : typAktion,
-      notiz: [`${flName(bel.flaecheId)} · ${belRange(bel)}`, bel.notiz].filter(Boolean).join(" · ")
+      notiz: bel.notiz || ""
     }, bel.id);
   }
+  // Stellplatz-Auswahl füllen; markiert belegte Plätze im gewählten Zeitraum
+  function fillSlotSelect(selId, wrapId, flId, cur) {
+    const f = flById(flId), opts = f ? slotOptions(f) : [];
+    $(wrapId).hidden = opts.length <= 1;
+    $(selId).innerHTML = opts.map((o) => `<option value="${esc(o.v)}">${esc(o.l)}</option>`).join("");
+    const want = cur && cur.format ? `${cur.format}|${cur.platz || 0}` : "";
+    $(selId).value = opts.some((o) => o.v === want) ? want : (opts[0] ? opts[0].v : "");
+  }
+  function markSlots(selId, flId, start, wochen, exceptId) {
+    [...$(selId).options].forEach((o) => {
+      const [format, platz] = o.value.split("|");
+      const c = conflict({ id: exceptId || "", flaecheId: flId, start, wochen, format, platz: +platz });
+      const base = o.textContent.replace(/ – .*$/, "");
+      const t = c ? `${base} – belegt (${belArtikel(c) || c.lieferant || "?"})` : `${base} – frei`;
+      if (o.textContent !== t) o.textContent = t;
+    });
+  }
+  $("bl_flaeche").addEventListener("change", () => {
+    const d = defaultSlot($("bl_flaeche").value, $("bl_start").value, +$("bl_wochen").value, null, belEditId);
+    fillSlotSelect("bl_slot", "wrapBlSlot", $("bl_flaeche").value, d);
+  });
   $("belForm").addEventListener("input", () => { $("bl_err").hidden = true; syncBel(); });
   $("belForm").addEventListener("change", syncBel);
   $("belForm").addEventListener("submit", (e) => { e.preventDefault(); const bel = saveBel(); if (bel) { learnKontakt(bel.lieferant, bel.kontakt); $("dlgBel").close(); toast("Belegung gespeichert"); } });
@@ -1514,7 +1684,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   });
   $("kal").addEventListener("click", (e) => {
     const b = e.target.closest("[data-bel]"); if (b) { openBel(b.dataset.bel); return; }
-    const c = e.target.closest(".kc"); if (c) openBel(null, { flaecheId: c.dataset.fl, start: c.dataset.w });
+    const c = e.target.closest(".kc"); if (c) openBel(null, { flaecheId: c.dataset.fl, start: c.dataset.w, slot: c.dataset.slot });
   });
   $("uList").addEventListener("click", (e) => {
     const t = e.target.closest("[data-take]"); if (!t) return;
@@ -1537,6 +1707,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       return `<div class="flrow">
         <label class="f">Name<input data-i="${i}" data-k="name" value="${esc(f.name)}" autocomplete="off"></label>
         <label class="f">Art<select data-i="${i}" data-k="typ">${Object.entries(TYPEN).map(([k, l]) => `<option value="${k}" ${f.typ === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+        <label class="f" style="grid-column:1/-1">Stellplätze pro KW<select data-i="${i}" data-k="layout">${Object.entries(LAYOUTS).map(([k, l]) => `<option value="${k}" ${(f.layout || "1") === k ? "selected" : ""}>${l.name}</option>`).join("")}</select></label>
         <button type="button" class="btn ghost small" data-rm="${i}" ${used ? `disabled title="Hat ${used} Belegung(en)"` : ""}>${used ? `${used} belegt` : "Entfernen"}</button>
       </div>`;
     }).join("") || `<div class="note" style="margin:0">Noch keine Flächen.</div>`;
@@ -1544,7 +1715,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   $("flList").addEventListener("input", (e) => { const t = e.target; if (t.dataset.i != null) flDraft[+t.dataset.i][t.dataset.k] = t.value; });
   $("flList").addEventListener("change", (e) => { const t = e.target; if (t.dataset.i != null) flDraft[+t.dataset.i][t.dataset.k] = t.value; });
   $("flList").addEventListener("click", (e) => { const t = e.target.closest("[data-rm]"); if (t && !t.disabled) { flDraft.splice(+t.dataset.rm, 1); renderFl(); } });
-  $("flAdd").addEventListener("click", () => { flDraft.push({ id: "fl" + uid(), name: `Fläche ${flDraft.length + 1}`, typ: "Standard" }); renderFl(); });
+  $("flAdd").addEventListener("click", () => { flDraft.push({ id: "fl" + uid(), name: `Aktionsplatz ${flDraft.length + 1}`, typ: "Standard", layout: "2EU" }); renderFl(); });
   $("flSave").addEventListener("click", () => {
     if (flDraft.some((f) => !f.name.trim())) { $("flErr").textContent = "Jede Fläche braucht einen Namen."; $("flErr").hidden = false; return; }
     flaechen = flDraft.map((f) => ({ ...f, name: f.name.trim() }));
@@ -1564,6 +1735,11 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     try { kontakte = normAll(JSON.parse(localStorage.getItem(KON_KEY) || "[]")); } catch (e) {}
     // Erst alles laden, dann aus bisherigen Einträgen lernen – sonst überschreibt das Speichern noch nicht geladene Listen
     let learned = false;
+    if (!settings.apAngelegt) {
+      const neu = AP_DEFAULT.filter((a) => !flaechen.some((f) => f.id === a.id));
+      if (neu.length) { flaechen = [...flaechen, ...neu.map((x) => ({ ...x }))]; try { saveKal(); } catch (e) {} }
+      settings.apAngelegt = true; learned = true;
+    }
     if (!artikel.length) { items.forEach((b) => learnArtikel(b, false)); learned = true; }
     if (!kontakte.length) { [...items, ...belegungen].forEach((x) => learnKontakt(x.lieferant, x.kontakt, false)); learned = true; }
     if (learned) saveExtras();
