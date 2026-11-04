@@ -56,7 +56,7 @@ appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
 - Reines HTML/CSS/JavaScript ohne Framework und ohne Build-Schritt. Alles steckt in `index.html` in einer großen Funktion `(function () { ... })()`.
 - **Speicher:** Jede Liste liegt im `localStorage` des Geräts. Ist man angemeldet, wird zusätzlich nach Firestore gespiegelt (`users/{uid}/...`). Firestore hat Offline-Persistenz (IndexedDB) und überträgt Änderungen, sobald wieder Netz da ist.
 - **Abgleich-Logik:** `pushCollection()` / `pushMeta()` vergleichen jedes Dokument mit dem zuletzt bekannten Cloud-Stand (sortiertes JSON) und schreiben nur Änderungen. `onSnapshot`-Listener übernehmen Änderungen vom anderen Gerät (`applyRemote`). Beim **ersten Anmelden pro Gerät** (`firstLink`) werden Gerät und Cloud zusammengeführt (bei gleicher ID gewinnt der neuere Stand `geaendert`/`erstellt`). Danach ist die Cloud maßgeblich.
-- **Service Worker:** Erst Netz, ohne Netz aus dem Speicher. **Bei jedem Update die Versionsnummer in `sw.js` erhöhen** (aktuell `const CACHE = "gratiswaren-v9";` → nächstes Mal `v10` usw.), sonst kommt die neue Version nicht zuverlässig an.
+- **Service Worker:** Erst Netz, ohne Netz aus dem Speicher. **Bei jedem Update die Versionsnummer in `sw.js` erhöhen** (aktuell `const CACHE = "gratiswaren-v10";` → nächstes Mal `v11` usw.), sonst kommt die neue Version nicht zuverlässig an.
 - **Design:** Flaschengrün als Akzentfarbe, Preisetikett-Gelb, Systemschriften (Avenir Next Condensed für Überschriften), hell und dunkel.
 
 ## 4. Datenmodell
@@ -70,6 +70,9 @@ appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
 | `gratiswaren-artikel` | `users/{uid}/meta/artikel` `{list}` | gelernte Artikel mit Preisen |
 | `gratiswaren-kontakte` | `users/{uid}/meta/kontakte` `{list}` | Telefonbuch |
 | `gratiswaren-einstellungen` | `users/{uid}/meta/einstellungen` | Einstellungen |
+| IndexedDB `gratiswaren-fotos`, Store `meta` | `users/{uid}/fotos/{id}` | Foto-Infos inkl. kleinem Vorschaubild (320 px) |
+| IndexedDB `gratiswaren-fotos`, Store `daten` | `users/{uid}/fotodaten/{id}` `{data}` | großes Foto (max. 1600 px, JPEG, Daten-URL) |
+| `gratiswaren-fotos-geloescht` | – | offline gelöschte Fotos, werden beim nächsten Anmelden auch in der Cloud gelöscht |
 | `gratiswaren-sync-uid` | – | merkt sich, ob dieses Gerät schon zusammengeführt wurde |
 | `gratiswaren-ansicht` | – | zuletzt geöffneter Reiter |
 
@@ -80,6 +83,7 @@ appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
 - **Fläche:** `id, name, typ (Kassenregal | Standard)`. Standard am Anfang: Kassenregal 1, Kassenregal 2, Stirnseite Getränke.
 - **Artikel:** `id, name, einheit, preis, ve?, veName?`
 - **Kontakt:** `id, name, telefon, email, notiz, lieferant (Haupt-Zuordnung, darf leer sein), weitere[] (weitere Lieferanten), hauptFuer[] (Lieferantennamen in Kleinschrift, für die er Hauptansprechpartner ist)`
+- **Foto:** `id, flaecheId, woche (Montag der KW), belegungId, notiz (Notiz / Nr.), aufgenommen, erstellt, thumb` (lokal zusätzlich `hochgeladen`). Fotos hängen an **Fläche + KW**, nicht an der Belegung, und bleiben auch nach dem Löschen einer Belegung erhalten. Sie sind **nicht** in der JSON-Sicherung. Firebase Storage wird nicht genutzt, weil es für neue Projekte den kostenpflichtigen Tarif verlangt.
 - **Einstellungen:** `wochen (Nachhaken nach … Wochen, Standard 3), absender (Standard „Edeka Wehrmann · Getränke“), land (Bundesland-Kürzel oder leer), anlaesse (bool)`
 
 ## 5. Rechenlogik
@@ -105,6 +109,7 @@ appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
 - Liste „Noch nicht übernommen“.
 - **Feiertage & Anlässe** werden selbst berechnet (Gaußsche Osterformel): bundesweit, regional nach Bundesland, optional Anlässe (Karneval, Valentinstag, Muttertag, Oktoberfest, Heiligabend, Silvester). Anzeige in der Wochen-Kopfzeile, **Hinweis-Karten** für die nächsten 10 Wochen mit freien Flächen.
 - Flächen verwalten (umbenennen, Typ, hinzufügen, entfernen, wenn nicht belegt).
+- **Fotos pro Fläche und KW** im Belegungs-Dialog (Kamera oder Mediathek, mehrere auf einmal), Notiz / Nr. pro Foto, große Ansicht, Teilen/Sichern, Löschen. Anzahl der Fotos steht im Kalender. **„Nachweis teilen“** schickt alle Fotos einer Belegung mit Text (Fläche, KW, Lieferant, Artikel, Nummern).
 - **Belegung kopieren:** Kopie landet in derselben KW im nächsten Jahr (änderbar). Hat die Vorlage eine Gratisware, übernimmt „Speichern & Gratisware anlegen“ deren Mengen und Preise.
 
 **Reiter Gratisware**
@@ -112,6 +117,7 @@ appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
 - Roter Hinweis bei überfälligen Einträgen, Filter (Alle, Nachhaken, Offen, Zu verbuchen, Verbucht, Angaben fehlen), Suche.
 - Formular mit Live-Rechnung („Kassenbon“), Artikel-Vorschläge mit automatischem Preis, Ansprechpartner-Vorschläge.
 - Detail: Rechnung, Lieferungen eintragen (Menge vorgeschlagen), einzeln oder alle verbuchen, bearbeiten, löschen.
+- Fotos der verknüpften Fläche erscheinen auch im Detail der Gratisware (mit „Nachweis teilen“).
 - **Gratisware kopieren:** Formular mit allen Angaben der Vorlage, ohne Lieferungen und Flächen-Verknüpfung, Datum = heute.
 
 **Reiter Lieferanten**
@@ -147,7 +153,6 @@ appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
 **Empfohlene Reihenfolge**
 1. **Papierkorb** (Gelöschtes 30 Tage zurückholen; wichtig wegen Abgleich zwischen Geräten) und **Versionsanzeige** in der App („Version vom …“).
 2. **Startseite „Diese Woche“:** was steht wo, was wird umgebaut, was ist zu verbuchen, was ist überfällig, welcher Feiertag kommt.
-3. **Fotos als Nachweis** (Aufbau, Lieferschein) an der Aktion.
 4. **Jahresauswertung pro Lieferant** für Jahresgespräche (Gratiswert, Flächenauslastung, Vorjahresvergleich).
 
 **Weitere Ideen**

@@ -193,6 +193,23 @@ textarea.csv { width: 100%; height: 160px; font-family: var(--f-num); font-size:
 .kon a { color: var(--accent); text-decoration: none; font-weight: 500 }
 .kon a:hover { text-decoration: underline }
 
+/* Fotos */
+.fsec { display: flex; flex-direction: column; gap: 8px }
+.fsec + .fsec { margin-top: 12px }
+.fhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap }
+.fhead b { font-family: var(--f-display); font-weight: 600; font-size: 17px; letter-spacing: .03em; text-transform: uppercase }
+.fhead span { font-size: 13px; color: var(--muted) }
+.fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px }
+.fthumb { position: relative; aspect-ratio: 1; border-radius: 5px; overflow: hidden; border: 1px solid var(--line); padding: 0; background: var(--sunken); cursor: pointer; max-width: 100% }
+.fthumb img { width: 100%; height: 100%; object-fit: cover; display: block }
+.fthumb .nr { position: absolute; left: 0; right: 0; bottom: 0; font-size: 10px; line-height: 1.3; background: rgb(0 0 0 / .6); color: #fff; padding: 2px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left }
+.fadd { aspect-ratio: 1; border: 1.5px dashed var(--muted); border-radius: 5px; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; max-width: 100% }
+.fadd b { font-size: 22px; font-weight: 400; line-height: 1 }
+.fadd:hover { border-color: var(--accent); color: var(--accent) }
+.fview { min-height: 160px; display: flex; align-items: center; justify-content: center; background: var(--sunken); border-radius: 6px; color: var(--muted); font-size: 14px; text-align: center; padding: 6px }
+.fview img { max-width: 100%; max-height: 62vh; display: block; border-radius: 4px }
+.kc .kcf { font-size: 11px; color: var(--muted); font-weight: 600 }
+
 /* Feiertage & Sprung */
 .jump { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: -2px 0 10px; font-size: 13px; color: var(--muted) }
 .jump select { padding: 6px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); color: var(--fg); font-size: 14px; max-width: 100% }
@@ -405,6 +422,18 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   </form>
 </dialog>
 
+<!-- Foto-Ansicht -->
+<dialog id="dlgFoto" aria-labelledby="fvTitle">
+  <div class="dlg-h"><div><div class="eyebrow" id="fvEyebrow"></div><h2 id="fvTitle">Foto</h2></div><button class="btn ghost" type="button" data-close>Schließen</button></div>
+  <div class="dlg-b">
+    <div class="fview" id="fv_box"></div>
+    <div class="s" id="fv_meta" style="color:var(--muted);font-size:13px"></div>
+    <label class="f">Notiz / Nr. <span class="h">z. B. Lieferschein-, Nachweis- oder Reklamationsnummer</span><input id="fv_notiz" autocomplete="off"></label>
+  </div>
+  <div class="dlg-f" id="fv_foot"></div>
+</dialog>
+<input type="file" id="fotoInput" accept="image/*" multiple hidden>
+
 <!-- Kontakt aus dem Telefonbuch zuordnen -->
 <dialog id="dlgPick" aria-labelledby="pTitle">
   <div class="dlg-h"><div><div class="eyebrow" id="pEyebrow"></div><h2 id="pTitle">Aus Telefonbuch hinzufügen</h2></div><button class="btn ghost" type="button" data-close>Schließen</button></div>
@@ -440,6 +469,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
         <label class="f">Dauer<select id="bl_wochen"></select></label>
       </fieldset>
       <div class="calc" id="bl_info"></div>
+      <div id="bl_fotos"></div>
       <fieldset>
         <legend>Mieter</legend>
         <label class="f">Lieferant<input id="bl_lieferant" autocomplete="off" list="dlLieferanten"></label>
@@ -666,6 +696,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
     render();
     fbInit();
+    fotosReady = loadFotos();
   }
 
   /* ---------- Übersicht ---------- */
@@ -837,6 +868,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       ${belOf(b) ? `<div><span>Aktionsfläche</span>${esc(flName(belOf(b).flaecheId))} · ${belRange(belOf(b))}</div>` : ""}
       ${b.notiz ? `<div><span>Notiz</span>${esc(b.notiz)}</div>` : ""}
     </div>`;
+    if (belOf(b)) { const x = belOf(b); h += fotoSektion(x.flaecheId, x.start, x.wochen, { readonly: true, share: x }); }
     h += `<div class="calc">`;
     if (c.bestellwert != null) h += L(c.isDisplay ? `${nf.format(b.menge)} Displays × ${nf.format(b.ve)} ${esc(b.veName)} × ${fmt(b.preis)}` : `${units(b.menge, b.einheit)} × ${fmt(b.preis)}`, fmt(c.bestellwert));
     h += L(`Gratiswert (${pct(c.quote)})`, fmt(c.gratiswert), "sum big");
@@ -1030,6 +1062,218 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     return belegungen.find((o) => o.id !== b.id && o.flaecheId === b.flaecheId && o.start <= end && b.start <= belEnd(o));
   }
 
+  /* ---------- Fotos pro Fläche und KW ----------
+     Bilder liegen in IndexedDB (localStorage ist dafür zu klein): "meta" mit kleinem Vorschaubild, "daten" mit dem großen Bild.
+     Angemeldet zusätzlich in Firestore: users/{uid}/fotos (meta) und users/{uid}/fotodaten (Bild). */
+  const FOTO_DB = "gratiswaren-fotos", TOMB_KEY = "gratiswaren-fotos-geloescht";
+  let fotos = [], fotosReady = Promise.resolve(), idbP = null, belFotoKey = "", fotoTarget = null, fotoViewId = null, fotoDelAsk = false;
+  function idb() {
+    if (!idbP) idbP = new Promise((res, rej) => {
+      const r = indexedDB.open(FOTO_DB, 1);
+      r.onupgradeneeded = () => { const d = r.result; d.createObjectStore("meta", { keyPath: "id" }); d.createObjectStore("daten", { keyPath: "id" }); };
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    });
+    return idbP;
+  }
+  async function idbReq(store, mode, fn) {
+    const d = await idb();
+    return new Promise((res, rej) => {
+      const tx = d.transaction(store, mode), q = fn(tx.objectStore(store));
+      tx.oncomplete = () => res(q && q.result); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error);
+    });
+  }
+  const idbAll = (st) => idbReq(st, "readonly", (o) => o.getAll());
+  const idbGet = (st, id) => idbReq(st, "readonly", (o) => o.get(id));
+  const idbPut = (st, v) => idbReq(st, "readwrite", (o) => o.put(v));
+  const idbDel = (st, id) => idbReq(st, "readwrite", (o) => o.delete(id));
+  const metaOhneIntern = (f) => { const { hochgeladen, _up, ...m } = f; return m; };
+  const tombs = () => { try { return JSON.parse(localStorage.getItem(TOMB_KEY) || "[]"); } catch (e) { return []; } };
+  const setTombs = (t) => { try { localStorage.setItem(TOMB_KEY, JSON.stringify(t)); } catch (e) {} };
+
+  async function loadFotos() {
+    try { fotos = (await idbAll("meta")) || []; } catch (e) { fotos = []; }
+    refreshFotoViews();
+  }
+  function fotosFuer(flId, start, wochen) {
+    const ende = addWeeks(start, (wochen || 1) - 1);
+    return fotos.filter((f) => f.flaecheId === flId && f.woche >= start && f.woche <= ende).sort((a, b) => String(a.aufgenommen || a.erstellt).localeCompare(String(b.aufgenommen || b.erstellt)));
+  }
+  function refreshFotoViews() {
+    render();
+    if ($("dlgBel").open) renderBelFotos(true);
+    if (detailId && $("dlgDetail").open) renderDetail();
+  }
+  // Bild verkleinern und als JPEG ablegen; zu große Bilder werden stärker komprimiert
+  async function bildAus(file, max, q) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image(); img.src = url; await img.decode();
+      const sc = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * sc); c.height = Math.round(img.naturalHeight * sc);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      return c.toDataURL("image/jpeg", q);
+    } finally { URL.revokeObjectURL(url); }
+  }
+  async function addFotos(files, ziel) {
+    let n = 0;
+    for (const file of files) {
+      try {
+        let data = await bildAus(file, 1600, 0.72);
+        if (data.length > 900000) data = await bildAus(file, 1280, 0.55);
+        const thumb = await bildAus(file, 320, 0.6);
+        const m = { id: uid(), flaecheId: ziel.flaecheId, woche: ziel.woche, belegungId: ziel.belegungId || null, notiz: "",
+          aufgenommen: new Date(file.lastModified || Date.now()).toISOString(), erstellt: new Date().toISOString(), thumb, hochgeladen: false };
+        await idbPut("daten", { id: m.id, data });
+        await idbPut("meta", m);
+        fotos.push(m); n++;
+        uploadFoto(m);
+      } catch (e) { toast("Ein Foto konnte nicht gelesen werden."); }
+    }
+    if (n) { refreshFotoViews(); toast(n === 1 ? "Foto gespeichert" : `${n} Fotos gespeichert`); }
+  }
+  async function uploadFoto(f) {
+    if (!syncOn || !user || f._up) return;
+    const d = await idbGet("daten", f.id).catch(() => null); if (!d) return;
+    f._up = true;
+    track(uref().collection("fotodaten").doc(f.id).set({ data: d.data }));
+    const p = uref().collection("fotos").doc(f.id).set(clean(metaOhneIntern(f)));
+    track(p);
+    p.then(() => { f.hochgeladen = true; idbPut("meta", { ...f, _up: undefined }); }).catch(() => {}).finally(() => { f._up = false; });
+  }
+  async function fotoDaten(id) {
+    const d = await idbGet("daten", id).catch(() => null);
+    if (d) return d.data;
+    if (fdb && user) {
+      try { const doc = await uref().collection("fotodaten").doc(id).get(); const data = doc.exists && doc.data().data; if (data) { await idbPut("daten", { id, data }); return data; } } catch (e) {}
+    }
+    return null;
+  }
+  async function removeFotoLocal(id) {
+    fotos = fotos.filter((f) => f.id !== id);
+    try { await idbDel("meta", id); await idbDel("daten", id); } catch (e) {}
+  }
+  async function deleteFoto(id) {
+    const f = fotos.find((x) => x.id === id);
+    await removeFotoLocal(id);
+    if (syncOn && user) { track(uref().collection("fotos").doc(id).delete()); track(uref().collection("fotodaten").doc(id).delete()); }
+    else if (f && f.hochgeladen) setTombs([...tombs(), id]);   // beim nächsten Anmelden auch in der Cloud löschen
+    refreshFotoViews();
+  }
+  async function mergeRemoteFotos(list) {
+    const R = new Map(list.map((f) => [f.id, f])), T = tombs();
+    let changed = false;
+    for (const id of T) if (R.has(id)) { track(uref().collection("fotos").doc(id).delete()); track(uref().collection("fotodaten").doc(id).delete()); R.delete(id); }
+    setTombs(T.filter((id) => R.has(id)));
+    for (const f of [...fotos]) {
+      const r = R.get(f.id);
+      if (r) {
+        if ((r.notiz || "") !== (f.notiz || "") || !f.hochgeladen) { f.notiz = r.notiz || ""; f.hochgeladen = true; await idbPut("meta", metaOhneIntern(f)).catch(() => {}); changed = true; }
+      } else if (f.hochgeladen) { await removeFotoLocal(f.id); changed = true; }   // auf dem anderen Gerät gelöscht
+      else uploadFoto(f);
+    }
+    for (const r of R.values()) if (!fotos.some((f) => f.id === r.id)) { const m = { ...r, hochgeladen: true }; fotos.push(m); await idbPut("meta", m).catch(() => {}); changed = true; }
+    if (changed) refreshFotoViews();
+  }
+  function setFotoNotiz(id, notiz) {
+    const f = fotos.find((x) => x.id === id); if (!f || (f.notiz || "") === notiz) return;
+    f.notiz = notiz; idbPut("meta", metaOhneIntern(f)).catch(() => {});
+    if (syncOn && user && f.hochgeladen) track(uref().collection("fotos").doc(id).set(clean(metaOhneIntern(f))));
+    refreshFotoViews(); toast("Notiz gespeichert");
+  }
+
+  // Foto-Bereich für einen Zeitraum (eine Sektion je KW)
+  function fotoSektion(flId, start, wochen, opt = {}) {
+    const alle = fotosFuer(flId, start, wochen);
+    if (opt.readonly && !alle.length) return "";
+    let h = `<div class="fwrap">`;
+    if (opt.readonly) h += `<div class="fhead"><b>Fotos</b>${opt.share ? `<button type="button" class="btn small" data-fshare="${esc(opt.share.id)}">Nachweis teilen</button>` : ""}</div>`;
+    for (let i = 0; i < (wochen || 1); i++) {
+      const w = addWeeks(start, i), list = alle.filter((f) => f.woche === w);
+      if (opt.readonly && !list.length) continue;
+      h += `<div class="fsec">
+        ${opt.readonly ? `<div class="fhead"><span>KW ${kw(w)} · ${shortDE(w)}–${shortDE(addDays(w, 6))}</span></div>`
+          : `<div class="fhead"><b>Fotos KW ${kw(w)}</b><span>${shortDE(w)}–${shortDE(addDays(w, 6))} · ${list.length ? list.length + (list.length === 1 ? " Foto" : " Fotos") : "noch keine"}</span></div>`}
+        <div class="fgrid">
+          ${list.map((f) => `<button type="button" class="fthumb" data-foto="${esc(f.id)}" aria-label="Foto vom ${dDE((f.aufgenommen || f.erstellt).slice(0, 10))} öffnen"><img src="${f.thumb}" alt="">${f.notiz ? `<span class="nr">${esc(f.notiz)}</span>` : ""}</button>`).join("")}
+          ${opt.readonly ? "" : `<button type="button" class="fadd" data-addfoto="${w}" data-fl="${esc(flId)}"><b>+</b>Foto</button>`}
+        </div>
+      </div>`;
+    }
+    return h + `</div>`;
+  }
+  function renderBelFotos(force) {
+    const b = readBel();
+    const key = `${b.flaecheId}|${b.start}|${b.wochen}`;
+    if (!force && key === belFotoKey) return;   // nur neu aufbauen, wenn sich Fläche oder Zeitraum ändert
+    belFotoKey = key;
+    const prev = belEditId ? belegungen.find((y) => y.id === belEditId) : null;
+    const n = fotosFuer(b.flaecheId, b.start, b.wochen).length;
+    $("bl_fotos").innerHTML = `<div class="fhead" style="margin-bottom:8px"><span>Fotos als Nachweis für den Aufbau, pro Kalenderwoche</span>${n && prev ? `<button type="button" class="btn small" data-fshare="${esc(prev.id)}">Nachweis teilen</button>` : ""}</div>`
+      + fotoSektion(b.flaecheId, b.start, b.wochen);
+  }
+  async function shareNachweis(bel) {
+    const list = fotosFuer(bel.flaecheId, bel.start, bel.wochen);
+    if (!list.length) { toast("Noch keine Fotos vorhanden."); return; }
+    toast("Fotos werden vorbereitet …");
+    const files = [];
+    for (const [i, f] of list.entries()) {
+      const data = await fotoDaten(f.id); if (!data) continue;
+      const blob = await (await fetch(data)).blob();
+      files.push(new File([blob], `Nachweis_${flName(bel.flaecheId).replace(/[^\wäöüÄÖÜß-]+/g, "_")}_KW${kw(f.woche)}_${i + 1}.jpg`, { type: "image/jpeg" }));
+    }
+    const text = [`Nachweis Aktionsfläche: ${flName(bel.flaecheId)}`, `${belRange(bel)} (${dDE(bel.start)} – ${dDE(addDays(belEnd(bel), 6))})`,
+      [bel.lieferant, bel.artikel].filter(Boolean).join(" – "), ...list.filter((f) => f.notiz).map((f) => `Nr./Notiz: ${f.notiz}`), settings.absender].filter(Boolean).join("\n");
+    if (!files.length) { toast("Die Fotos sind noch nicht auf diesem Gerät. Bitte mit Internet erneut versuchen."); return; }
+    try {
+      if (navigator.canShare && navigator.canShare({ files })) await navigator.share({ files, text, title: "Nachweis Aktionsfläche" });
+      else toast("Teilen von Fotos wird auf diesem Gerät nicht unterstützt.");
+    } catch (e) { if (!e || e.name !== "AbortError") toast("Teilen hat nicht geklappt."); }
+  }
+  async function openFoto(id) {
+    const f = fotos.find((x) => x.id === id); if (!f) return;
+    fotoViewId = id; fotoDelAsk = false;
+    $("fvEyebrow").textContent = `${flName(f.flaecheId)} · KW ${kw(f.woche)}`;
+    $("fvTitle").textContent = "Foto";
+    $("fv_meta").textContent = `Aufgenommen ${dDE((f.aufgenommen || f.erstellt).slice(0, 10))}, ${new Date(f.aufgenommen || f.erstellt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr`;
+    $("fv_notiz").value = f.notiz || "";
+    $("fv_box").innerHTML = `<img src="${f.thumb}" alt="" style="filter:blur(1px)">`;
+    renderFotoFoot();
+    if (!$("dlgFoto").open) $("dlgFoto").showModal();
+    const data = await fotoDaten(id);
+    if (fotoViewId !== id) return;
+    $("fv_box").innerHTML = data ? `<img src="${data}" alt="Foto ${esc(flName(f.flaecheId))} KW ${kw(f.woche)}">` : `<div>Das große Foto liegt noch auf dem anderen Gerät.<br>Es wird geladen, sobald hier Internet da ist.</div>`;
+  }
+  function renderFotoFoot() {
+    $("fv_foot").innerHTML = fotoDelAsk
+      ? `<div class="confirm">Foto löschen? <button type="button" class="btn danger small" id="fvDelYes">Ja, löschen</button><button type="button" class="btn small" id="fvDelNo">Behalten</button></div>`
+      : `<button type="button" class="btn ghost" id="fvDel">Löschen</button><button type="button" class="btn primary" id="fvShare">Teilen / Sichern</button>`;
+  }
+  // Klicks in allen Dialogen, die Fotos zeigen
+  document.addEventListener("click", (e) => {
+    const add = e.target.closest("[data-addfoto]");
+    if (add) { fotoTarget = { flaecheId: add.dataset.fl, woche: add.dataset.addfoto, belegungId: belEditId }; $("fotoInput").value = ""; $("fotoInput").click(); return; }
+    const th = e.target.closest("[data-foto]"); if (th) { openFoto(th.dataset.foto); return; }
+    const sh = e.target.closest("[data-fshare]"); if (sh) { const bel = belegungen.find((x) => x.id === sh.dataset.fshare); if (bel) shareNachweis(bel); }
+  });
+  $("fotoInput").addEventListener("change", (e) => { const files = [...(e.target.files || [])]; if (files.length && fotoTarget) addFotos(files, fotoTarget); });
+  $("fv_notiz").addEventListener("change", () => { if (fotoViewId) setFotoNotiz(fotoViewId, $("fv_notiz").value.trim()); });
+  $("dlgFoto").addEventListener("click", async (e) => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.id === "fvDel") { fotoDelAsk = true; renderFotoFoot(); }
+    else if (t.id === "fvDelNo") { fotoDelAsk = false; renderFotoFoot(); }
+    else if (t.id === "fvDelYes") { const id = fotoViewId; $("dlgFoto").close(); fotoViewId = null; await deleteFoto(id); toast("Foto gelöscht"); }
+    else if (t.id === "fvShare") {
+      const f = fotos.find((x) => x.id === fotoViewId); const data = f && await fotoDaten(f.id);
+      if (!data) { toast("Das Foto ist noch nicht auf diesem Gerät."); return; }
+      const file = new File([await (await fetch(data)).blob()], `Foto_${flName(f.flaecheId).replace(/[^\wäöüÄÖÜß-]+/g, "_")}_KW${kw(f.woche)}.jpg`, { type: "image/jpeg" });
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file], text: [`${flName(f.flaecheId)} · KW ${kw(f.woche)}`, f.notiz ? `Nr./Notiz: ${f.notiz}` : ""].filter(Boolean).join("\n") });
+        else toast("Teilen von Fotos wird auf diesem Gerät nicht unterstützt.");
+      } catch (err) { if (!err || err.name !== "AbortError") toast("Teilen hat nicht geklappt."); }
+    }
+  });
+  $("dlgFoto").addEventListener("close", () => { fotoViewId = null; });
+
   /* Feiertage & Anlässe: bewegliche Termine hängen an Ostern */
   const pad = (n) => String(n).padStart(2, "0");
   const WT = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
@@ -1145,11 +1389,11 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
           <button type="button" class="kb ${cls}${cut}" data-bel="${esc(b.id)}" aria-label="${esc(f.name)}, ${belRange(b)}: ${esc(b.lieferant)}, ${state}">
             <div class="t">${esc(b.lieferant || "Ohne Lieferant")}</div>
             <div class="s">${esc(b.artikel || "")}</div>
-            <div class="s">${belRange(b)} · ${state}</div>
+            <div class="s">${belRange(b)} · ${state}${(() => { const n = fotosFuer(b.flaecheId, b.start, b.wochen).length; return n ? ` · ${n} ${n === 1 ? "Foto" : "Fotos"}` : ""; })()}</div>
           </button></div>`;
       });
       weeks.forEach((w, i) => {
-        if (!covered[i]) h += `<button type="button" class="kc ${w === cur ? "now" : weekEvents(w).some((e) => e.typ === "feiertag") ? "fei" : ""}" style="grid-row:${row};grid-column:${i + 2}" data-fl="${esc(f.id)}" data-w="${w}" aria-label="${esc(f.name)} in KW ${kw(w)} belegen">+</button>`;
+        if (!covered[i]) h += `<button type="button" class="kc ${w === cur ? "now" : weekEvents(w).some((e) => e.typ === "feiertag") ? "fei" : ""}" style="grid-row:${row};grid-column:${i + 2}" data-fl="${esc(f.id)}" data-w="${w}" aria-label="${esc(f.name)} in KW ${kw(w)} belegen">${(() => { const n = fotosFuer(f.id, w, 1).length; return n ? `<span class="kcf">${n} ${n === 1 ? "Foto" : "Fotos"}</span>` : "+"; })()}</button>`;
       });
     });
     if (!flaechen.length) h += `<div style="grid-row:2;grid-column:1 / -1;padding:24px;color:var(--muted)">Noch keine Aktionsflächen. Lege sie über „Flächen verwalten“ an.</div>`;
@@ -1187,7 +1431,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     $("bl_flaeche").value = b.flaecheId; $("bl_start").value = b.start; $("bl_wochen").value = String(b.wochen || 1);
     ["lieferant", "kontakt", "artikel", "notiz"].forEach((k) => $("bl_" + k).value = b[k] || "");
     $("bl_err").hidden = true;
-    syncBel(); renderBelFoot();
+    belFotoKey = ""; syncBel(); renderBelFoot();
     $("dlgBel").showModal();
     if (!id) $("bl_lieferant").focus();
   }
@@ -1209,6 +1453,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     }
     if (x) h += `<div class="hint" style="color:var(--danger)">Überschneidung: ${esc(flName(x.flaecheId))} ist in ${belRange(x)} schon an ${esc(x.lieferant || "jemanden")} vergeben.</div>`;
     $("bl_info").innerHTML = h;
+    renderBelFotos();
   }
   // Knöpfe nur bei Bedarf neu aufbauen, sonst geht ein Tipp beim Verlassen eines Felds verloren
   function renderBelFoot() {
@@ -1761,6 +2006,10 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       remote.belegungen = new Map(arr.map((o) => [o.id, stable(clean(o))]));
       applyRemote(() => { belegungen = arr; });
     }, onErr));
+    unsubs.push(uref().collection("fotos").onSnapshot((snap) => {
+      const list = snap.docs.map((d) => ({ ...d.data(), id: d.id }));
+      fotosReady.then(() => mergeRemoteFotos(list));
+    }, onErr));
     unsubs.push(uref().collection("meta").onSnapshot((snap) => {
       const m = {}; snap.docs.forEach((d) => { m[d.id] = d.data(); remote.meta.set(d.id, stable(clean(d.data()))); });
       applyRemote(() => {
@@ -1837,8 +2086,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     else { txt = "Abgeglichen"; col = "var(--ok)"; }
     chip.hidden = false; chip.textContent = txt; chip.style.setProperty("--c", col);
     $("backupInfo").textContent = user
-      ? "Deine Daten liegen in der Cloud und auf jedem angemeldeten Gerät. Eine Sicherung als Datei schadet trotzdem nicht."
-      : "Ohne Anmeldung sind alle Einträge nur auf diesem Gerät gespeichert. Mach ab und zu eine Sicherung, zum Beispiel in iCloud Drive.";
+      ? "Deine Daten liegen in der Cloud und auf jedem angemeldeten Gerät. Eine Sicherung als Datei schadet trotzdem nicht. Fotos sind darin nicht enthalten, die liegen in der Cloud."
+      : "Ohne Anmeldung sind alle Einträge nur auf diesem Gerät gespeichert. Mach ab und zu eine Sicherung, zum Beispiel in iCloud Drive. Fotos sind darin nicht enthalten. Sichere wichtige Fotos über „Teilen“ → „Bild sichern“.";
     if (!box || box.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
     if (!fauth) { box.innerHTML = `<p class="note" style="margin:0">Der Abgleich ist nicht verfügbar. Prüfe, ob die Dateien fb-app.js, fb-auth.js und fb-firestore.js mit hochgeladen sind.</p>`; return; }
     if (user) {
