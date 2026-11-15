@@ -8,7 +8,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Gratisware">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#1f5a3c">
+<meta name="theme-color" content="#f4f6f8">
+<script>try { if (localStorage.getItem("gratiswaren-sperre")) document.documentElement.classList.add("locked"); } catch (e) {}</script>
+<script>try { var st = JSON.parse(localStorage.getItem("gratiswaren-einstellungen") || "{}"); document.documentElement.dataset.mode = st.darstellung || "hell"; } catch (e) { document.documentElement.dataset.mode = "hell"; }</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
@@ -17,40 +19,46 @@ html { -webkit-text-size-adjust: 100% }
 :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px) }
 body { margin: 0 }
 [hidden] { display: none !important }
-/* Layout: Regal-Etikett-Kacheln oben, darunter eine Liste von Aktionen; Details und Erfassung in Dialogen. */
+/* Design: hell, ruhig, Karten mit weichen Schatten. Navigation unten wie bei iPad-Apps. */
 :root {
-  --bg: #f3f5f2;
+  --bg: #f4f6f8;
   --surface: #ffffff;
-  --sunken: #e8ece6;
-  --fg: #17221b;
-  --muted: #5a675e;
-  --line: #d3dbd2;
-  --accent: #1f5a3c;        /* Flaschengrün */
+  --surface-2: #fafbfc;
+  --sunken: #eef1f4;
+  --fg: #1b2430;
+  --muted: #667085;
+  --line: #e3e7ec;
+  --line-soft: #edf0f3;
+  --line-strong: #d0d6de;
+  --accent: #1e874f;        /* frisches Grün */
   --accent-fg: #ffffff;
-  --tag: #f2c230;           /* Preisetikett-Gelb */
-  --tag-fg: #1d1a0c;
-  --ok: #24764a;
-  --ok-bg: #dcefe2;
-  --warn: #8a5a00;
-  --warn-bg: #fbecc6;
-  --open: #2d4f7a;
-  --open-bg: #dfe8f3;
-  --danger: #a3302a;
-  --danger-bg: #f6dedc;
-  --f-display: "Avenir Next Condensed", "Arial Narrow", system-ui, sans-serif;
+  --accent-soft: #e7f5ed;
+  --tag: #fff4d6;
+  --tag-fg: #8a5a00;
+  --ok: #18794a;
+  --ok-bg: #e5f5eb;
+  --warn: #b25e09;
+  --warn-bg: #fff1dc;
+  --open: #2f62d8;
+  --open-bg: #e8effd;
+  --danger: #d1372f;
+  --danger-bg: #fdecea;
+  --shadow-sm: 0 1px 2px rgb(16 24 40 / .05), 0 1px 3px rgb(16 24 40 / .07);
+  --shadow-md: 0 4px 10px rgb(16 24 40 / .07), 0 2px 4px rgb(16 24 40 / .05);
+  --f-display: -apple-system, system-ui, "Segoe UI", sans-serif;
   --f-body: -apple-system, system-ui, "Segoe UI", sans-serif;
-  --f-num: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, monospace;
+  --f-num: -apple-system, system-ui, "Segoe UI", sans-serif;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #111714; --surface: #18201b; --sunken: #1f2923; --fg: #e5ebe6; --muted: #9aa89f; --line: #2e3a33;
-  --accent: #5fb488; --accent-fg: #0d1a12; --tag: #e3b628; --tag-fg: #1d1a0c;
-  --ok: #7fd3a1; --ok-bg: #1e3a2a; --warn: #f0c46a; --warn-bg: #3d3014; --open: #9dbbe3; --open-bg: #1f2c3d;
-  --danger: #f09a93; --danger-bg: #3d1f1d; color-scheme: dark } }
-:root[data-theme="dark"] {
-  --bg: #111714; --surface: #18201b; --sunken: #1f2923; --fg: #e5ebe6; --muted: #9aa89f; --line: #2e3a33;
-  --accent: #5fb488; --accent-fg: #0d1a12; --tag: #e3b628; --tag-fg: #1d1a0c;
-  --ok: #7fd3a1; --ok-bg: #1e3a2a; --warn: #f0c46a; --warn-bg: #3d3014; --open: #9dbbe3; --open-bg: #1f2c3d;
-  --danger: #f09a93; --danger-bg: #3d1f1d; color-scheme: dark }
+:root[data-mode="dunkel"] {
+  --bg: #12161b; --surface: #1b2128; --surface-2: #1f262e; --sunken: #252d36; --fg: #e8edf2; --muted: #9aa5b1; --line: #2c343e; --line-soft: #262e37; --line-strong: #3a4450;
+  --accent: #4cc283; --accent-fg: #0b1a12; --accent-soft: #1b3326; --tag: #3a3016; --tag-fg: #f3cf75;
+  --ok: #6fd39c; --ok-bg: #1c3527; --warn: #f2b45c; --warn-bg: #3a2b14; --open: #8fb0f5; --open-bg: #1d2a44; --danger: #f4877f; --danger-bg: #3d1f1d;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / .4); --shadow-md: 0 4px 12px rgb(0 0 0 / .45); color-scheme: dark }
+@media (prefers-color-scheme: dark) { :root[data-mode="auto"] {
+  --bg: #12161b; --surface: #1b2128; --surface-2: #1f262e; --sunken: #252d36; --fg: #e8edf2; --muted: #9aa5b1; --line: #2c343e; --line-soft: #262e37; --line-strong: #3a4450;
+  --accent: #4cc283; --accent-fg: #0b1a12; --accent-soft: #1b3326; --tag: #3a3016; --tag-fg: #f3cf75;
+  --ok: #6fd39c; --ok-bg: #1c3527; --warn: #f2b45c; --warn-bg: #3a2b14; --open: #8fb0f5; --open-bg: #1d2a44; --danger: #f4877f; --danger-bg: #3d1f1d;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / .4); --shadow-md: 0 4px 12px rgb(0 0 0 / .45); color-scheme: dark } }
 
 * { box-sizing: border-box }
 body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.45 }
@@ -296,38 +304,320 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
 .flrow { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto; gap: 8px; align-items: end; padding-bottom: 10px; border-bottom: 1px solid var(--line) }
 .flrow input, .flrow select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); width: 100%; min-width: 0 }
 @media (max-width: 560px) { .tab { font-size: 16px; padding-inline: 8px } .kal { --lab: 108px; --cw: 132px } .flrow { grid-template-columns: 1fr 1fr } .flrow .btn { grid-column: 1 / -1 } }
+
+/* ===== Modernes Erscheinungsbild ===== */
+html.locked .wrap, html.locked .tabs { visibility: hidden }
+.lockscreen { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; align-items: center; justify-content: center; overflow-y: auto;
+  padding: max(24px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)) }
+.lockcard { width: min(380px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow-md); padding: 28px 24px; text-align: center; display: flex; flex-direction: column; gap: 12px }
+.lockicon { width: 64px; height: 64px; margin: 0 auto; border-radius: 18px; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center }
+.lockicon svg { width: 32px; height: 32px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round }
+.lockcard h2 { margin: 0; font: 700 22px var(--f-body) }
+.lk-sub { margin: 0; color: var(--muted); font-size: 14px }
+.lk-pin { width: 100%; font-size: 26px; letter-spacing: .35em; text-align: center; padding: 12px; border-radius: 12px; border: 1px solid var(--line-strong); background: var(--surface) }
+.lk-pin:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft) }
+.lk-msg { min-height: 20px; color: var(--danger); font-size: 14px; font-weight: 600 }
+.lockform { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; align-items: end }
+.lockform .actions { grid-column: 1 / -1 }
+:root { --cj: #1e874f; --cv: #6a8ed8 }
+:root[data-mode="dunkel"] { --cj: #3aa86c; --cv: #5f86d8 }
+@media (prefers-color-scheme: dark) { :root[data-mode="auto"] { --cj: #3aa86c; --cv: #5f86d8 } }
+.iconbtn { width: 46px; height: 46px; flex: none; border-radius: 12px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg); display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); cursor: pointer }
+.iconbtn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round }
+.iconbtn:hover { background: var(--accent-soft); color: var(--accent) }
+.subnav { display: inline-flex; padding: 3px; gap: 3px; background: var(--sunken); border-radius: 12px; margin-bottom: 16px; max-width: 100%; overflow-x: auto }
+.subnav button { border: 0; background: transparent; padding: 9px 16px; border-radius: 9px; font: 600 14px var(--f-body); color: var(--muted); cursor: pointer; white-space: nowrap }
+.subnav button[aria-pressed="true"] { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-sm) }
+.morebtns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px }
+.morebtn { text-align: left; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); padding: 14px 16px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; box-shadow: var(--shadow-sm) }
+.morebtn b { font-size: 16px } .morebtn span { color: var(--muted); font-size: 13px }
+.morebtn:hover { border-color: var(--accent); background: var(--accent-soft) }
+.typpill { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--sunken); color: var(--muted); margin-right: 6px; vertical-align: 1px }
+.typpill.fehler { background: var(--danger-bg); color: var(--danger) } .typpill.idee { background: var(--open-bg); color: var(--open) } .typpill.wunsch { background: var(--ok-bg); color: var(--ok) }
+.kon.done { opacity: .55 }
+.note-q { font-size: 12px; color: var(--muted); margin-top: 6px } .note-a { font-size: 14px; white-space: pre-wrap }
+
+/* Startseite */
+.st-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; align-items: start }
+.st-col { display: flex; flex-direction: column; gap: 16px; min-width: 0 }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-sm); padding: 16px 18px; min-width: 0 }
+.card-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 12px }
+.card-h h2 { margin: 0; font: 700 18px var(--f-body); letter-spacing: -.01em }
+.card-h .sub { color: var(--muted); font-size: 13px }
+.linkbtn2 { border: 0; background: none; color: var(--accent); font: 600 14px var(--f-body); cursor: pointer; padding: 4px 0; white-space: nowrap }
+.todo { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px }
+.todo-t { text-align: left; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow-sm); padding: 12px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; border-left: 5px solid var(--c, var(--line-strong)) }
+.todo-t b { font-size: 24px; font-weight: 700; letter-spacing: -.02em } .todo-t span { font-size: 13px; color: var(--muted); font-weight: 600 }
+.todo-t:hover { box-shadow: var(--shadow-md) }
+.st-fl + .st-fl { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft) }
+.st-fl > .n { font-weight: 700; font-size: 14px; margin-bottom: 6px }
+.st-it { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; text-align: left; border: 0; background: var(--sb, var(--sunken)); border-left: 4px solid var(--sc, var(--line-strong)); border-radius: 10px; padding: 8px 10px; cursor: pointer; margin-top: 6px; color: var(--fg) }
+.st-it .fm { font-size: 11px; font-weight: 700; color: var(--muted); background: var(--surface); border-radius: 999px; padding: 2px 7px; white-space: nowrap }
+.st-it .t { font-weight: 700; font-size: 14px; overflow-wrap: anywhere } .st-it .s { font-size: 12.5px; color: var(--muted) }
+.st-it .r { font-size: 12.5px; color: var(--muted); text-align: right; max-width: 42%; justify-self: end }
+.st-it.st-offen, .st-it.st-teil { --sc: var(--open); --sb: var(--open-bg) } .st-it.st-buchen { --sc: var(--warn); --sb: var(--warn-bg) }
+.st-it.st-fertig { --sc: var(--ok); --sb: var(--ok-bg) } .st-it.st-fehlt { --sc: var(--danger); --sb: var(--danger-bg) } .st-it.nolink { --sc: #8a94a3; --sb: var(--sunken) }
+.st-free { font-size: 13px; color: var(--muted); margin-top: 10px }
+.st-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line-soft); background: none; padding: 10px 0; cursor: pointer; color: var(--fg) }
+.st-row:first-child { border-top: 0; padding-top: 2px }
+.st-row .t { font-weight: 700; font-size: 14px } .st-row .s { font-size: 12.5px; color: var(--muted) } .st-row .v { font-weight: 700; text-align: right; white-space: nowrap }
+.st-empty { color: var(--muted); font-size: 14px; padding: 6px 0 }
+@media (max-width: 860px) { .st-grid { grid-template-columns: 1fr } }
+@media (max-width: 560px) { .st-it { grid-template-columns: auto minmax(0, 1fr) } .st-it .r { grid-column: 2; text-align: left; justify-self: start; max-width: none } .todo-t b { font-size: 21px } }
+
+/* Jahresauswertung */
+.aw-top { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 14px }
+.aw-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px }
+.aw-kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-sm); padding: 14px 16px }
+.aw-kpi .l { font-size: 13px; font-weight: 600; color: var(--muted) } .aw-kpi .v { font-size: clamp(20px, 3vw, 28px); font-weight: 700; letter-spacing: -.02em; margin-top: 2px }
+.aw-kpi .d { font-size: 13px; color: var(--muted); margin-top: 2px }
+.delta-up { color: var(--ok); font-weight: 700 } .delta-down { color: var(--danger); font-weight: 700 }
+.chart { display: flex; flex-direction: column; gap: 12px }
+.clegend { display: flex; gap: 16px; font-size: 13px; color: var(--muted); margin-bottom: 12px; flex-wrap: wrap }
+.clegend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; background: var(--c) }
+.crow { display: grid; grid-template-columns: minmax(96px, 190px) minmax(0, 1fr); gap: 12px; align-items: center; cursor: pointer }
+.cname { font-weight: 600; font-size: 14px; overflow-wrap: anywhere }
+.cbars { display: flex; flex-direction: column; gap: 2px; min-width: 0 }
+.cbar { display: flex; align-items: center; gap: 8px; min-height: 14px }
+.cbar i { display: block; height: 12px; border-radius: 0 4px 4px 0; background: var(--cj); min-width: 2px }
+.cbar.vj i { background: var(--cv) }
+.cbar span { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums }
+.crow:hover .cname { color: var(--accent) }
+.tblwrap { overflow-x: auto; -webkit-overflow-scrolling: touch }
+.atable { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 760px }
+.atable th { text-align: right; font-size: 12px; font-weight: 600; color: var(--muted); padding: 8px; border-bottom: 1px solid var(--line); white-space: nowrap }
+.atable th:first-child, .atable td:first-child { text-align: left }
+.atable td { text-align: right; padding: 10px 8px; border-bottom: 1px solid var(--line-soft); font-variant-numeric: tabular-nums; white-space: nowrap }
+.atable td:first-child { font-weight: 600; white-space: normal }
+.atable tbody tr { cursor: pointer } .atable tbody tr:hover td { background: var(--surface-2) }
+.atable .s { color: var(--muted); font-size: 12px }
+.atable tfoot td { font-weight: 700; border-top: 2px solid var(--line); border-bottom: 0 }
+@media (max-width: 760px) { .aw-kpis { grid-template-columns: 1fr 1fr } .morebtns { grid-template-columns: 1fr } }
+.kal { position: relative }
+.kal .kb { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation }
+.kal .kb.drag-src { opacity: .3 }
+.drag-ghost { position: fixed; z-index: 200; pointer-events: none; display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 8px 11px; border-radius: 12px; border: 1px solid var(--line); border-left: 4px solid var(--accent); background: var(--surface); color: var(--fg); font: 600 13px var(--f-body); box-shadow: 0 14px 34px rgb(16 24 40 / .25); transform: rotate(-1.5deg) scale(1.04); opacity: .96; overflow: hidden }
+.drag-ghost .t { font-size: 14px; font-weight: 700 }
+.drag-ghost .s { font-weight: 400; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.drop-zone { position: absolute; z-index: 6; pointer-events: none; display: flex; align-items: center; justify-content: center; border: 2px dashed var(--accent); border-radius: 12px; background: color-mix(in srgb, var(--accent-soft) 80%, transparent); color: var(--accent); font: 700 13px var(--f-body); text-align: center; padding: 4px }
+.drop-zone.bad { border-color: var(--danger); background: color-mix(in srgb, var(--danger-bg) 85%, transparent); color: var(--danger) }
+.toast-undo { margin-left: 12px; background: none; border: 0; color: #8fe0b4; font: 700 14px var(--f-body); cursor: pointer; padding: 4px 6px }
+.shiftbtns { display: flex; gap: 8px; align-items: end; flex-wrap: wrap }
+body { font-size: 16px; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased }
+.wrap { max-width: 1240px; padding-block: 18px calc(110px + env(safe-area-inset-bottom, 0px)) }
+.eyebrow, .kcorner, .row .k, .tagx, .kslot { text-transform: none; letter-spacing: 0 }
+header.top { align-items: center; margin-bottom: 16px }
+.eyebrow { font-size: 13px; font-weight: 500 }
+h1 { font-family: var(--f-body); font-size: clamp(26px, 4.4vw, 32px); font-weight: 700; letter-spacing: -.02em; margin-top: 2px }
+
+/* Knöpfe & Eingaben */
+.btn { border-radius: 10px; padding: 9px 15px; font-weight: 600; border-color: var(--line-strong); box-shadow: var(--shadow-sm); transition: background .15s, border-color .15s, box-shadow .15s }
+.btn:hover { border-color: var(--line-strong); background: var(--surface-2) }
+.btn.primary { box-shadow: 0 1px 2px rgb(30 135 79 / .25), 0 2px 6px rgb(30 135 79 / .2) }
+.btn.primary:hover { background: var(--accent); filter: brightness(1.06) }
+.btn.big { padding: 12px 20px; font-size: 16px; border-radius: 12px }
+.btn.small { border-radius: 8px; padding: 6px 12px }
+.btn.ghost { box-shadow: none }
+.btn.ghost:hover { background: var(--sunken); border-color: transparent }
+.btn.danger { background: var(--danger-bg); border-color: transparent; color: var(--danger) }
+.search { border-radius: 12px; padding: 11px 14px; border-color: var(--line-strong); box-shadow: var(--shadow-sm) }
+.search:focus, label.f input:focus, label.f select:focus, label.f textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft) }
+label.f { font-size: 14px; font-weight: 600; gap: 6px }
+label.f .h { font-weight: 400 }
+label.f input, label.f select, label.f textarea { border-radius: 10px; padding: 10px 12px; background: var(--surface); border-color: var(--line-strong); font-size: 16px }
+.chip { border-radius: 999px; padding: 7px 14px; font-weight: 500; border-color: var(--line-strong); box-shadow: var(--shadow-sm) }
+.chip[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: transparent; box-shadow: none }
+.chip b { font-family: var(--f-body) }
+.chk input { accent-color: var(--accent) }
+
+/* Navigation unten */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; margin: 0; overflow: visible; justify-content: center; gap: 4px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent); -webkit-backdrop-filter: saturate(1.4) blur(18px); backdrop-filter: saturate(1.4) blur(18px);
+  border-top: 1px solid var(--line); border-bottom: 0;
+  padding: 6px max(10px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px)) }
+.tab { position: relative; flex: 1 1 0; max-width: 150px; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 4px 6px; border: 0; border-radius: 12px;
+  font-family: var(--f-body); font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--muted) }
+.tab svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round }
+.tab:hover { color: var(--fg) }
+.tab[aria-selected="true"] { color: var(--accent); background: var(--accent-soft); border-bottom: 0 }
+.tab .tb { position: absolute; top: 3px; left: calc(50% + 7px); min-width: 19px; height: 19px; padding: 0 5px; margin: 0; border-radius: 10px; font-family: var(--f-body); font-size: 11px; font-weight: 700; line-height: 19px; text-align: center; background: var(--warn); color: #fff; vertical-align: 0 }
+.tab .tb.red { background: var(--danger); color: #fff }
+.tab span.tl { white-space: nowrap }
+.toast { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); border-radius: 12px; padding: 11px 18px; box-shadow: var(--shadow-md) }
+
+/* Karten & Listen */
+.kpi { border-radius: 16px; border-color: var(--line); box-shadow: var(--shadow-sm) }
+.kpi .lbl { font-family: var(--f-body); text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 600; color: var(--muted); border-bottom: 0; padding: 14px 16px 0; display: flex; align-items: center; gap: 8px }
+.kpi .lbl::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--kc, var(--accent)); flex: none }
+.kpi.total { --kc: var(--accent) } .kpi.done { --kc: var(--ok) } .kpi.open { --kc: var(--open) }
+.kpi.total .lbl, .kpi.done .lbl, .kpi.open .lbl { background: none; color: var(--muted) }
+.kpi .val { font-family: var(--f-body); font-weight: 700; letter-spacing: -.02em; padding: 6px 16px 4px }
+.kpi .sub { margin-top: 0; padding: 0 16px 14px }
+.bar { height: 10px; border-radius: 6px }
+.legend { gap: 18px }
+.legend span::before { border-radius: 50%; width: 10px; height: 10px }
+.row { border-radius: 14px; border-color: var(--line); box-shadow: var(--shadow-sm); padding: 14px 16px; transition: box-shadow .15s, transform .15s }
+.row:hover { border-color: var(--line); box-shadow: var(--shadow-md); transform: translateY(-1px) }
+.row .k { font-size: 12px; font-weight: 500 }
+.row .v { font-family: var(--f-body); font-weight: 600; font-size: 15px }
+.pill { padding: 4px 10px }
+.tagx { border-radius: 999px; padding: 2px 8px; font-size: 11.5px }
+.empty { border-radius: 16px; border-color: var(--line-strong) }
+.alert { border-radius: 14px; border-color: transparent; background: var(--danger-bg); box-shadow: var(--shadow-sm); padding: 12px 16px }
+.banner { border-radius: 12px }
+.mini { height: 5px; border-radius: 3px }
+h3.sec { font-family: var(--f-body); text-transform: none; letter-spacing: -.01em; font-size: 20px; font-weight: 700 }
+.urow, .lrow, .kon { border-radius: 14px; border-color: var(--line); background: var(--surface); box-shadow: var(--shadow-sm) }
+.telgrp { font-family: var(--f-body); text-transform: none; letter-spacing: 0; font-size: 17px; font-weight: 700; color: var(--fg) }
+.calc { font-family: var(--f-body); border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line-soft) }
+.calc .ln.big span:last-child { font-weight: 700 }
+.anfchk { border-radius: 12px; background: var(--surface-2) }
+.sync { border-color: var(--line-strong); box-shadow: var(--shadow-sm); padding: 8px 13px }
+
+/* Dialoge */
+dialog { border: 0; border-radius: 20px; box-shadow: 0 24px 64px rgb(16 24 40 / .22), 0 4px 12px rgb(16 24 40 / .08) }
+dialog::backdrop { background: rgb(15 23 42 / .32); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px) }
+.dlg-h { padding: 18px 20px 14px; border-bottom: 1px solid var(--line-soft) }
+.dlg-h h2 { font-family: var(--f-body); font-size: 22px; font-weight: 700; letter-spacing: -.01em }
+.dlg-b { padding: 18px 20px 20px; gap: 22px }
+.dlg-f { padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line-soft) }
+legend { font-family: var(--f-body); text-transform: none; letter-spacing: 0; font-size: 16px; font-weight: 700; color: var(--fg); margin-bottom: 10px }
+.seg { border-radius: 12px; border-color: var(--line-strong); padding: 3px; gap: 3px; background: var(--sunken) }
+.seg label { border: 0 !important; border-radius: 9px; padding: 9px 6px }
+.seg label:has(input:checked) { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-sm) }
+.facts div > span { text-transform: none; letter-spacing: 0; font-size: 12px; font-weight: 500 }
+.fhead b { font-family: var(--f-body); text-transform: none; letter-spacing: 0; font-size: 16px; font-weight: 700 }
+.fthumb, .fadd { border-radius: 10px }
+.fview { border-radius: 14px }
+
+/* Aktionskalender */
+.hints { gap: 10px; margin-bottom: 16px }
+.hint-c { border-radius: 14px; border: 1px solid var(--line); border-left: 4px solid var(--c); box-shadow: var(--shadow-sm); padding: 11px 14px }
+.hint-c:hover { box-shadow: var(--shadow-md); border-color: var(--line); border-left-color: var(--c) }
+.hint-c .t { font-size: 15px; font-weight: 700 }
+.kalbar { margin-bottom: 12px }
+.weeknav .rng { font-family: var(--f-body); font-weight: 700; font-size: 20px; letter-spacing: -.01em; margin-left: 8px }
+.jump { margin: 0 0 14px; font-size: 14px }
+.jump select { border-radius: 10px; padding: 8px 10px; border-color: var(--line-strong); box-shadow: var(--shadow-sm) }
+.kalscroll { border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow-sm); background: var(--surface) }
+.kal { --lab: 168px; --cw: 158px }
+.kal .kh { border-left-color: var(--line-soft); border-bottom: 1px solid var(--line); padding: 10px 6px 9px; font-size: 12px; background: var(--surface) }
+.kal .kh b { font-family: var(--f-body); font-size: 16px; font-weight: 700; letter-spacing: -.01em; margin-bottom: 1px }
+.kal .kh.now { background: var(--accent-soft); color: var(--accent) }
+.kal .kh.now b { color: var(--accent) }
+.kal .kh.now b::after { content: " · jetzt"; font-size: 12px; font-weight: 600 }
+.kal .kh .ev { margin-top: 5px; display: inline-block; max-width: 100%; padding: 2px 7px; border-radius: 999px; background: var(--danger-bg); color: var(--danger); font-size: 11px }
+.kal .kh .ev.anl { background: var(--open-bg); color: var(--open) }
+.kal .kh.now .ev { color: var(--danger) }
+.kal .kh.now .ev.anl { color: var(--open) }
+.kal .kcorner { background: var(--surface-2); border-bottom-color: var(--line); font-size: 12px; font-weight: 600 }
+.kal .kl { background: var(--surface-2); border-bottom-color: var(--line); border-right: 1px solid var(--line); padding: 12px 14px }
+.kal .kl .t { font-size: 15px; font-weight: 700; line-height: 1.25 }
+.kal .kl .s { margin-top: 4px; font-size: 12.5px; line-height: 1.35 }
+.kal .kc { border-left-color: var(--line-soft); border-bottom-color: var(--line); color: var(--line-strong); font-size: 22px; font-weight: 300; transition: background .12s, color .12s }
+.kal .kc.sub, .kal .kw.sub { border-bottom-color: var(--line-soft); border-bottom-style: dashed }
+.kal .kc.now { background: color-mix(in srgb, var(--accent-soft) 45%, transparent) }
+.kal .kc.fei { background: color-mix(in srgb, var(--danger-bg) 55%, transparent) }
+.kal .kc:hover, .kal .kc:focus-visible { background: var(--accent-soft); color: var(--accent) }
+.kal .kc .kslot { top: 6px; left: 8px; padding: 1px 7px; border-radius: 999px; background: var(--sunken); color: var(--muted); font-size: 10.5px; opacity: 1 }
+.kal .kc .kcf { color: var(--open); font-size: 12px }
+.kal .kw { border-left-color: var(--line-soft); border-bottom-color: var(--line); padding: 5px }
+.kal .kb { --sc: var(--muted); --sb: var(--sunken); background: var(--sb); color: var(--fg); border: 1.5px solid color-mix(in srgb, var(--sc) 55%, transparent); border-left: 6px solid var(--sc); border-radius: 10px; box-shadow: 0 1px 2px rgb(16 24 40 / .08), 0 2px 6px rgb(16 24 40 / .08); padding: 7px 10px; gap: 2px; transition: box-shadow .15s, transform .15s }
+.kal .kb:hover { box-shadow: var(--shadow-md); transform: translateY(-1px) }
+.kal .kb .t { color: var(--fg) }
+.kal .kb .s { color: color-mix(in srgb, var(--fg) 70%, var(--sc)); opacity: 1 }
+.kal .kb.st-offen, .kal .kb.st-teil { --sc: var(--open); --sb: var(--open-bg) }
+.kal .kb.st-buchen { --sc: var(--warn); --sb: var(--warn-bg) }
+.kal .kb.st-fertig { --sc: var(--ok); --sb: var(--ok-bg) }
+.kal .kb.st-fehlt { --sc: var(--danger); --sb: var(--danger-bg) }
+.kal .kb.nolink { --sc: #8a94a3; --sb: var(--sunken); border-style: dashed; border-left-style: solid }
+.kal .kb.cut-l { border-top-left-radius: 3px; border-bottom-left-radius: 3px }
+.kal .kb.cut-r { border-top-right-radius: 3px; border-bottom-right-radius: 3px }
+.klegend span.hatch::before { background: #8a94a3 }
+.hints { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) }
+.hint-c .f { font-weight: 600; font-size: 13.5px; margin-top: 4px }
+.hint-c .s { font-size: 13px }
+.segnav { display: inline-flex; padding: 3px; gap: 3px; background: var(--sunken); border-radius: 12px }
+.segnav button { border: 0; background: transparent; padding: 8px 14px; border-radius: 9px; font-weight: 600; font-size: 14px; color: var(--fg); cursor: pointer }
+.segnav button:hover { background: var(--surface); box-shadow: var(--shadow-sm) }
+.segnav #kToday { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-sm) }
+@media (max-width: 560px) {
+  .kal { --lab: 118px; --cw: 138px }
+  .kal .kl { padding: 10px 8px 10px 10px }
+  .kal .kl .t { font-size: 13.5px; overflow-wrap: normal; hyphens: auto }
+  .kal .kl .s { font-size: 11.5px }
+  .sync { display: none !important }
+  .hints { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; -webkit-overflow-scrolling: touch }
+  .hint-c { flex: 0 0 78%; scroll-snap-align: start }
+  .weeknav .rng { width: 100%; margin: 4px 0 0 2px; font-size: 18px }
+  .tab { font-size: 10.5px; padding-inline: 2px }
+  .tab svg { width: 23px; height: 23px }
+  header.top .actions { width: 100% }
+  header.top .btn.big { flex: 1 }
+}
 </style>
 </head>
 <body>
+<div class="lockscreen" id="lockScreen" hidden>
+  <div class="lockcard">
+    <div class="lockicon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><circle cx="12" cy="15.5" r="1.3"/></svg></div>
+    <h2>Gratiswaren-Kontrolle</h2>
+    <p class="lk-sub">Die App ist gesperrt.</p>
+    <button type="button" class="btn primary big" id="lk_face" hidden>Mit Face ID entsperren</button>
+    <form id="lk_form" novalidate>
+      <input id="lk_pin" class="lk-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" placeholder="PIN" aria-label="PIN">
+      <button type="submit" class="btn big" style="width:100%;margin-top:10px">Mit PIN entsperren</button>
+    </form>
+    <div class="lk-msg" id="lk_msg" role="alert"></div>
+    <button type="button" class="linkbtn2" id="lk_forgot">PIN vergessen?</button>
+    <form id="lk_pwform" hidden novalidate>
+      <p class="lk-sub" id="lk_pwinfo"></p>
+      <input id="lk_pw" class="search" type="password" autocomplete="current-password" placeholder="Passwort deines App-Kontos" style="width:100%">
+      <button type="submit" class="btn big" style="width:100%;margin-top:10px">Mit Passwort entsperren</button>
+    </form>
+  </div>
+</div>
+
 <div class="wrap">
   <header class="top">
     <div>
-      <div class="eyebrow">Getränke · Aktionsflächen</div>
-      <h1>Gratiswaren-Kontrolle</h1>
+      <div class="eyebrow">Gratiswaren-Kontrolle · Getränke</div>
+      <h1 id="viewTitle">Aktionskalender</h1>
     </div>
     <div class="actions">
+      <button class="iconbtn" id="btnIdee" type="button" aria-label="Idee oder Fehler notieren" title="Idee oder Fehler notieren"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg></button>
       <button class="sync" id="syncChip" type="button" hidden></button>
-      <button class="btn" id="btnData" type="button">Einstellungen</button>
-      <button class="btn primary" id="btnNew" type="button">+ Neue Gratisware</button>
+      <button class="btn primary big" id="btnNew" type="button">+ Neue Gratisware</button>
     </div>
   </header>
 
   <div class="banner" id="banner" hidden></div>
 
   <nav class="tabs" role="tablist" aria-label="Bereiche">
-    <button class="tab" type="button" role="tab" id="tabKal" data-view="kalender" aria-selected="false">Aktionskalender</button>
-    <button class="tab" type="button" role="tab" id="tabGratis" data-view="gratis" aria-selected="true">Gratisware</button>
-    <button class="tab" type="button" role="tab" id="tabLief" data-view="lieferanten" aria-selected="false">Lieferanten</button>
-    <button class="tab" type="button" role="tab" id="tabTel" data-view="telefon" aria-selected="false">Telefonbuch</button>
+    <button class="tab" type="button" role="tab" id="tabStart" data-view="start" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11h5v-6h3v6h5V9"/></svg><span class="tl">Start</span><b class="tb" hidden></b></button>
+    <button class="tab" type="button" role="tab" id="tabKal" data-view="kalender" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M7.5 13.5h3M13.5 13.5h3M7.5 17h3"/></svg><span class="tl">Kalender</span><b class="tb" hidden></b></button>
+    <button class="tab" type="button" role="tab" id="tabGratis" data-view="gratis" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8" width="17" height="12.5" rx="2"/><path d="M12 8v12.5M3.5 12.5h17M12 8C10 4.2 6.5 4.3 6.5 6.4 6.5 8 9.5 8 12 8zm0 0c2-3.8 5.5-3.7 5.5-1.6C17.5 8 14.5 8 12 8z"/></svg><span class="tl">Gratisware</span><b class="tb" hidden></b></button>
+    <button class="tab" type="button" role="tab" id="tabLief" data-view="lieferanten" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 6.5h11.5v10H2.5zM14 9.5h4.2l3.3 3.3v3.7H14"/><circle cx="6.5" cy="17.5" r="1.9"/><circle cx="17.5" cy="17.5" r="1.9"/></svg><span class="tl">Lieferanten</span><b class="tb" hidden></b></button>
+    <button class="tab" type="button" id="btnData"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18.5" cy="12" r="1.6"/></svg><span class="tl">Mehr</span><b class="tb" hidden></b></button>
   </nav>
+
+  <section id="viewStart" hidden><div id="startBody"></div></section>
+
+  <div class="subnav" id="liefSub" role="tablist" aria-label="Lieferanten-Bereiche" hidden>
+    <button type="button" data-view="lieferanten">Übersicht</button>
+    <button type="button" data-view="telefon">Telefonbuch</button>
+    <button type="button" data-view="auswertung">Jahresauswertung</button>
+  </div>
 
   <section id="viewKal" hidden>
     <div class="hints" id="kHints" hidden></div>
     <div class="kalbar">
       <div class="weeknav">
-        <button class="btn small" type="button" id="kPrev" aria-label="4 Wochen zurück">‹ 4 Wochen</button>
-        <button class="btn small" type="button" id="kToday">Diese Woche</button>
-        <button class="btn small" type="button" id="kNext" aria-label="4 Wochen vor">4 Wochen ›</button>
+        <div class="segnav" role="group" aria-label="Wochen blättern">
+          <button type="button" id="kPrev" aria-label="4 Wochen zurück">‹ Zurück</button>
+          <button type="button" id="kToday">Heute</button>
+          <button type="button" id="kNext" aria-label="4 Wochen vor">Weiter ›</button>
+        </div>
         <span class="rng" id="kRange"></span>
       </div>
       <button class="btn small" type="button" id="btnFl">Flächen verwalten</button>
@@ -345,7 +635,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       <span style="--c:var(--warn)">zu verbuchen</span>
       <span style="--c:var(--ok)">verbucht</span>
     </div>
-    <p class="note">Freies Feld antippen, um eine Fläche zu belegen. Eine Belegung antippen, um sie zu ändern oder in die Gratiswaren-Kontrolle zu übernehmen.</p>
+    <p class="note">Freies „+“ antippen, um eine Fläche zu belegen. Belegung antippen, um sie zu ändern – oder <b>gedrückt halten und auf eine andere Woche ziehen</b>.</p>
     <h3 class="sec" id="uHead">Noch nicht übernommen</h3>
     <div class="list" id="uList"></div>
   </section>
@@ -387,6 +677,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     <div class="list" id="liefList"></div>
     <p class="note">Antippen für alle Aktionen eines Lieferanten und eine Aufstellung zum Verschicken an den Außendienst.</p>
   </section>
+
+  <section id="viewAusw" hidden><div id="auswBody"></div></section>
 </div>
 
 <!-- Lieferant -->
@@ -474,6 +766,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
         <label class="f wide">Aktionsfläche<select id="bl_flaeche"></select></label>
         <label class="f wide" id="wrapBlSlot">Stellplatz<select id="bl_slot"></select></label>
         <label class="f">Ab Kalenderwoche<select id="bl_start"></select></label>
+        <div class="shiftbtns"><button type="button" class="btn small" id="blEarlier">‹ 1 Woche früher</button><button type="button" class="btn small" id="blLater">1 Woche später ›</button></div>
         <label class="f">Dauer<select id="bl_wochen"></select></label>
       </fieldset>
       <div class="calc" id="bl_info"></div>
@@ -578,18 +871,25 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
 
 <!-- Daten & Sicherung -->
 <dialog id="dlgData" aria-labelledby="cTitle">
-  <div class="dlg-h"><h2 id="cTitle">Einstellungen &amp; Sicherung</h2><button class="btn ghost" type="button" data-close>Schließen</button></div>
+  <div class="dlg-h"><h2 id="cTitle">Mehr</h2><button class="btn ghost" type="button" data-close>Schließen</button></div>
   <div class="dlg-b">
+    <div class="morebtns">
+      <button type="button" class="morebtn" id="btnTrash"><b>Papierkorb</b><span id="trashCount">leer</span></button>
+      <button type="button" class="morebtn" id="btnIdeen"><b>Ideen &amp; Fehler</b><span id="ideenCount">noch keine</span></button>
+    </div>
     <fieldset>
       <legend>Einstellungen</legend>
       <label class="f">Nachhaken nach … Wochen <span class="h">gezählt ab Ende der Aktion</span><input id="set_wochen" type="number" inputmode="numeric" min="1" max="26" step="1"></label>
       <label class="f">Absender für Aufstellungen<input id="set_absender" autocomplete="off"></label>
+      <label class="f">Darstellung<select id="set_mode"><option value="hell">Hell (empfohlen)</option><option value="auto">Wie das iPad (hell oder dunkel)</option><option value="dunkel">Dunkel</option></select></label>
       <label class="f">Bundesland <span class="h">für regionale Feiertage im Kalender</span><select id="set_land">
         <option value="">Nur bundesweite Feiertage</option><option value="BW">Baden-Württemberg</option><option value="BY">Bayern</option><option value="BE">Berlin</option><option value="BB">Brandenburg</option><option value="HB">Bremen</option><option value="HH">Hamburg</option><option value="HE">Hessen</option><option value="MV">Mecklenburg-Vorpommern</option><option value="NI">Niedersachsen</option><option value="NW">Nordrhein-Westfalen</option><option value="RP">Rheinland-Pfalz</option><option value="SL">Saarland</option><option value="SN">Sachsen</option><option value="ST">Sachsen-Anhalt</option><option value="SH">Schleswig-Holstein</option><option value="TH">Thüringen</option>
       </select></label>
       <label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="set_anl">Anlässe zeigen (Karneval, Valentinstag, Muttertag, Oktoberfest, Heiligabend, Silvester)</label>
       <div><button class="btn small" type="button" id="btnArt2">Artikel &amp; Preise verwalten</button></div>
     </fieldset>
+    <legend style="margin:6px 0 -8px">App-Sperre</legend>
+    <div id="lockBox"></div>
     <legend style="margin:6px 0 -8px">Abgleich iPad &amp; iPhone</legend>
     <div id="syncBox"></div>
     <legend style="margin:6px 0 -8px">Sicherung</legend>
@@ -603,6 +903,37 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     <div class="confirm" id="restoreAsk" hidden></div>
     <p class="note" id="storeInfo" style="margin:0"></p>
   </div>
+</dialog>
+
+<!-- Papierkorb -->
+<dialog id="dlgTrash" aria-labelledby="trTitle">
+  <div class="dlg-h"><div><div class="eyebrow">Gelöschtes bleibt 30 Tage hier und lässt sich wiederherstellen</div><h2 id="trTitle">Papierkorb</h2></div><button class="btn ghost" type="button" data-close>Schließen</button></div>
+  <div class="dlg-b"><div class="lief" id="trashList"></div></div>
+  <div class="dlg-f" id="trashFoot"></div>
+</dialog>
+
+<!-- Ideen & Fehler -->
+<dialog id="dlgIdee" aria-labelledby="iTitle">
+  <form id="ideeForm" method="dialog" novalidate>
+    <div class="dlg-h"><div><div class="eyebrow">Sofort festhalten, was dir im Alltag auffällt</div><h2 id="iTitle">Ideen &amp; Fehler</h2></div><button class="btn ghost" type="button" data-close>Schließen</button></div>
+    <div class="dlg-b">
+      <fieldset>
+        <div class="seg" role="radiogroup" aria-label="Art der Notiz">
+          <label><input type="radio" name="iart" value="Idee" checked>Idee</label>
+          <label><input type="radio" name="iart" value="Fehler">Fehler</label>
+          <label><input type="radio" name="iart" value="Wunsch">Wunsch</label>
+        </div>
+        <label class="f wide">Was wollte ich machen?<textarea id="i_wollte" rows="2" placeholder="z. B. Zwei Paletten auf einmal belegen"></textarea></label>
+        <label class="f wide">Was hat nicht funktioniert?<textarea id="i_problem" rows="2" placeholder="optional"></textarea></label>
+        <label class="f wide">Was wäre einfacher gewesen?<textarea id="i_einfacher" rows="2" placeholder="optional"></textarea></label>
+        <div class="actions" style="grid-column:1/-1;align-items:center"><button type="submit" class="btn primary">Notiz speichern</button><span class="err" id="i_err" hidden></span></div>
+      </fieldset>
+      <div>
+        <div class="fhead" style="margin-bottom:10px"><b id="iListHead">Notizen</b><button type="button" class="btn small" id="iShare">Liste teilen / kopieren</button></div>
+        <div class="lief" id="ideeList"></div>
+      </div>
+    </div>
+  </form>
 </dialog>
 
 <datalist id="dlLieferanten"></datalist>
@@ -703,7 +1034,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   async function remove(id) { items = items.filter((x) => x.id !== id); saveLocal(); render(); }
   function connect() {
     store = "local"; items = loadLocal();
-    loadKal(); loadExtras();
+    loadKal(); loadExtras(); loadTrash(); loadNotizen(); purgeTrash();
     let seeded = false; try { seeded = !!localStorage.getItem(SEEDED); } catch (e) {}
     if (!items.length && !seeded) {
       items = [{ id: "beispiel-weihnachtsbier", beispiel: true, lieferant: "Beispiel-Lieferant", kontakt: "", datum: today(), bestellartikel: "Weihnachtsbier-Display", menge: 6, einheit: "Display", ve: 60, veName: "Sixpack", preis: 6.49, aktion: "Kassenregal", quote: null, gratisartikel: "Barre Pils 24 × 0,33 l", gEinheit: "Kiste", gPreis: 17.99, notiz: "Beispiel – bearbeiten oder löschen", lieferungen: [], erstellt: new Date().toISOString() }];
@@ -723,6 +1054,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   const nochAnfordern = (r) => !r.b.angefordert && r.c.restAnspruch > 0;
   const anfTag = (b, c) => b.angefordert ? ` <span class="tagx anf" title="${b.angefordertAm ? "am " + dDE(b.angefordertAm) : ""}">Angefordert</span>` : c.restAnspruch > 0 ? ` <span class="tagx noanf">Nicht angefordert</span>` : "";
   function render() {
+    applyMode();
     renderKal();
     const rows = items.map((b) => ({ b, c: calcFull(b) }));
     let total = 0, done = 0, waiting = 0;
@@ -743,8 +1075,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const over = rows.filter((r) => r.c.over);
     const ob = $("overdueBox"); ob.hidden = !over.length;
     if (over.length) ob.innerHTML = `<span><b>${over.length} ${over.length === 1 ? "Gratisware ist" : "Gratiswaren sind"} überfällig.</b> Noch nicht geliefert: ${fmt(r2(over.reduce((s, r) => s + r.c.restAnspruch * (num(r.b.gPreis) || 0), 0)))}. Zeit, beim Lieferanten nachzuhaken.</span><span>${filter === "nachhaken" ? "Alle zeigen" : "Anzeigen ›"}</span>`;
-    $("tabGratis").innerHTML = "Gratisware" + (over.length ? `<b class="red" title="überfällig">${over.length}</b>` : "");
-    renderLief(); renderTel();
+    setTabBadge("tabGratis", over.length, true, "überfällig");
+    renderLief(); renderTel(); renderStart(); renderAusw(); updateMoreCounts();
     $("chips").innerHTML = FILTERS.filter(([k]) => k === "alle" || counts[k] || filter === k)
       .map(([k, l]) => `<button type="button" class="chip" data-f="${k}" aria-pressed="${filter === k}">${l}<b>${counts[k]}</b></button>`).join("");
 
@@ -962,6 +1294,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
         }
         item.belegungId = bel.id; saveKal();
       } else if (bel) {
+        inTrash("belegung", bel, belArtikel(bel) || bel.lieferant || "Belegung", belInfo(bel));
         belegungen = belegungen.filter((x) => x.id !== bel.id); delete item.belegungId; saveKal();
       } else delete item.belegungId;
       pendingBelId = null;
@@ -1025,7 +1358,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     $("dBody").innerHTML = h;
 
     $("dFoot").innerHTML = confirmDel
-      ? `<div class="confirm">Diese Gratisware mit allen Lieferungen löschen? <button type="button" class="btn danger small" id="dDelYes">Ja, löschen</button><button type="button" class="btn small" id="dDelNo">Behalten</button></div>`
+      ? `<div class="confirm">Diese Gratisware mit allen Lieferungen in den Papierkorb legen? <button type="button" class="btn danger small" id="dDelYes">Ja, löschen</button><button type="button" class="btn small" id="dDelNo">Behalten</button></div>`
       : `<button type="button" class="btn ghost" id="dDel">Löschen</button>
          <div class="actions">${lief.some((l) => !l.verbucht) ? `<button type="button" class="btn" id="dBookAll">Alle Lieferungen verbuchen</button>` : ""}<button type="button" class="btn" id="dCopy">Kopieren</button><button type="button" class="btn" id="dEdit">Bearbeiten</button></div>`;
   }
@@ -1063,13 +1396,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     else if (t.id === "dBookAll") { updateLief((ls) => ls.map((l) => l.verbucht ? l : { ...l, verbucht: true, verbuchtAm: today() })); toast("Alle Lieferungen verbucht"); }
     else if (t.id === "dDel") { confirmDel = true; renderDetail(); }
     else if (t.id === "dDelNo") { confirmDel = false; renderDetail(); }
-    else if (t.id === "dDelYes") {
-      const id = detailId; $("dlgDetail").close();
-      try {
-        belegungen.forEach((x) => { if (x.buchungId === id) delete x.buchungId; }); saveKal();
-        await remove(id); toast("Gelöscht");
-      } catch (err) { toast("Löschen fehlgeschlagen."); }
-    }
+    else if (t.id === "dDelYes") { const id = detailId; $("dlgDetail").close(); trashBuchung(id); }
   });
 
   /* ---------- CSV-Export ---------- */
@@ -1099,9 +1426,10 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     return true;
   }
   function openData() {
-    renderSync();
+    renderLockBox();
+    renderSync(); updateMoreCounts();
     $("set_wochen").value = settings.wochen; $("set_absender").value = settings.absender;
-    $("set_land").value = settings.land || ""; $("set_anl").checked = settings.anlaesse !== false;
+    $("set_land").value = settings.land || ""; $("set_mode").value = settings.darstellung || "hell"; $("set_anl").checked = settings.anlaesse !== false;
     $("restoreAsk").hidden = true;
     $("storeInfo").textContent = `${items.length} ${items.length === 1 ? "Aktion" : "Aktionen"} auf diesem Gerät gespeichert.`;
     $("dlgData").showModal();
@@ -1112,7 +1440,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     if (await saveFile(`gratiswaren_${today()}.csv`, csv(), "text/csv")) toast("Export erstellt");
   });
   $("btnBackup").addEventListener("click", async () => {
-    const data = JSON.stringify({ app: "gratiswaren-kontrolle", version: 2, gesichert: new Date().toISOString(), buchungen: items, flaechen, belegungen, artikel, kontakte, einstellungen: settings }, null, 1);
+    const data = JSON.stringify({ app: "gratiswaren-kontrolle", version: 2, gesichert: new Date().toISOString(), buchungen: items, flaechen, belegungen, artikel, kontakte, papierkorb, notizen, einstellungen: settings }, null, 1);
     if (await saveFile(`gratiswaren_sicherung_${today()}.json`, data, "application/json")) toast("Sicherung erstellt");
   });
   let pendingRestore = null;
@@ -1125,7 +1453,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       const list = Array.isArray(o) ? o : o.buchungen;
       if (!Array.isArray(list) || list.some((x) => !x || typeof x !== "object" || !x.id)) throw new Error();
       const fl = Array.isArray(o.flaechen) ? o.flaechen : null, bl = Array.isArray(o.belegungen) ? o.belegungen : [];
-      pendingRestore = { list, fl, bl, art: Array.isArray(o.artikel) ? o.artikel : null, kon: Array.isArray(o.kontakte) ? o.kontakte : null, set: o.einstellungen && typeof o.einstellungen === "object" ? o.einstellungen : null };
+      pendingRestore = { list, fl, bl, art: Array.isArray(o.artikel) ? o.artikel : null, kon: Array.isArray(o.kontakte) ? o.kontakte : null, pk: Array.isArray(o.papierkorb) ? o.papierkorb : null, no: Array.isArray(o.notizen) ? o.notizen : null, set: o.einstellungen && typeof o.einstellungen === "object" ? o.einstellungen : null };
       ask.innerHTML = `Sicherung mit ${list.length} ${list.length === 1 ? "Aktion" : "Aktionen"}${fl ? ` und ${bl.length} ${bl.length === 1 ? "Belegung" : "Belegungen"}` : ""} laden? Die Einträge auf diesem Gerät werden ersetzt. <button type="button" class="btn danger small" id="rsYes">Ja, ersetzen</button><button type="button" class="btn small" id="rsNo">Abbrechen</button>`;
     } catch (err) { pendingRestore = null; ask.textContent = "Diese Datei ist keine gültige Sicherung der Gratiswaren-App."; }
     ask.hidden = false;
@@ -1137,6 +1465,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       if (pendingRestore.fl) { flaechen = pendingRestore.fl; belegungen = pendingRestore.bl; }
       if (pendingRestore.art) artikel = pendingRestore.art;
       if (pendingRestore.kon) kontakte = normAll(pendingRestore.kon);
+      if (pendingRestore.pk) { papierkorb = pendingRestore.pk; saveTrash(); }
+      if (pendingRestore.no) { notizen = pendingRestore.no; saveNotizen(); }
       if (pendingRestore.set) settings = { ...settings, ...pendingRestore.set };
       saveExtras(); fillArtList();
       pendingRestore = null;
@@ -1544,13 +1874,15 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     $("kHints").innerHTML = list.map(([w, evs]) => {
       const frei = freieFlaechen(w), diff = weekDiff(cur, w);
       const wann = diff === 0 ? "diese Woche" : diff === 1 ? "nächste Woche" : `in ${diff} Wochen`;
-      const namen = uniq(evs.map((e) => e.n)).join(", ");
-      const tage = evs.map((e) => `${wtag(e.d)} ${shortDE(e.d)}`).join(", ");
+      const namen = uniq(evs.map((e) => e.s)).join(" · ");
+      const tage = evs.map((e) => `${e.n} (${wtag(e.d)} ${shortDE(e.d)})`).join(", ");
       const col = !frei.length ? "var(--ok)" : diff <= 3 ? "var(--danger)" : "var(--warn)";
-      return `<button type="button" class="hint-c" data-jump="${w}" style="--c:${col}">
+      const nFrei = frei.reduce((a, x) => a + x.frei, 0), nAlle = flaechen.reduce((a, f) => a + lay(f).plaetze, 0);
+      const titel = `${tage}. ${frei.length ? "Noch frei: " + frei.map((x) => x.f.name + (x.P > 1 ? ` (${x.frei} von ${x.P})` : "")).join(", ") : "Alle Flächen belegt"}`;
+      return `<button type="button" class="hint-c" data-jump="${w}" style="--c:${col}" title="${esc(titel)}">
         <div class="t">${esc(namen)}</div>
-        <div class="s">KW ${kw(w)} · ${tage} · ${wann}</div>
-        <div class="f">${frei.length ? `Noch frei: ${frei.map((x) => esc(x.f.name) + (x.P > 1 ? ` (${x.frei} von ${x.P})` : "")).join(", ")}` : "Alle Flächen belegt"}</div>
+        <div class="s">KW ${kw(w)} · ${wann}</div>
+        <div class="f">${frei.length ? `${nFrei} von ${nAlle} Plätzen frei` : "Alles belegt"}</div>
       </button>`;
     }).join("");
   }
@@ -1566,13 +1898,13 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     weeks.forEach((w, i) => {
       const evs = weekEvents(w), fei = evs.filter((e) => e.typ === "feiertag");
       const ev = evs.length ? `<span class="ev ${fei.length ? "" : "anl"}" title="${esc(evs.map((e) => `${e.n} (${wtag(e.d)} ${shortDE(e.d)})`).join(", "))}">${esc(uniq(evs.map((e) => e.s)).join(" · "))}</span>` : "";
-      h += `<div class="kh ${w === cur ? "now" : ""} ${w === zielWeek ? "ziel" : ""}" style="grid-row:1;grid-column:${i + 2}"><b>KW ${kw(w)}</b>${shortDE(w)}–${shortDE(addDays(w, 6))}${ev}</div>`;
+      h += `<div class="kh ${w === cur ? "now" : ""} ${w === zielWeek ? "ziel" : ""}" style="grid-row:1;grid-column:${i + 2}" data-w="${w}"><b>KW ${kw(w)}</b>${shortDE(w)}–${shortDE(addDays(w, 6))}${ev}</div>`;
     });
     let row0 = 2;
     flaechen.forEach((f) => {
       const L = lay(f), P = L.plaetze, rh = P >= 4 ? 62 : P === 3 ? 78 : 92;
       const covered = Array.from({ length: P }, () => new Array(KAL_N).fill(false));
-      h += `<div class="kl" style="grid-row:${row0} / span ${P};grid-column:1"><div class="t">${esc(f.name)}</div><div class="s">${L.plaetze > 1 || L.formate[0].n !== "Fläche" ? esc(L.name) + " · " : ""}${TYPEN[f.typ] || ""}</div></div>`;
+      h += `<div class="kl" data-fl="${esc(f.id)}" style="grid-row:${row0} / span ${P};grid-column:1"><div class="t">${esc(f.name)}</div><div class="s">${L.plaetze > 1 || L.formate[0].n !== "Fläche" ? esc(L.name) + " · " : ""}${TYPEN[f.typ] || ""}</div></div>`;
       belegungen.filter((b) => b.flaecheId === f.id && b.start <= last && belEnd(b) >= weeks[0]).forEach((b) => {
         const a = Math.max(0, weekDiff(kalStart, b.start)), e = Math.min(KAL_N - 1, weekDiff(kalStart, belEnd(b))), sl = belSlot(b);
         for (let u = sl.p; u < sl.p + sl.g; u++) for (let i = a; i <= e; i++) covered[u][i] = true;
@@ -1609,7 +1941,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
           <div class="s">${esc(flName(b.flaecheId))}${belFormat(b) ? ", " + esc(belFormat(b)) : ""} · ${belRange(b)} · ${dDE(b.start)} – ${dDE(addDays(belEnd(b), 6))}</div></div>
         <button type="button" class="btn primary small" data-take="${esc(b.id)}">In Gratisware übernehmen</button>
       </div>`).join("") : `<div class="empty" style="padding:18px">Jede Belegung hat schon einen Eintrag in der Gratiswaren-Kontrolle.</div>`;
-    const tb = $("tabKal"); tb.innerHTML = "Aktionskalender" + (open.length ? `<b title="noch nicht übernommen">${open.length}</b>` : "");
+    setTabBadge("tabKal", open.length, false, "noch nicht übernommen");
   }
 
   /* Belegung anlegen / ändern */
@@ -1668,7 +2000,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const prev = belEditId ? belegungen.find((y) => y.id === belEditId) : null;
     const bu = prev ? linkedBuchung(prev) : null;
     $("bl_foot").innerHTML = belConfirmDel
-      ? `<div class="confirm">Belegung löschen?${bu ? " Der Eintrag in der Gratiswaren-Kontrolle bleibt erhalten." : ""} <button type="button" class="btn danger small" id="blDelYes">Ja, löschen</button><button type="button" class="btn small" id="blDelNo">Behalten</button></div>`
+      ? `<div class="confirm">Belegung in den Papierkorb legen?${bu ? " Der Eintrag in der Gratiswaren-Kontrolle bleibt erhalten." : ""} <button type="button" class="btn danger small" id="blDelYes">Ja, löschen</button><button type="button" class="btn small" id="blDelNo">Behalten</button></div>`
       : `${prev ? `<button type="button" class="btn ghost" id="blDel">Löschen</button>` : `<span></span>`}
          <div class="actions">
            ${prev ? `<button type="button" class="btn" id="blCopy">Kopieren</button>` : ""}
@@ -1753,15 +2085,10 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     else if (t.id === "blOpenG") { const prev = belegungen.find((y) => y.id === belEditId); const bu = prev && linkedBuchung(prev); $("dlgBel").close(); if (bu) { setView("gratis"); openDetail(bu.id); } }
     else if (t.id === "blDel") { belConfirmDel = true; renderBelFoot(); }
     else if (t.id === "blDelNo") { belConfirmDel = false; renderBelFoot(); }
-    else if (t.id === "blDelYes") {
-      const prev = belegungen.find((y) => y.id === belEditId);
-      belegungen = belegungen.filter((y) => y.id !== belEditId);
-      const bu = prev && linkedBuchung(prev);
-      try { saveKal(); if (bu) { delete bu.belegungId; saveLocal(); } } catch (err) { return; }
-      $("dlgBel").close(); render(); toast("Belegung gelöscht");
-    }
+    else if (t.id === "blDelYes") { const id = belEditId; $("dlgBel").close(); trashBelegung(id); }
   });
   $("kal").addEventListener("click", (e) => {
+    if (dragJustEnded) { e.preventDefault(); return; }
     const b = e.target.closest("[data-bel]"); if (b) { openBel(b.dataset.bel); return; }
     const c = e.target.closest(".kc"); if (c) openBel(null, { flaecheId: c.dataset.fl, start: c.dataset.w, slot: c.dataset.slot });
   });
@@ -1776,6 +2103,125 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   $("kHints").addEventListener("click", (e) => { const t = e.target.closest("[data-jump]"); if (t) jumpTo(t.dataset.jump, true); });
   $("kNext").addEventListener("click", () => { kalStart = addWeeks(kalStart, 4); zielWeek = null; renderKal(); });
   $("kToday").addEventListener("click", () => { kalStart = mondayOf(today()); zielWeek = null; renderKal(); });
+
+  /* ---------- Belegungen verschieben ----------
+     Touch: gedrückt halten (ca. 0,4 s), dann ziehen. Maus: einfach ziehen. Ziel = Woche unter dem Finger, Fläche/Stellplatz aus der Zeile. */
+  let drag = null, dragJustEnded = false;
+  function weekAtX(x) {
+    const h = [...$("kal").querySelectorAll(".kh")].find((el) => { const r = el.getBoundingClientRect(); return x >= r.left && x < r.right; });
+    return h ? h.dataset.w : null;
+  }
+  function rowAtY(y) {
+    for (const el of $("kal").querySelectorAll(".kl")) {
+      const r = el.getBoundingClientRect();
+      if (y >= r.top && y < r.bottom) { const f = flById(el.dataset.fl); if (!f) return null; const P = lay(f).plaetze; return { f, P, slot: Math.min(P - 1, Math.floor((y - r.top) / (r.height / P))) }; }
+    }
+    return null;
+  }
+  function dropTarget(x, y) {
+    const w = weekAtX(x), r = rowAtY(y); if (!w || !r) return null;
+    const b = drag.bel, L = lay(r.f), start = addWeeks(w, -drag.grab);
+    let format, platz;
+    const fm = L.formate.find((m) => m.n === b.format);
+    if (fm) { const g = Math.min(fm.g, L.plaetze); format = fm.n; platz = Math.max(0, Math.min(r.slot - r.slot % g, L.plaetze - g)); }
+    else { const d = defaultSlot(r.f.id, start, b.wochen, r.slot, b.id); format = d.format; platz = d.platz; }
+    const cand = { ...b, flaecheId: r.f.id, start, format, platz };
+    const same = r.f.id === b.flaecheId && start === b.start && platz === belSlot(b).p && format === belSlot(b).fm.n;
+    return { cand, ok: !conflict(cand), same };
+  }
+  function showZone(t) {
+    let z = $("dropZone");
+    if (!t) { if (z) z.hidden = true; return; }
+    if (!z) { z = document.createElement("div"); z.id = "dropZone"; z.className = "drop-zone"; $("kal").appendChild(z); }
+    const kr = $("kal").getBoundingClientRect(), end = belEnd(t.cand);
+    const cols = [...$("kal").querySelectorAll(".kh")].filter((h) => h.dataset.w >= t.cand.start && h.dataset.w <= end);
+    const lab = $("kal").querySelector(`.kl[data-fl="${t.cand.flaecheId}"]`);
+    if (!cols.length || !lab) { z.hidden = true; return; }
+    const lr = lab.getBoundingClientRect(), sl = belSlot(t.cand), rowH = lr.height / lay(flById(t.cand.flaecheId)).plaetze;
+    const c0 = cols[0].getBoundingClientRect(), c1 = cols[cols.length - 1].getBoundingClientRect();
+    Object.assign(z.style, { left: (c0.left - kr.left + 4) + "px", width: (c1.right - c0.left - 8) + "px", top: (lr.top - kr.top + sl.p * rowH + 4) + "px", height: (sl.g * rowH - 8) + "px" });
+    z.classList.toggle("bad", !t.ok); z.hidden = false;
+    z.textContent = t.ok ? `${belRange(t.cand)}${belFormat(t.cand) ? " · " + belFormat(t.cand) : ""}` : "Hier ist schon belegt";
+  }
+  function startDrag(x, y) {
+    if (!drag || drag.active) return;
+    drag.active = true;
+    const r = drag.kb.getBoundingClientRect(), g = drag.kb.cloneNode(true);
+    g.classList.add("drag-ghost"); g.style.width = Math.min(r.width, 240) + "px"; g.style.height = Math.min(r.height, 110) + "px";
+    document.body.appendChild(g);
+    drag.ghost = g; drag.dx = Math.min(x - r.left, 110); drag.dy = Math.min(y - r.top, 50);
+    drag.kb.classList.add("drag-src");
+    moveDrag(x, y);
+  }
+  function moveDrag(x, y) {
+    drag.lx = x; drag.ly = y;
+    drag.ghost.style.left = (x - drag.dx) + "px"; drag.ghost.style.top = (y - drag.dy) + "px";
+    drag.target = dropTarget(x, y); showZone(drag.target);
+    // am Rand automatisch seitlich weiterscrollen
+    const sc = $("kal").parentElement, r = sc.getBoundingClientRect();
+    drag.auto = x < r.left + 48 ? -12 : x > r.right - 48 ? 12 : 0;
+    if (drag.auto && !drag.raf) {
+      const step = () => {
+        if (!drag || !drag.auto) { if (drag) drag.raf = 0; return; }
+        sc.scrollLeft += drag.auto; drag.target = dropTarget(drag.lx, drag.ly); showZone(drag.target);
+        drag.raf = requestAnimationFrame(step);
+      };
+      drag.raf = requestAnimationFrame(step);
+    }
+  }
+  function endDrag(apply) {
+    if (!drag) return;
+    const d = drag; drag = null;
+    clearTimeout(d.timer); if (d.raf) cancelAnimationFrame(d.raf);
+    if (!d.active) return;
+    dragJustEnded = true; setTimeout(() => { dragJustEnded = false; }, 400);
+    d.ghost.remove(); d.kb.classList.remove("drag-src"); showZone(null);
+    const t = d.target;
+    if (!apply || !t || t.same) return;
+    if (!t.ok) { toast("Dort ist schon etwas belegt – nicht verschoben."); return; }
+    moveBel(d.bel, t.cand);
+  }
+  function moveBel(b, cand) {
+    const alt = { flaecheId: b.flaecheId, start: b.start, format: b.format, platz: b.platz };
+    Object.assign(b, { flaecheId: cand.flaecheId, start: cand.start, format: cand.format, platz: cand.platz });
+    try { saveKal(); } catch (e) { Object.assign(b, alt); return; }
+    render();
+    toastUndo(`Verschoben: ${belArtikel(b) || b.lieferant} → ${flName(b.flaecheId)}${belFormat(b) ? ", " + belFormat(b) : ""}, ${belRange(b)}`, () => {
+      if (conflict({ ...b, ...alt })) { toast("Rückgängig geht nicht – der alte Platz ist inzwischen belegt."); return; }
+      Object.assign(b, alt); try { saveKal(); } catch (e) {} render(); toast("Rückgängig gemacht");
+    });
+  }
+  $("kal").addEventListener("pointerdown", (e) => {
+    const kb = e.target.closest(".kb"); if (!kb || e.button > 0) return;
+    const bel = belegungen.find((x) => x.id === kb.dataset.bel); const w = weekAtX(e.clientX);
+    if (!bel || !w) return;
+    drag = { bel, kb, id: e.pointerId, x0: e.clientX, y0: e.clientY, grab: weekDiff(bel.start, w), active: false, mouse: e.pointerType === "mouse" };
+    if (!drag.mouse) drag.timer = setTimeout(() => startDrag(drag ? drag.x0 : 0, drag ? drag.y0 : 0), 400);
+  });
+  window.addEventListener("pointermove", (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.active) {
+      const dist = Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0);
+      if (drag.mouse && dist > 6) startDrag(e.clientX, e.clientY);
+      else if (!drag.mouse && dist > 10) { clearTimeout(drag.timer); drag = null; }   // war normales Scrollen
+      return;
+    }
+    moveDrag(e.clientX, e.clientY);
+  });
+  window.addEventListener("pointerup", (e) => { if (drag && e.pointerId === drag.id) endDrag(true); });
+  window.addEventListener("pointercancel", (e) => { if (drag && e.pointerId === drag.id) endDrag(false); });
+  // Während des Ziehens die Seite nicht scrollen lassen (iPad/iPhone)
+  document.addEventListener("touchmove", (e) => { if (drag && drag.active) e.preventDefault(); }, { passive: false });
+  $("kal").addEventListener("contextmenu", (e) => { if (e.target.closest(".kb")) e.preventDefault(); });
+
+  // Im Belegungs-Fenster: eine Woche früher/später
+  function shiftBelStart(n) {
+    const sel = $("bl_start"), w = addWeeks(sel.value, n);
+    if (![...sel.options].some((o) => o.value === w)) sel.insertAdjacentHTML(n < 0 ? "afterbegin" : "beforeend", `<option value="${w}">KW ${kw(w)} · ab ${dDE(w)}</option>`);
+    sel.value = w; $("bl_err").hidden = true; syncBel();
+  }
+  $("blEarlier").addEventListener("click", () => shiftBelStart(-1));
+  $("blLater").addEventListener("click", () => shiftBelStart(1));
 
   /* Flächen verwalten */
   let flDraft = [];
@@ -1860,6 +2306,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   $("set_wochen").addEventListener("change", () => { const w = Math.round(num($("set_wochen").value)); if (w >= 1 && w <= 26) { settings.wochen = w; saveExtras(); render(); toast(`Nachhaken nach ${w} ${w === 1 ? "Woche" : "Wochen"}`); } else $("set_wochen").value = settings.wochen; });
   $("set_absender").addEventListener("change", () => { settings.absender = $("set_absender").value.trim(); saveExtras(); });
   $("set_land").addEventListener("change", () => { settings.land = $("set_land").value; saveExtras(); renderKal(); toast(settings.land ? "Regionale Feiertage übernommen" : "Nur bundesweite Feiertage"); });
+  $("set_mode").addEventListener("change", () => { settings.darstellung = $("set_mode").value; applyMode(); saveExtras(); });
+  function applyMode() { document.documentElement.dataset.mode = settings.darstellung || "hell"; }
   $("set_anl").addEventListener("change", () => { settings.anlaesse = $("set_anl").checked; saveExtras(); renderKal(); });
 
   /* Artikel verwalten */
@@ -1975,7 +2423,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   $("k_lieferant").addEventListener("input", syncKonHaupt);
   function renderKonFoot() {
     $("k_foot").innerHTML = konConfirmDel
-      ? `<div class="confirm">Kontakt löschen? <button type="button" class="btn danger small" id="kDelYes">Ja, löschen</button><button type="button" class="btn small" id="kDelNo">Behalten</button></div>`
+      ? `<div class="confirm">Kontakt in den Papierkorb legen? <button type="button" class="btn danger small" id="kDelYes">Ja, löschen</button><button type="button" class="btn small" id="kDelNo">Behalten</button></div>`
       : `${konEditId ? `<button type="button" class="btn ghost" id="kDel">Löschen</button>` : `<span></span>`}<button type="submit" class="btn primary">Speichern</button>`;
   }
   $("konForm").addEventListener("submit", (e) => {
@@ -2008,7 +2456,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     const t = e.target.closest("button"); if (!t) return;
     if (t.id === "kDel") { konConfirmDel = true; renderKonFoot(); }
     else if (t.id === "kDelNo") { konConfirmDel = false; renderKonFoot(); }
-    else if (t.id === "kDelYes") { kontakte = kontakte.filter((x) => x.id !== konEditId); saveExtras(); render(); $("dlgKon").close(); toast("Kontakt gelöscht"); }
+    else if (t.id === "kDelYes") { const id = konEditId; $("dlgKon").close(); trashKontakt(id); }
   });
   $("btnKonNew").addEventListener("click", () => openKon(null));
 
@@ -2047,7 +2495,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
         ${andere.length ? `<div class="s">${lief ? "Auch für" : "Zuständig für"}: ${esc(andere.join(", "))}</div>` : ""}
         <div class="links">${k.telefon ? `<a href="tel:${esc(k.telefon.replace(/[^+\d]/g, ""))}">${esc(k.telefon)}</a>` : ""}${k.email ? `<a href="mailto:${esc(k.email)}">${esc(k.email)}</a>` : ""}${!k.telefon && !k.email ? '<span class="s">Telefon und E-Mail noch nicht eingetragen</span>' : ""}</div></div>
       <div class="acts">${actions}</div>
-      ${telDelId === k.id ? `<div class="confirm">${esc(k.name)}${k.lieferant ? ` (${esc(k.lieferant)})` : ""} ganz löschen? <button type="button" class="btn danger small" data-teldelyes="${esc(k.id)}">Ja, löschen</button><button type="button" class="btn small" data-teldelno="1">Behalten</button></div>` : ""}
+      ${telDelId === k.id ? `<div class="confirm">${esc(k.name)}${k.lieferant ? ` (${esc(k.lieferant)})` : ""} in den Papierkorb legen? <button type="button" class="btn danger small" data-teldelyes="${esc(k.id)}">Ja, löschen</button><button type="button" class="btn small" data-teldelno="1">Behalten</button></div>` : ""}
     </div>`;
   }
   function renderTel() {
@@ -2070,7 +2518,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     else if (t.dataset.konnew != null) openKon(null, t.dataset.konnew);
     else if (t.dataset.teldel) { telDelId = t.dataset.teldel; renderTel(); }
     else if (t.dataset.teldelno) { telDelId = null; renderTel(); }
-    else if (t.dataset.teldelyes) { kontakte = kontakte.filter((x) => x.id !== t.dataset.teldelyes); telDelId = null; saveExtras(); render(); toast("Kontakt gelöscht"); }
+    else if (t.dataset.teldelyes) { telDelId = null; trashKontakt(t.dataset.teldelyes); }
   });
 
   /* ---------- Lieferanten ---------- */
@@ -2093,7 +2541,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   function renderLief() {
     const q = liefQuery.trim().toLowerCase();
     const all = lieferanten(), list = all.filter((g) => !q || g.name.toLowerCase().includes(q) || [...g.kontakte].join(" ").toLowerCase().includes(q));
-    $("tabLief").textContent = "Lieferanten";
+
     if (!all.length) { $("liefList").innerHTML = `<div class="empty"><strong>Noch keine Lieferanten</strong>Sie erscheinen hier, sobald du eine Gratisware, eine Belegung oder einen Ansprechpartner anlegst.</div>`; return; }
     if (!list.length) { $("liefList").innerHTML = `<div class="empty"><strong>Kein Lieferant gefunden</strong>Suche anpassen.</div>`; return; }
     $("liefList").innerHTML = list.map((g) => `<button type="button" class="row" data-lief="${esc(g.key)}">
@@ -2174,7 +2622,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       try { await navigator.share({ title: `Gratiswaren ${g.name}`, text }); return; }
       catch (err) { if (err && err.name === "AbortError") return; }
     }
-    $("tText").value = text; $("dlgText").showModal();
+    $("tTitle").textContent = "Aufstellung"; $("tText").value = text; $("dlgText").showModal();
   });
   $("tCopy").addEventListener("click", () => {
     const ta = $("tText");
@@ -2195,7 +2643,7 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   };
   const SYNC_KEY = "gratiswaren-sync-uid";
   let fdb = null, fauth = null, user = null, syncOn = false, linking = false, pending = 0, syncErr = "", authMsg = "", unsubs = [];
-  const remote = { buchungen: new Map(), belegungen: new Map(), meta: new Map() };
+  const remote = { buchungen: new Map(), belegungen: new Map(), meta: new Map(), papierkorb: new Map() };
   const clean = (o) => JSON.parse(JSON.stringify(o));
   const stable = (o) => JSON.stringify(o, (k, v) => v && typeof v === "object" && !Array.isArray(v) ? Object.keys(v).sort().reduce((r, x) => (r[x] = v[x], r), {}) : v);
   const uref = () => fdb.collection("users").doc(user.uid);
@@ -2238,7 +2686,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   function applyRemote(fn) {
     const was = syncOn; syncOn = false;
     try { fn(); localStorage.setItem(LS_KEY, JSON.stringify(items)); localStorage.setItem(FL_KEY, JSON.stringify(flaechen)); localStorage.setItem(BEL_KEY, JSON.stringify(belegungen));
-      localStorage.setItem(SET_KEY, JSON.stringify(settings)); localStorage.setItem(ART_KEY, JSON.stringify(artikel)); localStorage.setItem(KON_KEY, JSON.stringify(kontakte)); } catch (e) {}
+      localStorage.setItem(SET_KEY, JSON.stringify(settings)); localStorage.setItem(ART_KEY, JSON.stringify(artikel)); localStorage.setItem(KON_KEY, JSON.stringify(kontakte));
+      localStorage.setItem(TRASH_KEY, JSON.stringify(papierkorb)); localStorage.setItem(NOTE_KEY, JSON.stringify(notizen)); } catch (e) {}
     syncOn = was;
     fillArtList(); render();
     if (detailId && $("dlgDetail").open) renderDetail();
@@ -2257,6 +2706,12 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
       remote.belegungen = new Map(arr.map((o) => [o.id, stable(clean(o))]));
       applyRemote(() => { belegungen = arr; });
     }, onErr));
+    unsubs.push(uref().collection("papierkorb").onSnapshot((snap) => {
+      const arr = snap.docs.map((d) => ({ ...d.data(), id: d.id }));
+      remote.papierkorb = new Map(arr.map((o) => [o.id, stable(clean(o))]));
+      applyRemote(() => { papierkorb = arr; });
+      purgeTrash(); updateMoreCounts(); if ($("dlgTrash").open) renderTrash();
+    }, onErr));
     unsubs.push(uref().collection("fotos").onSnapshot((snap) => {
       const list = snap.docs.map((d) => ({ ...d.data(), id: d.id }));
       fotosReady.then(() => mergeRemoteFotos(list));
@@ -2267,15 +2722,17 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
         if (m.flaechen && Array.isArray(m.flaechen.list)) flaechen = m.flaechen.list;
         if (m.artikel && Array.isArray(m.artikel.list)) artikel = m.artikel.list;
         if (m.kontakte && Array.isArray(m.kontakte.list)) kontakte = normAll(m.kontakte.list);
+        if (m.notizen && Array.isArray(m.notizen.list)) notizen = m.notizen.list;
         if (m.einstellungen) settings = { ...settings, ...m.einstellungen };
       });
+      updateMoreCounts(); if ($("dlgIdee").open) renderNotizen();
       if (migrateFlaechen()) { try { saveKal(); } catch (e) {} render(); }
     }, onErr));
   }
   // Beim ersten Anmelden auf einem Gerät: Daten vom Gerät und aus der Cloud zusammenführen
   async function firstLink() {
     linking = true; renderSync();
-    const [bu, be, me] = await Promise.all(["buchungen", "belegungen", "meta"].map((n) => uref().collection(n).get()));
+    const [bu, be, me, pk] = await Promise.all(["buchungen", "belegungen", "meta", "papierkorb"].map((n) => uref().collection(n).get()));
     const rBu = bu.docs.map((d) => ({ ...d.data(), id: d.id })), rBe = be.docs.map((d) => ({ ...d.data(), id: d.id }));
     const rMe = {}; me.docs.forEach((d) => rMe[d.id] = d.data());
     remote.buchungen = new Map(rBu.map((o) => [o.id, stable(clean(o))]));
@@ -2295,8 +2752,16 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
     }
     if (rMe.artikel && Array.isArray(rMe.artikel.list)) { const m = new Map(artikel.map((a) => [artKey(a.name), a])); rMe.artikel.list.forEach((a) => m.set(artKey(a.name), a)); artikel = [...m.values()]; }
     if (rMe.einstellungen) settings = { ...settings, ...rMe.einstellungen };
+    // Papierkorb zusammenführen; was dort liegt, wird nicht wiederbelebt (Löschen gilt auf allen Geräten)
+    const rPk = pk.docs.map((d) => ({ ...d.data(), id: d.id }));
+    remote.papierkorb = new Map(rPk.map((o) => [o.id, stable(clean(o))]));
+    { const m = new Map(rPk.map((o) => [o.id, o])); papierkorb.forEach((o) => { if (!m.has(o.id)) m.set(o.id, o); }); papierkorb = [...m.values()]; }
+    const weg = (typ) => new Set(papierkorb.filter((t) => t.typ === typ && t.daten).map((t) => t.daten.id));
+    const wG = weg("gratisware"), wB = weg("belegung"), wK = weg("kontakt");
+    items = items.filter((x) => !wG.has(x.id)); belegungen = belegungen.filter((x) => !wB.has(x.id)); kontakte = kontakte.filter((x) => !wK.has(x.id));
+    if (rMe.notizen && Array.isArray(rMe.notizen.list)) { const m = new Map(notizen.map((n) => [n.id, n])); rMe.notizen.list.forEach((n) => m.set(n.id, n)); notizen = [...m.values()]; }
     syncOn = true;
-    saveLocal(); saveKal(); saveExtras();          // schickt alles, was in der Cloud noch fehlt
+    saveLocal(); saveKal(); saveExtras(); saveTrash(); saveNotizen(); purgeTrash();   // schickt alles, was in der Cloud noch fehlt
     try { localStorage.setItem(SYNC_KEY, user.uid); } catch (e) {}
     linking = false;
     fillArtList(); render();
@@ -2392,20 +2857,448 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   window.addEventListener("offline", renderSync);
 
   /* Reiter */
+  function setTabBadge(id, n, red, title) {
+    const b = $(id).querySelector(".tb"); if (!b) return;
+    b.hidden = !n; b.textContent = n || ""; b.title = title || ""; b.classList.toggle("red", !!red);
+  }
+  const VIEW_TITEL = { start: "Diese Woche", kalender: "Aktionskalender", gratis: "Gratisware", lieferanten: "Lieferanten", telefon: "Telefonbuch", auswertung: "Jahresauswertung" };
+  const VIEW_SEC = { start: "viewStart", kalender: "viewKal", gratis: "viewGratis", lieferanten: "viewLief", telefon: "viewTel", auswertung: "viewAusw" };
   function setView(v) {
-    view = ["kalender", "lieferanten", "telefon"].includes(v) ? v : "gratis";
-    $("viewKal").hidden = view !== "kalender"; $("viewGratis").hidden = view !== "gratis"; $("viewLief").hidden = view !== "lieferanten"; $("viewTel").hidden = view !== "telefon";
-    $("tabKal").setAttribute("aria-selected", view === "kalender"); $("tabGratis").setAttribute("aria-selected", view === "gratis"); $("tabLief").setAttribute("aria-selected", view === "lieferanten"); $("tabTel").setAttribute("aria-selected", view === "telefon");
+    view = VIEW_SEC[v] ? v : "start";
+    Object.entries(VIEW_SEC).forEach(([k, id]) => { $(id).hidden = k !== view; });
+    const grp = ["lieferanten", "telefon", "auswertung"].includes(view);
+    $("tabStart").setAttribute("aria-selected", view === "start"); $("tabKal").setAttribute("aria-selected", view === "kalender");
+    $("tabGratis").setAttribute("aria-selected", view === "gratis"); $("tabLief").setAttribute("aria-selected", grp);
+    $("liefSub").hidden = !grp;
+    $("liefSub").querySelectorAll("[data-view]").forEach((x) => x.setAttribute("aria-pressed", x.dataset.view === view));
+    $("btnNew").hidden = view === "auswertung";
     $("btnNew").textContent = view === "kalender" ? "+ Fläche belegen" : view === "telefon" ? "+ Neuer Kontakt" : "+ Neue Gratisware";
-    try { localStorage.setItem("gratiswaren-ansicht", view); } catch (e) {}
+    $("viewTitle").textContent = VIEW_TITEL[view];
+    window.scrollTo(0, 0);
     if (location.hash !== "#" + view) history.replaceState(null, "", "#" + view);
   }
+  $("liefSub").addEventListener("click", (e) => { const t = e.target.closest("[data-view]"); if (t) setView(t.dataset.view); });
+
+  /* ---------- Startseite „Diese Woche“: nur das Wichtigste, alles andere bleibt in den Bereichen ---------- */
+  function renderStart() {
+    const cur = mondayOf(today()), next = addWeeks(cur, 1);
+    const rows = items.map((b) => ({ b, c: calcFull(b) }));
+    const n = { over: 0, anf: 0, buchen: 0, ohne: belegungen.filter((b) => !linkedBuchung(b)).length };
+    let offen = 0;
+    rows.forEach((r) => { if (r.c.over) n.over++; if (nochAnfordern(r)) n.anf++; if (r.c.key === "buchen") n.buchen++; if (r.c.gratiswert != null) offen += r.c.offen; });
+    const tile = (v, label, col, go) => `<button type="button" class="todo-t" style="--c:${col}" data-go="${go}"><b>${v}</b><span>${label}</span></button>`;
+    let h = `<div class="note" style="margin:-8px 0 12px">KW ${kw(cur)} · ${dDE(cur)} – ${dDE(addDays(cur, 6))}</div><div class="todo">`
+      + tile(fmt(r2(offen)), "Gratisware noch offen", "var(--open)", "gratis:alle")
+      + (n.over ? tile(n.over, "überfällig – nachhaken", "var(--danger)", "gratis:nachhaken") : "")
+      + (n.anf ? tile(n.anf, "beim Außendienst anfordern", "var(--warn)", "gratis:anfordern") : "")
+      + (n.buchen ? tile(n.buchen, "geliefert – noch verbuchen", "var(--warn)", "gratis:buchen") : "")
+      + (n.ohne ? tile(n.ohne, n.ohne === 1 ? "Belegung ohne Gratisware" : "Belegungen ohne Gratisware", "#8a94a3", "kalender") : "")
+      + `</div>`;
+    const blk = (b, rechts) => {
+      const bu = linkedBuchung(b), c = bu ? calcFull(bu) : null;
+      return `<button type="button" class="st-it ${c ? c.cls : "nolink"}" data-sbel="${esc(b.id)}">
+        <span class="fm">${esc(belFormat(b) || "Fläche")}</span>
+        <span><div class="t">${esc(belArtikel(b) || b.lieferant || "Ohne Artikel")}</div><div class="s">${esc(b.lieferant || "")} · ${c ? c.status : "Gratisware fehlt"}</div></span>
+        <span class="r">${rechts}</span></button>`;
+    };
+    // Was steht diese Woche wo?
+    const jetzt = belegungen.filter((b) => b.start <= cur && belEnd(b) >= cur);
+    let fl = ""; const frei = [];
+    flaechen.forEach((f) => {
+      const list = jetzt.filter((b) => b.flaecheId === f.id).sort((a, b) => belSlot(a).p - belSlot(b).p);
+      const fp = freiePlaetze(f, cur), P = lay(f).plaetze;
+      if (fp > 0) frei.push(P > 1 ? `${f.name} (${fp} von ${P})` : f.name);
+      if (list.length) fl += `<div class="st-fl"><div class="n">${esc(f.name)}</div>${list.map((b) => blk(b, belEnd(b) === cur ? "endet diese Woche" : "bis KW " + kw(belEnd(b)))).join("")}</div>`;
+    });
+    const cardFl = `<section class="card"><div class="card-h"><h2>Diese Woche auf den Flächen</h2><button type="button" class="linkbtn2" data-go="kalender">Kalender ›</button></div>
+      ${fl || `<div class="st-empty">Diese Woche ist keine Fläche belegt.</div>`}
+      ${frei.length ? `<div class="st-free">Noch frei: ${frei.map(esc).join(", ")}</div>` : ""}</section>`;
+    // Nächste Woche: was endet, was kommt neu? (Was diese Woche endet, steht schon oben)
+    const endet = belegungen.filter((b) => belEnd(b) === next).sort((a, b) => flName(a.flaecheId).localeCompare(flName(b.flaecheId)));
+    const neu = belegungen.filter((b) => b.start === next).sort((a, b) => flName(a.flaecheId).localeCompare(flName(b.flaecheId)));
+    const cardUm = `<section class="card"><div class="card-h"><h2>Nächste Woche</h2><span class="sub">KW ${kw(next)} · ${shortDE(next)}–${shortDE(addDays(next, 6))}</span></div>
+      ${endet.length ? `<div class="note-q" style="margin-top:0">Aktion endet</div>` + endet.map((b) => blk(b, `${esc(flName(b.flaecheId))}<br>bis So ${shortDE(addDays(next, 6))}`)).join("") : ""}
+      ${neu.length ? `<div class="note-q" style="margin-top:${endet.length ? 12 : 0}px">Neu auf der Fläche – aufbauen</div>` + neu.map((b) => blk(b, esc(flName(b.flaecheId)))).join("") : ""}
+      ${!endet.length && !neu.length ? `<div class="st-empty">Nächste Woche endet keine Aktion und nichts Neues startet.</div>` : ""}</section>`;
+    // Welche Gratisware steht noch aus?
+    const aus = rows.filter((r) => r.c.restAnspruch > 0 || r.c.key === "buchen")
+      .sort((a, b) => (b.c.over - a.c.over) || (b.c.tage || 0) - (a.c.tage || 0) || ((nochAnfordern(b) ? 1 : 0) - (nochAnfordern(a) ? 1 : 0)) || String(a.c.due || "").localeCompare(String(b.c.due || "")));
+    const cardAus = `<section class="card"><div class="card-h"><h2>Gratisware ausstehend</h2>${aus.length ? `<button type="button" class="linkbtn2" data-go="gratis:alle">Alle ${aus.length} ›</button>` : ""}</div>
+      ${aus.slice(0, 6).map(({ b, c }) => `<button type="button" class="st-row" data-sgr="${esc(b.id)}">
+          <span><div class="t">${esc(b.lieferant || "?")} · ${esc(b.bestellartikel || "")}</div>
+          <div class="s">${c.restAnspruch > 0 ? `noch ${units(c.restAnspruch, b.gEinheit)} (${fmt(r2(c.restAnspruch * (num(b.gPreis) || 0)))})` : "geliefert – noch verbuchen"}${!b.angefordert && c.restAnspruch > 0 ? ` · <b style="color:var(--warn)">nicht angefordert</b>` : ""}${c.due && !c.over && c.restAnspruch > 0 ? ` · nachhaken ab ${dDE(c.due)}` : ""}</div></span>
+          <span class="pill ${c.cls}">${c.status}</span></button>`).join("") || `<div class="st-empty">Alles geliefert – nichts steht aus.</div>`}</section>`;
+    // Nächster Feiertag nur, wenn er in den nächsten 4 Wochen liegt
+    let feier = "";
+    const evs = eventsBetween(today(), addDays(today(), 28));
+    if (evs.length && flaechen.length) {
+      const w = mondayOf(evs[0].d), grp = evs.filter((e) => mondayOf(e.d) === w), diff = weekDiff(cur, w);
+      const nf = flaechen.reduce((a, f) => a + freiePlaetze(f, w), 0), na = flaechen.reduce((a, f) => a + lay(f).plaetze, 0);
+      feier = `<button type="button" class="hint-c" data-sjump="${w}" style="--c:${nf ? (diff <= 3 ? "var(--danger)" : "var(--warn)") : "var(--ok)"}"><div class="t">${esc(uniq(grp.map((e) => e.s)).join(" · "))}</div><div class="s">KW ${kw(w)} · ${diff === 0 ? "diese Woche" : diff === 1 ? "nächste Woche" : `in ${diff} Wochen`}</div><div class="f">${nf ? `${nf} von ${na} Plätzen frei` : "Alles belegt"}</div></button>`;
+    }
+    h += `<div class="st-grid"><div class="st-col">${cardFl}${cardUm}</div><div class="st-col">${feier}${cardAus}</div></div>`;
+    $("startBody").innerHTML = h;
+  }
+  $("startBody").addEventListener("click", (e) => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.dataset.go) { const [v, f] = t.dataset.go.split(":"); if (f) filter = f; setView(v); if (f) render(); }
+    else if (t.dataset.sbel) openBel(t.dataset.sbel);
+    else if (t.dataset.sgr) openDetail(t.dataset.sgr);
+    else if (t.dataset.sjump) { setView("kalender"); jumpTo(t.dataset.sjump, true); }
+  });
+
+  /* ---------- Papierkorb ----------
+     Gelöschtes wird samt Inhalt hierher verschoben (eigene Firestore-Sammlung „papierkorb“), damit Löschen
+     auf allen Geräten gleich wirkt. Nach 30 Tagen entfernt jedes Gerät den Eintrag endgültig. */
+  const TRASH_KEY = "gratiswaren-papierkorb", TRASH_TAGE = 30;
+  const TYP_NAME = { gratisware: "Gratisware", belegung: "Belegung", kontakt: "Kontakt" };
+  let papierkorb = [], trashAsk = null;
+  function loadTrash() { try { const t = JSON.parse(localStorage.getItem(TRASH_KEY) || "[]"); papierkorb = Array.isArray(t) ? t : []; } catch (e) { papierkorb = []; } }
+  function saveTrash() { try { localStorage.setItem(TRASH_KEY, JSON.stringify(papierkorb)); } catch (e) {} pushCollection("papierkorb", papierkorb); updateMoreCounts(); }
+  function purgeTrash() {
+    const grenze = new Date(Date.now() - TRASH_TAGE * 864e5).toISOString(), n = papierkorb.length;
+    papierkorb = papierkorb.filter((t) => String(t.geloescht) >= grenze);
+    if (papierkorb.length !== n) saveTrash();
+  }
+  function inTrash(typ, obj, titel, info) {
+    const e = { id: uid(), typ, titel, info, geloescht: new Date().toISOString(), daten: clean(obj) };
+    papierkorb.push(e); saveTrash(); return e;
+  }
+  const belInfo = (b) => `${flName(b.flaecheId)}${belFormat(b) ? ", " + belFormat(b) : ""} · ${belRange(b)}/${isoWeek(b.start).y}`;
+  function trashBuchung(id) {
+    const b = items.find((x) => x.id === id); if (!b) return;
+    const e = inTrash("gratisware", b, `${b.bestellartikel || "Gratisware"} · ${b.lieferant || "?"}`, [b.datum ? "vom " + dDE(b.datum) : "", "Gratiswert " + fmt(calc(b).gratiswert)].filter(Boolean).join(" · "));
+    belegungen.forEach((x) => { if (x.buchungId === id) delete x.buchungId; });
+    items = items.filter((x) => x.id !== id);
+    try { saveKal(); saveLocal(); } catch (err) {}
+    render();
+    toastUndo("Gratisware liegt im Papierkorb", () => restoreTrash(e.id));
+  }
+  function trashBelegung(id) {
+    const b = belegungen.find((x) => x.id === id); if (!b) return;
+    const e = inTrash("belegung", b, belArtikel(b) || b.lieferant || "Belegung", belInfo(b));
+    const bu = linkedBuchung(b);
+    belegungen = belegungen.filter((x) => x.id !== id);
+    try { saveKal(); if (bu) { delete bu.belegungId; saveLocal(); } } catch (err) {}
+    render();
+    toastUndo("Belegung liegt im Papierkorb", () => restoreTrash(e.id));
+  }
+  function trashKontakt(id) {
+    const k = kontakte.find((x) => x.id === id); if (!k) return;
+    const e = inTrash("kontakt", k, k.name, konLiefs(k).join(", ") || "Ohne Zuordnung");
+    kontakte = kontakte.filter((x) => x.id !== id); saveExtras(); render();
+    toastUndo("Kontakt liegt im Papierkorb", () => restoreTrash(e.id));
+  }
+  function restoreTrash(tid) {
+    const e = papierkorb.find((x) => x.id === tid); if (!e) return;
+    const d = { ...e.daten };
+    if (e.typ === "gratisware") {
+      if (!items.some((x) => x.id === d.id)) {
+        const bel = d.belegungId && belegungen.find((x) => x.id === d.belegungId);
+        if (bel && (!bel.buchungId || bel.buchungId === d.id)) bel.buchungId = d.id; else delete d.belegungId;
+        items.push(d);
+        try { saveKal(); saveLocal(); } catch (err) { return; }
+      }
+    } else if (e.typ === "belegung") {
+      if (!flById(d.flaecheId)) { toast("Die Fläche gibt es nicht mehr – Wiederherstellen nicht möglich."); return; }
+      if (conflict(d)) { toast("Der Platz ist in dieser Zeit inzwischen belegt. Verschiebe zuerst die andere Belegung."); return; }
+      const bu = d.buchungId && items.find((x) => x.id === d.buchungId);
+      if (bu && (!bu.belegungId || bu.belegungId === d.id)) bu.belegungId = d.id; else delete d.buchungId;
+      belegungen.push(d);
+      try { saveKal(); if (bu) saveLocal(); } catch (err) { return; }
+    } else if (e.typ === "kontakt") {
+      if (!kontakte.some((x) => x.id === d.id)) { kontakte.push(normKon(d)); saveExtras(); }
+    }
+    papierkorb = papierkorb.filter((x) => x.id !== tid); saveTrash();
+    render(); if ($("dlgTrash").open) renderTrash();
+    toast(`Wiederhergestellt: ${e.titel}`);
+  }
+  function renderTrash() {
+    const list = [...papierkorb].sort((a, b) => String(b.geloescht).localeCompare(String(a.geloescht)));
+    $("trashList").innerHTML = list.map((e) => {
+      const rest = Math.max(0, TRASH_TAGE - Math.floor((Date.now() - new Date(e.geloescht)) / 864e5));
+      return `<div class="kon">
+        <div><div class="t"><span class="typpill">${TYP_NAME[e.typ] || esc(e.typ)}</span>${esc(e.titel || "")}</div>
+          <div class="s">${esc(e.info || "")}</div>
+          <div class="s">gelöscht am ${dDE(String(e.geloescht).slice(0, 10))} · wird in ${rest} ${rest === 1 ? "Tag" : "Tagen"} endgültig entfernt</div></div>
+        <div class="acts"><button type="button" class="btn primary small" data-restore="${esc(e.id)}">Wiederherstellen</button><button type="button" class="btn ghost small" data-tdel="${esc(e.id)}">Endgültig löschen</button></div>
+        ${trashAsk === e.id ? `<div class="confirm">Endgültig löschen? Das lässt sich nicht rückgängig machen. <button type="button" class="btn danger small" data-tdelyes="${esc(e.id)}">Ja, endgültig</button><button type="button" class="btn small" data-tno="1">Behalten</button></div>` : ""}
+      </div>`;
+    }).join("") || `<div class="empty" style="padding:22px"><strong>Der Papierkorb ist leer</strong>Gelöschte Gratisware, Belegungen und Kontakte landen hier und lassen sich 30 Tage lang wiederherstellen.</div>`;
+    $("trashFoot").innerHTML = trashAsk === "alle"
+      ? `<div class="confirm">Alles endgültig löschen? <button type="button" class="btn danger small" data-tallyes="1">Ja, Papierkorb leeren</button><button type="button" class="btn small" data-tno="1">Abbrechen</button></div>`
+      : `<span class="note" style="margin:0">${list.length} ${list.length === 1 ? "Eintrag" : "Einträge"}</span>${list.length ? `<button type="button" class="btn ghost" data-tall="1">Papierkorb leeren</button>` : ""}`;
+  }
+  function openTrash() { trashAsk = null; renderTrash(); $("dlgTrash").showModal(); }
+  $("dlgTrash").addEventListener("click", (e) => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.dataset.restore) restoreTrash(t.dataset.restore);
+    else if (t.dataset.tdel) { trashAsk = t.dataset.tdel; renderTrash(); }
+    else if (t.dataset.tdelyes) { papierkorb = papierkorb.filter((x) => x.id !== t.dataset.tdelyes); trashAsk = null; saveTrash(); renderTrash(); toast("Endgültig gelöscht"); }
+    else if (t.dataset.tall) { trashAsk = "alle"; renderTrash(); }
+    else if (t.dataset.tallyes) { papierkorb = []; trashAsk = null; saveTrash(); renderTrash(); toast("Papierkorb geleert"); }
+    else if (t.dataset.tno) { trashAsk = null; renderTrash(); }
+  });
+  $("btnTrash").addEventListener("click", () => { $("dlgData").close(); openTrash(); });
+  function updateMoreCounts() {
+    const n = papierkorb.length, o = notizen.filter((x) => !x.erledigt).length;
+    $("trashCount").textContent = n ? `${n} ${n === 1 ? "Eintrag" : "Einträge"} · 30 Tage wiederherstellbar` : "leer";
+    $("ideenCount").textContent = o ? `${o} offen` : notizen.length ? "alles erledigt" : "noch keine";
+  }
+
+  /* ---------- Ideen & Fehler ---------- */
+  const NOTE_KEY = "gratiswaren-notizen";
+  let notizen = [], noteAsk = null;
+  function loadNotizen() { try { const n = JSON.parse(localStorage.getItem(NOTE_KEY) || "[]"); notizen = Array.isArray(n) ? n : []; } catch (e) { notizen = []; } }
+  function saveNotizen() { try { localStorage.setItem(NOTE_KEY, JSON.stringify(notizen)); } catch (e) {} pushMeta("notizen", { list: notizen }); updateMoreCounts(); }
+  function renderNotizen() {
+    const list = [...notizen].sort((a, b) => (a.erledigt ? 1 : 0) - (b.erledigt ? 1 : 0) || String(b.erstellt).localeCompare(String(a.erstellt)));
+    const offen = notizen.filter((x) => !x.erledigt).length;
+    $("iListHead").textContent = notizen.length ? `Notizen (${offen} offen)` : "Notizen";
+    $("ideeList").innerHTML = list.map((n) => `<div class="kon${n.erledigt ? " done" : ""}">
+        <div><div class="t"><span class="typpill ${esc(String(n.art).toLowerCase())}">${esc(n.art)}</span>${dDE(String(n.erstellt).slice(0, 10))}${n.bereich ? ` · ${esc(n.bereich)}` : ""}</div>
+          ${n.wollte ? `<div class="note-q">Was wollte ich machen?</div><div class="note-a">${esc(n.wollte)}</div>` : ""}
+          ${n.problem ? `<div class="note-q">Was hat nicht funktioniert?</div><div class="note-a">${esc(n.problem)}</div>` : ""}
+          ${n.einfacher ? `<div class="note-q">Was wäre einfacher gewesen?</div><div class="note-a">${esc(n.einfacher)}</div>` : ""}</div>
+        <div class="acts"><button type="button" class="btn small" data-ndone="${esc(n.id)}">${n.erledigt ? "Wieder offen" : "Erledigt"}</button><button type="button" class="btn ghost small" data-ndel="${esc(n.id)}">Löschen</button></div>
+        ${noteAsk === n.id ? `<div class="confirm">Notiz löschen? <button type="button" class="btn danger small" data-ndelyes="${esc(n.id)}">Ja, löschen</button><button type="button" class="btn small" data-nno="1">Behalten</button></div>` : ""}
+      </div>`).join("") || `<div class="st-empty">Noch keine Notizen. Schreib oben auf, was dir auffällt – Stichworte reichen.</div>`;
+  }
+  function openIdee() { noteAsk = null; $("i_err").hidden = true; renderNotizen(); $("dlgIdee").showModal(); }
+  $("ideeForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const n = { id: uid(), art: document.querySelector('input[name="iart"]:checked').value, wollte: $("i_wollte").value.trim(), problem: $("i_problem").value.trim(),
+      einfacher: $("i_einfacher").value.trim(), bereich: VIEW_TITEL[view] || "", erstellt: new Date().toISOString(), erledigt: false };
+    if (!n.wollte && !n.problem && !n.einfacher) { $("i_err").textContent = "Bitte mindestens ein Feld ausfüllen."; $("i_err").hidden = false; return; }
+    notizen.push(n); saveNotizen();
+    ["i_wollte", "i_problem", "i_einfacher"].forEach((id) => { $(id).value = ""; }); $("i_err").hidden = true;
+    renderNotizen(); toast("Notiz gespeichert");
+  });
+  $("dlgIdee").addEventListener("click", (e) => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.dataset.ndone) { const n = notizen.find((x) => x.id === t.dataset.ndone); if (n) { n.erledigt = !n.erledigt; saveNotizen(); renderNotizen(); } }
+    else if (t.dataset.ndel) { noteAsk = t.dataset.ndel; renderNotizen(); }
+    else if (t.dataset.ndelyes) { notizen = notizen.filter((x) => x.id !== t.dataset.ndelyes); noteAsk = null; saveNotizen(); renderNotizen(); }
+    else if (t.dataset.nno) { noteAsk = null; renderNotizen(); }
+    else if (t.id === "iShare") shareNotizen();
+  });
+  async function shareNotizen() {
+    const offen = notizen.filter((x) => !x.erledigt);
+    if (!offen.length) { toast("Keine offenen Notizen."); return; }
+    const text = ["Gratiswaren-App – offene Ideen & Fehler", `Stand ${dDE(today())}`, "",
+      ...offen.map((n, i) => [`${i + 1}. [${n.art}] ${dDE(String(n.erstellt).slice(0, 10))}${n.bereich ? " · " + n.bereich : ""}`,
+        n.wollte ? `   Wollte: ${n.wollte}` : "", n.problem ? `   Problem: ${n.problem}` : "", n.einfacher ? `   Einfacher wäre: ${n.einfacher}` : ""].filter(Boolean).join("\n"))].join("\n");
+    if (navigator.share) { try { await navigator.share({ title: "Ideen & Fehler", text }); return; } catch (err) { if (err && err.name === "AbortError") return; } }
+    $("tTitle").textContent = "Ideen & Fehler"; $("tText").value = text; $("dlgText").showModal();
+  }
+  $("btnIdee").addEventListener("click", openIdee);
+  $("btnIdeen").addEventListener("click", () => { $("dlgData").close(); openIdee(); });
+
+  /* ---------- Jahresauswertung ----------
+     Eine Aktion zählt zum Jahr ihres Starts auf der Fläche, ohne Fläche zum Datum der Vereinbarung.
+     Alle Euro-Werte zum Einkaufspreis der Gratisware (Preis je Gratis-Einheit). */
+  let auswJahr = null;
+  const jahrVon = (b) => { const x = belOf(b); return String((x && x.start) || b.datum || b.erstellt || "").slice(0, 4); };
+  function auswAgg(jahr) {
+    const m = new Map();
+    items.forEach((b) => {
+      if (b.beispiel || jahrVon(b) !== String(jahr)) return;
+      const c = calc(b); if (c.gratiswert == null) return;
+      const k = lkey(b.lieferant) || "–";
+      if (!m.has(k)) m.set(k, { key: k, name: String(b.lieferant || "Ohne Lieferant").trim(), n: 0, einkauf: 0, gratis: 0, geliefert: 0 });
+      const g = m.get(k); g.n++; g.einkauf += c.bestellwert || 0; g.gratis += c.gratiswert; g.geliefert += c.geliefertWert;
+    });
+    m.forEach((g) => { ["einkauf", "gratis", "geliefert"].forEach((f) => { g[f] = r2(g[f]); }); g.offen = r2(Math.max(0, g.gratis - g.geliefert)); });
+    return m;
+  }
+  const sumF = (m, f) => r2([...m.values()].reduce((a, g) => a + g[f], 0));
+  const pctTxt = (a, b) => b ? nf.format(Math.round(a / b * 100)) + " %" : "–";
+  function deltaTxt(a, b) {
+    if (!b) return a ? `<span class="delta-up">neu</span>` : "–";
+    const d = Math.round((a - b) / b * 100);
+    return d === 0 ? "±0 %" : d > 0 ? `<span class="delta-up">▲ ${d} %</span>` : `<span class="delta-down">▼ ${Math.abs(d)} %</span>`;
+  }
+  function renderAusw() {
+    const cy = String(new Date().getFullYear());
+    const jahre = uniq([...items.filter((b) => !b.beispiel).map(jahrVon).filter((y) => /^\d{4}$/.test(y)), cy]).sort();
+    if (!auswJahr || !jahre.includes(auswJahr)) auswJahr = cy;
+    const Y = auswJahr, V = String(+Y - 1), mY = auswAgg(Y), mV = auswAgg(V);
+    const zeilen = uniq([...mY.keys(), ...mV.keys()]).map((k) => ({ k, y: mY.get(k), v: mV.get(k), name: (mY.get(k) || mV.get(k)).name }))
+      .sort((a, b) => ((b.y ? b.y.gratis : 0) - (a.y ? a.y.gratis : 0)) || ((b.v ? b.v.gratis : 0) - (a.v ? a.v.gratis : 0)));
+    const gY = sumF(mY, "gratis"), gV = sumF(mV, "gratis"), lY = sumF(mY, "geliefert"), oY = sumF(mY, "offen"), eY = sumF(mY, "einkauf");
+    let h = `<div class="aw-top"><div class="subnav" style="margin:0" role="group" aria-label="Jahr">${jahre.map((j) => `<button type="button" data-jahr="${j}" aria-pressed="${j === Y}">${j}</button>`).join("")}</div>
+      <button type="button" class="btn small" id="awCsv">Für Calc exportieren</button></div>
+      <div class="aw-kpis">
+        <div class="aw-kpi"><div class="l">Gratiswert ${Y}</div><div class="v">${fmt(gY)}</div><div class="d">${deltaTxt(gY, gV)} zum Vorjahr (${fmt(gV)})</div></div>
+        <div class="aw-kpi"><div class="l">Davon geliefert</div><div class="v">${fmt(lY)}</div><div class="d">${pctTxt(lY, gY)} des Gratiswerts</div></div>
+        <div class="aw-kpi"><div class="l">Noch nicht geliefert</div><div class="v">${fmt(oY)}</div><div class="d">offene Ansprüche aus ${Y}</div></div>
+        <div class="aw-kpi"><div class="l">Einkaufswert der Bestellungen</div><div class="v">${fmt(eY)}</div><div class="d">davon gratis: ${pctTxt(gY, eY)}</div></div>
+      </div>`;
+    if (!zeilen.length) {
+      $("auswBody").innerHTML = h + `<div class="empty"><strong>Für ${Y} und ${V} gibt es noch keine Gratisware</strong>Sobald du Vereinbarungen erfasst, siehst du hier, was dir welcher Lieferant eingebracht hat.</div>`;
+      return;
+    }
+    const max = Math.max(1, ...zeilen.map((z) => Math.max(z.y ? z.y.gratis : 0, z.v ? z.v.gratis : 0)));
+    const bar = (cls, v) => `<div class="cbar${cls}"><i style="width:calc((100% - 92px) * ${(v / max).toFixed(4)})"></i><span>${fmt(v)}</span></div>`;
+    h += `<section class="card" style="margin-bottom:16px"><div class="card-h"><h2>Gratiswert je Lieferant</h2><span class="sub">zum Einkaufspreis der Gratisware</span></div>
+      <div class="clegend"><span style="--c:var(--cj)">${Y}</span><span style="--c:var(--cv)">${V} (Vorjahr)</span></div>
+      <div class="chart">${zeilen.map((z) => { const a = z.y ? z.y.gratis : 0, b = z.v ? z.v.gratis : 0;
+        return `<div class="crow" data-alief="${esc(z.k)}" title="${esc(z.name)}: ${Y} ${fmt(a)} · ${V} ${fmt(b)}"><div class="cname">${esc(z.name)}</div><div class="cbars">${bar("", a)}${bar(" vj", b)}</div></div>`; }).join("")}</div></section>`;
+    const td = (v) => `<td>${v}</td>`;
+    h += `<section class="card"><div class="card-h"><h2>Übersicht ${Y}</h2><span class="sub">Zeile antippen für Details</span></div><div class="tblwrap"><table class="atable">
+      <thead><tr><th>Lieferant</th><th>Aktionen</th><th>Einkaufswert</th><th>Gratiswert</th><th>Geliefert</th><th>Noch offen</th><th>Gratiswert ${V}</th><th>Veränderung</th></tr></thead><tbody>
+      ${zeilen.map((z) => { const y = z.y || { n: 0, einkauf: 0, gratis: 0, geliefert: 0, offen: 0 }, v = z.v ? z.v.gratis : 0;
+        return `<tr data-alief="${esc(z.k)}"><td>${esc(z.name)}</td>${td(y.n)}${td(fmt(y.einkauf))}${td(fmt(y.gratis))}${td(`${fmt(y.geliefert)} <span class="s">${pctTxt(y.geliefert, y.gratis)}</span>`)}${td(fmt(y.offen))}${td(fmt(v))}${td(deltaTxt(y.gratis, v))}</tr>`; }).join("")}
+      </tbody><tfoot><tr><td>Summe</td>${td(sumF(mY, "n"))}${td(fmt(eY))}${td(fmt(gY))}${td(`${fmt(lY)} <span class="s">${pctTxt(lY, gY)}</span>`)}${td(fmt(oY))}${td(fmt(gV))}${td(deltaTxt(gY, gV))}</tr></tfoot></table></div>
+      <p class="note">Eine Aktion zählt zu dem Jahr, in dem sie auf der Fläche startet (ohne Fläche: Datum der Vereinbarung). Alle Werte zum Einkaufspreis der Gratisware. „Noch offen“ = noch nicht geliefert.</p></section>`;
+    $("auswBody").innerHTML = h;
+  }
+  async function auswCsv() {
+    const Y = auswJahr, V = String(+Y - 1), mY = auswAgg(Y), mV = auswAgg(V), n = (v) => String(v).replace(".", ",");
+    const lines = [["Lieferant", `Aktionen ${Y}`, `Einkaufswert ${Y} €`, `Gratiswert ${Y} €`, `Geliefert ${Y} €`, `Noch offen ${Y} €`, `Gratiswert ${V} €`].join(";")];
+    uniq([...mY.keys(), ...mV.keys()]).forEach((k) => { const y = mY.get(k), v = mV.get(k), name = (y || v).name;
+      lines.push([`"${name.replace(/"/g, '""')}"`, y ? y.n : 0, n(y ? y.einkauf : 0), n(y ? y.gratis : 0), n(y ? y.geliefert : 0), n(y ? y.offen : 0), n(v ? v.gratis : 0)].join(";")); });
+    if (await saveFile(`gratiswaren_auswertung_${Y}.csv`, "﻿" + lines.join("\r\n"), "text/csv")) toast("Auswertung exportiert");
+  }
+  $("auswBody").addEventListener("click", (e) => {
+    const j = e.target.closest("[data-jahr]"); if (j) { auswJahr = j.dataset.jahr; renderAusw(); return; }
+    if (e.target.closest("#awCsv")) { auswCsv(); return; }
+    const r = e.target.closest("[data-alief]"); if (r) { liefKey = r.dataset.alief; $("lAll").checked = false; renderLiefDetail(); $("dlgLief").showModal(); }
+  });
   document.querySelector(".tabs").addEventListener("click", (e) => { const t = e.target.closest("[data-view]"); if (t) setView(t.dataset.view); });
   window.addEventListener("hashchange", () => setView(location.hash.slice(1)));
+
+  /* ---------- App-Sperre (pro Gerät) ----------
+     PIN wird nur als Prüfsumme gespeichert. Face ID/Touch ID über einen Passkey dieses Geräts (WebAuthn).
+     Die Sperre verdeckt die App; sie ersetzt nicht die Gerätesperre von iPad/iPhone. */
+  const LOCK_KEY = "gratiswaren-sperre";
+  let sperre = null, lockFails = 0, lockWaitUntil = 0, hiddenAt = 0, lockOffAsk = false;
+  try { sperre = JSON.parse(localStorage.getItem(LOCK_KEY) || "null"); } catch (e) { sperre = null; }
+  function saveSperre() { try { if (sperre) localStorage.setItem(LOCK_KEY, JSON.stringify(sperre)); else localStorage.removeItem(LOCK_KEY); } catch (e) {} }
+  const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  const unb64 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0));
+  async function pinHash(pin, salt) { return b64(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(salt + ":" + pin))); }
+  let faceMoeglich = false;
+  (async () => { try { faceMoeglich = !!(window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); } catch (e) { faceMoeglich = false; } })();
+  const NACH = { 0: "sofort", 1: "nach 1 Minute", 5: "nach 5 Minuten", 15: "nach 15 Minuten" };
+
+  function lockApp() {
+    if (!sperre) return;
+    document.documentElement.classList.add("locked");
+    document.querySelectorAll("dialog[open]").forEach((d) => d.close());
+    $("lockScreen").hidden = false;
+    $("lk_pin").value = ""; $("lk_msg").textContent = ""; $("lk_pwform").hidden = true;
+    $("lk_face").hidden = !sperre.credId;
+  }
+  function unlockApp() { document.documentElement.classList.remove("locked"); $("lockScreen").hidden = true; lockFails = 0; $("lk_pin").blur(); }
+  $("lk_face").addEventListener("click", async () => {
+    try {
+      await navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), allowCredentials: [{ type: "public-key", id: unb64(sperre.credId) }], userVerification: "required", timeout: 60000 } });
+      unlockApp();
+    } catch (e) { $("lk_msg").textContent = "Face ID hat nicht geklappt. Bitte die PIN eingeben."; }
+  });
+  $("lk_form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (Date.now() < lockWaitUntil) { $("lk_msg").textContent = `Zu viele Versuche. Bitte noch ${Math.ceil((lockWaitUntil - Date.now()) / 1000)} Sekunden warten.`; return; }
+    const pin = $("lk_pin").value.trim();
+    if (pin && (await pinHash(pin, sperre.salt)) === sperre.pinHash) { unlockApp(); return; }
+    lockFails++; $("lk_pin").value = "";
+    if (lockFails >= 5) { lockWaitUntil = Date.now() + 30000; lockFails = 0; $("lk_msg").textContent = "5 falsche Versuche – bitte 30 Sekunden warten."; }
+    else $("lk_msg").textContent = `Die PIN stimmt nicht (${lockFails} von 5 Versuchen).`;
+  });
+  $("lk_forgot").addEventListener("click", () => {
+    if (fauth && user) {
+      $("lk_pwinfo").textContent = `Entsperren mit dem Passwort von ${user.email}. Danach kannst du unter „Mehr“ eine neue PIN festlegen.`;
+      $("lk_pwform").hidden = false; $("lk_pw").focus();
+    } else $("lk_msg").textContent = "Ohne Anmeldung lässt sich die PIN nicht zurücksetzen. Melde dich beim nächsten Mal in der App an – dann geht es mit deinem Passwort.";
+  });
+  $("lk_pwform").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try { await fauth.signInWithEmailAndPassword(user.email, $("lk_pw").value); $("lk_pw").value = ""; unlockApp(); toast("Entsperrt – unter „Mehr“ kannst du eine neue PIN festlegen."); }
+    catch (err) { $("lk_msg").textContent = authError(err); }
+  });
+  // Beim Verlassen sperren bzw. beim Zurückkehren nach Ablauf der Zeit
+  document.addEventListener("visibilitychange", () => {
+    if (!sperre) return;
+    if (document.visibilityState === "hidden") { hiddenAt = Date.now(); if (!sperre.nachMin) lockApp(); }
+    else if (hiddenAt && Date.now() - hiddenAt >= (sperre.nachMin || 0) * 60000) lockApp();
+  });
+
+  // Einstellungen „App-Sperre“
+  async function registerFace() {
+    try {
+      const cred = await navigator.credentials.create({ publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: "Gratiswaren-Kontrolle" },
+        user: { id: crypto.getRandomValues(new Uint8Array(16)), name: "gratiswaren-sperre", displayName: "Gratiswaren-Kontrolle (App-Sperre)" },
+        pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+        authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required", residentKey: "discouraged" }, timeout: 60000, attestation: "none" } });
+      return b64(cred.rawId);
+    } catch (e) { return null; }
+  }
+  function renderLockBox() {
+    const box = $("lockBox");
+    if (sperre) {
+      box.innerHTML = `<div class="calc" style="font-family:var(--f-body)">
+          <div class="ln"><span>App-Sperre</span><span style="color:var(--ok);font-weight:700">eingeschaltet</span></div>
+          <div class="ln"><span>Face ID / Touch ID</span><span>${sperre.credId ? "ja" : "nein, nur PIN"}</span></div>
+          <div class="ln"><span>Sperren beim Verlassen</span><span><select id="lb_nach2">${Object.entries(NACH).map(([k, l]) => `<option value="${k}" ${+k === (sperre.nachMin || 0) ? "selected" : ""}>${l}</option>`).join("")}</select></span></div>
+        </div>
+        <div class="actions" style="margin-top:10px">
+          <button type="button" class="btn primary small" id="lb_now">Jetzt sperren</button>
+          ${!sperre.credId && faceMoeglich ? `<button type="button" class="btn small" id="lb_addface">Face ID einrichten</button>` : ""}
+          <button type="button" class="btn small" id="lb_newpin">Neue PIN festlegen</button>
+          <button type="button" class="btn ghost small" id="lb_off">Ausschalten</button>
+        </div>
+        ${lockOffAsk ? `<div class="confirm" style="margin-top:8px">App-Sperre auf diesem Gerät ausschalten? <button type="button" class="btn danger small" id="lb_offyes">Ja, ausschalten</button><button type="button" class="btn small" id="lb_offno">Abbrechen</button></div>` : ""}
+        <div id="lb_pinform"></div>`;
+      return;
+    }
+    box.innerHTML = `<p style="margin:0 0 10px">Beim Öffnen fragt die App nach ${faceMoeglich ? "Face ID oder " : ""}deiner PIN. Gilt nur für dieses Gerät – auf dem iPhone richtest du sie separat ein.</p>${pinFormHtml(true)}`;
+  }
+  function pinFormHtml(neu) {
+    return `<div class="lockform">
+      <label class="f">${neu ? "PIN festlegen" : "Neue PIN"} <span class="h">4 bis 8 Ziffern</span><input id="lb_pin1" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off"></label>
+      <label class="f">PIN wiederholen<input id="lb_pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off"></label>
+      ${neu ? `<label class="f">Sperren beim Verlassen<select id="lb_nach">${Object.entries(NACH).map(([k, l]) => `<option value="${k}" ${k === "1" ? "selected" : ""}>${l}</option>`).join("")}</select></label>` : ""}
+      ${neu && faceMoeglich ? `<label class="chk" style="padding-bottom:10px"><input type="checkbox" id="lb_face" checked>Face ID / Touch ID verwenden</label>` : ""}
+      <div class="actions"><button type="button" class="btn primary" id="${neu ? "lb_on" : "lb_savepin"}">${neu ? "App-Sperre einschalten" : "PIN speichern"}</button><span class="err" id="lb_err" hidden></span></div>
+    </div>`;
+  }
+  function pinPruefen() {
+    const p1 = $("lb_pin1").value.trim(), p2 = $("lb_pin2").value.trim();
+    const err = !/^\d{4,8}$/.test(p1) ? "Die PIN braucht 4 bis 8 Ziffern." : p1 !== p2 ? "Die beiden Eingaben stimmen nicht überein." : "";
+    if (err) { $("lb_err").textContent = err; $("lb_err").hidden = false; return null; }
+    return p1;
+  }
+  $("lockBox").addEventListener("click", async (e) => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.id === "lb_on") {
+      const pin = pinPruefen(); if (!pin) return;
+      const wantFace = $("lb_face") && $("lb_face").checked, nachMin = +$("lb_nach").value;
+      const credId = wantFace ? await registerFace() : null;   // Face ID zuerst, solange der Tipp „frisch“ ist
+      const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+      sperre = { salt, pinHash: await pinHash(pin, salt), nachMin, credId };
+      saveSperre(); renderLockBox();
+      toast(wantFace && !credId ? "App-Sperre an – Face ID ging nicht, die PIN gilt." : "App-Sperre ist eingeschaltet");
+    }
+    else if (t.id === "lb_now") { $("dlgData").close(); lockApp(); }
+    else if (t.id === "lb_addface") { const id = await registerFace(); if (id) { sperre.credId = id; saveSperre(); renderLockBox(); toast("Face ID eingerichtet"); } else toast("Face ID konnte nicht eingerichtet werden."); }
+    else if (t.id === "lb_newpin") { $("lb_pinform").innerHTML = pinFormHtml(false); $("lb_pin1").focus(); }
+    else if (t.id === "lb_savepin") { const pin = pinPruefen(); if (!pin) return; sperre.salt = b64(crypto.getRandomValues(new Uint8Array(16))); sperre.pinHash = await pinHash(pin, sperre.salt); saveSperre(); renderLockBox(); toast("Neue PIN gespeichert"); }
+    else if (t.id === "lb_off") { lockOffAsk = true; renderLockBox(); }
+    else if (t.id === "lb_offno") { lockOffAsk = false; renderLockBox(); }
+    else if (t.id === "lb_offyes") { sperre = null; lockOffAsk = false; saveSperre(); document.documentElement.classList.remove("locked"); renderLockBox(); toast("App-Sperre ausgeschaltet"); }
+  });
+  $("lockBox").addEventListener("change", (e) => { if (e.target.id === "lb_nach2") { sperre.nachMin = +e.target.value; saveSperre(); toast(`Sperrt ${NACH[sperre.nachMin]}`); } });
 
   /* ---------- Allgemein ---------- */
   let tt;
   function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 2200); }
+  function toastUndo(msg, undo) {
+    const t = $("toast"); t.innerHTML = `${esc(msg)}<button type="button" class="toast-undo">Rückgängig</button>`; t.hidden = false;
+    clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 6000);
+    t.querySelector("button").onclick = () => { t.hidden = true; undo(); };
+  }
   document.querySelectorAll("dialog").forEach((d) => d.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) d.close(); }));
   $("btnNew").addEventListener("click", () => view === "kalender" ? openBel(null) : view === "telefon" ? openKon(null) : openForm(null));
   $("list").addEventListener("click", (e) => { const r = e.target.closest(".row"); if (r) openDetail(r.dataset.id); });
@@ -2413,9 +3306,8 @@ h3.sec { font-family: var(--f-display); font-weight: 600; font-size: 19px; lette
   $("q").addEventListener("input", (e) => { query = e.target.value; render(); });
 
   connect();
-  let startView = location.hash.slice(1);
-  if (!startView) { try { startView = localStorage.getItem("gratiswaren-ansicht") || ""; } catch (e) {} }
-  setView(startView || "kalender");
+  setView(location.hash.slice(1) || "start");   // beim Öffnen immer „Diese Woche“
+  if (sperre) lockApp(); else document.documentElement.classList.remove("locked");
 })();
 </script>
 <script>

@@ -56,8 +56,8 @@ appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
 - Reines HTML/CSS/JavaScript ohne Framework und ohne Build-Schritt. Alles steckt in `index.html` in einer großen Funktion `(function () { ... })()`.
 - **Speicher:** Jede Liste liegt im `localStorage` des Geräts. Ist man angemeldet, wird zusätzlich nach Firestore gespiegelt (`users/{uid}/...`). Firestore hat Offline-Persistenz (IndexedDB) und überträgt Änderungen, sobald wieder Netz da ist.
 - **Abgleich-Logik:** `pushCollection()` / `pushMeta()` vergleichen jedes Dokument mit dem zuletzt bekannten Cloud-Stand (sortiertes JSON) und schreiben nur Änderungen. `onSnapshot`-Listener übernehmen Änderungen vom anderen Gerät (`applyRemote`). Beim **ersten Anmelden pro Gerät** (`firstLink`) werden Gerät und Cloud zusammengeführt (bei gleicher ID gewinnt der neuere Stand `geaendert`/`erstellt`). Danach ist die Cloud maßgeblich.
-- **Service Worker:** Erst Netz, ohne Netz aus dem Speicher. **Bei jedem Update die Versionsnummer in `sw.js` erhöhen** (aktuell `const CACHE = "gratiswaren-v10";` → nächstes Mal `v11` usw.), sonst kommt die neue Version nicht zuverlässig an.
-- **Design:** Flaschengrün als Akzentfarbe, Preisetikett-Gelb, Systemschriften (Avenir Next Condensed für Überschriften), hell und dunkel.
+- **Service Worker:** Erst Netz, ohne Netz aus dem Speicher. **Bei jedem Update die Versionsnummer in `sw.js` erhöhen** (aktuell `const CACHE = "gratiswaren-v21";` → nächstes Mal `v22` usw.), sonst kommt die neue Version nicht zuverlässig an.
+- **Design (seit v15):** hell und ruhig, weiße Karten mit weichen Schatten und runden Ecken, Systemschrift (keine Großbuchstaben-Überschriften), Akzent Grün `#1e874f`. **Navigation als Leiste unten** mit Symbolen (Kalender, Gratisware, Lieferanten, Telefonbuch, Einstellungen); oben steht der Titel des Bereichs und der passende „+“-Knopf. Darstellung standardmäßig **hell, auch wenn das iPad auf dunkel steht**; umstellbar unter Einstellungen → Darstellung (`settings.darstellung`: hell | auto | dunkel, gesetzt als `data-mode` auf `<html>`). Die neuen Regeln stehen als Block „Modernes Erscheinungsbild“ am Ende des `<style>` und überschreiben ältere Regeln.
 
 ## 4. Datenmodell
 
@@ -77,10 +77,11 @@ appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
 | `gratiswaren-ansicht` | – | zuletzt geöffneter Reiter |
 
 ### Felder
-- **Buchung (Gratisware):** `id, lieferant, kontakt, datum (abgemacht am), bestellartikel, menge, einheit (Display/Kiste/…), ve (Einheiten je Display), veName (Sixpack/…), preis (je Einheit bzw. je VE), aktion (Kassenregal | Standard | Eigene), quote (nur bei Eigene, in %), gratisartikel, gEinheit, gPreis, notiz, lieferungen[], belegungId?, beispiel?, erstellt, geaendert`
+- **Buchung (Gratisware):** `id, lieferant, kontakt, datum (abgemacht am), bestellartikel, menge, einheit (Display/Kiste/…), ve (Einheiten je Display), veName (Sixpack/…), preis (je Einheit bzw. je VE), aktion (Kassenregal | Standard | Eigene), quote (nur bei Eigene, in %), gratisartikel, gEinheit, gPreis, notiz, lieferungen[], belegungId?, angefordert (bool, beim Außendienst angefordert), angefordertAm, beispiel?, erstellt, geaendert`
 - **Lieferung:** `id, datum, menge (in Gratis-Einheiten), lieferschein, verbucht (bool), verbuchtAm`
-- **Belegung:** `id, flaecheId, start (Montag als JJJJ-MM-TT), wochen, lieferant, kontakt, artikel, notiz, buchungId?, erstellt`
-- **Fläche:** `id, name, typ (Kassenregal | Standard)`. Standard am Anfang: Kassenregal 1, Kassenregal 2, Stirnseite Getränke.
+- **Belegung:** `id, flaecheId, format (Palettenart, z. B. "Europalette"), platz (erster Stellplatz, 0-basiert), start (Montag als JJJJ-MM-TT), wochen, lieferant, kontakt (wird nicht mehr angezeigt), artikel, notiz, buchungId?, erstellt`
+- **Fläche:** `id, name, typ (Kassenregal | Standard), layout` – `layout` legt die **Stellplätze pro KW** fest (Tabelle `LAYOUTS` in `index.html`): `1` ein Feld, `1EU`/`2EU`/`3EU` Europaletten, `2DUE` 2 Düsseldorfer, `2DUE4V` 2 Düsseldorfer **oder** 4 Viertel-Chep (4 Viertel-Plätze, ein Düsseldorfer belegt 2, mischbar), `4V` 4 Viertel-Chep. Überschneidungen werden pro Stellplatz geprüft.
+- **Dans Aktionsplätze** sind eigene Flächen namens „Aktionsplatz 1 Energy/Limo Regal“, „Aktionsplatz 2 Rücklauf Wasser“, „Aktionsplatz 3 für zwei DD“, „Aktionsplatz 4 beim Leergut“ (plus „Kassenregal 1“). `migrateFlaechen()` gibt Flächen, deren Name mit „Aktionsplatz 1–4“ beginnt und die noch kein `layout` haben, einmalig: 1 und 2 = `2EU`, 3 = `2DUE`, 4 = `2DUE4V`. Läuft beim Start, nach dem ersten Zusammenführen und nach jedem Cloud-Update der Flächen. Bei neuer Installation sind `ap1`–`ap4` die Standard-Flächen.
 - **Artikel:** `id, name, einheit, preis, ve?, veName?`
 - **Kontakt:** `id, name, telefon, email, notiz, lieferant (Haupt-Zuordnung, darf leer sein), weitere[] (weitere Lieferanten), hauptFuer[] (Lieferantennamen in Kleinschrift, für die er Hauptansprechpartner ist)`
 - **Foto:** `id, flaecheId, woche (Montag der KW), belegungId, notiz (Notiz / Nr.), aufgenommen, erstellt, thumb` (lokal zusätzlich `hochgeladen`). Fotos hängen an **Fläche + KW**, nicht an der Belegung, und bleiben auch nach dem Löschen einer Belegung erhalten. Sie sind **nicht** in der JSON-Sicherung. Firebase Storage wird nicht genutzt, weil es für neue Projekte den kostenpflichtigen Tarif verlangt.
@@ -101,8 +102,10 @@ appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
 **Kopfbereich:** Status-Anzeige Abgleich („Abgeglichen“, „Offline · n Änderungen warten“, „Nicht angemeldet“), Einstellungen, „+ Neu“-Knopf passend zum Reiter.
 
 **Reiter Aktionskalender**
-- Flächen als Zeilen, 12 Kalenderwochen als Spalten, Blättern um 4 Wochen, „Diese Woche“.
+- Flächen als Zeilen, **jeder Stellplatz eine eigene Zeile** (z. B. EU 1 / EU 2, ¼ 1–4), große Felder (150 px breit), im Feld steht **der Artikel fett**, darunter Lieferant, Palette, KW, Status. 12 Kalenderwochen als Spalten, Blättern um 4 Wochen, „Diese Woche“.
 - „Springe zu“: KW + Jahr, oder Feiertag/Anlass aus einer Liste.
+- **Verschieben per Ziehen:** Belegung gedrückt halten (Touch ca. 0,4 s, Maus sofort) und auf andere Woche/Stellplatz/Fläche ziehen; grüner bzw. roter Zielrahmen, Doppelbelegung wird abgelehnt, danach Toast mit „Rückgängig“. Im Belegungs-Fenster zusätzlich „‹ 1 Woche früher“ / „1 Woche später ›“. Fotos bleiben an Fläche + KW und wandern nicht mit.
+- **„Speichern & weitere Palette“** (nur bei Flächen mit mehreren Stellplätzen): speichert und öffnet sofort den nächsten freien Stellplatz in derselben Woche/Dauer.
 - Freies Feld antippen → Belegung anlegen (Fläche, Start-KW, Dauer, Lieferant, Ansprechpartner, Artikel). Doppelbelegung wird verhindert.
 - „Speichern & Gratisware anlegen“ übernimmt die Belegung vorausgefüllt in die Gratiswaren-Kontrolle (Quote nach Flächen-Typ).
 - Farben: schraffiert = noch keine Gratisware, blau = offen, gelb = zu verbuchen, grün = verbucht, rot = überfällig.
@@ -115,6 +118,9 @@ appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
 **Reiter Gratisware**
 - Drei Kennzahlen: Gratiswert gesamt, davon bereits verbucht, noch offen. Balken: verbucht / geliefert, nicht verbucht / offen.
 - Roter Hinweis bei überfälligen Einträgen, Filter (Alle, Nachhaken, Offen, Zu verbuchen, Verbucht, Angaben fehlen), Suche.
+- **Aktionsfläche direkt im Formular** (Fläche, Start-KW, Dauer): Beim Speichern wird die Belegung im Kalender angelegt, geändert oder bei „Keine Fläche“ entfernt. Die Auswahl zeigt „frei“ bzw. „belegt von …“, Doppelbelegung wird verhindert, die Fläche setzt die Quote (Kassenregal 20 %, Standard 10 %, außer bei eigener Quote). Beim Übernehmen aus dem Kalender ist die Fläche vorausgefüllt und es steht nichts mehr automatisch in der Notiz.
+- **Lieferant ist Pflicht** (Formular und Belegung): bekannte Namen werden auf die vorhandene Schreibweise gebracht (`pruefeLieferant`), ein neuer Name muss einmal mit „Ja, als neuen Lieferanten anlegen“ bestätigt werden.
+- **Kontrollkästchen „Gratisware beim Außendienst angefordert“** im Formular und im Detail (mit Datum). In der Liste Markierung „Angefordert“ / „Nicht angefordert“, Filter **„Noch anfordern“** (offen und nicht angefordert), Spalte in der CSV.
 - Formular mit Live-Rechnung („Kassenbon“), Artikel-Vorschläge mit automatischem Preis, Ansprechpartner-Vorschläge.
 - Detail: Rechnung, Lieferungen eintragen (Menge vorgeschlagen), einzeln oder alle verbuchen, bearbeiten, löschen.
 - Fotos der verknüpften Fläche erscheinen auch im Detail der Gratisware (mit „Nachweis teilen“).
@@ -134,6 +140,15 @@ appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
 - Abgleich: anmelden, Konto anlegen, Passwort vergessen, abmelden.
 - Sicherung als JSON-Datei speichern/laden (enthält alles), CSV-Export für OpenOffice Calc (Semikolon, Dezimalkomma).
 
+## 6b. Neu seit v20
+
+- **Navigation unten:** Start · Kalender · Gratisware · Lieferanten · Mehr. Unter „Lieferanten“ oben umschaltbar: Übersicht · Telefonbuch · Jahresauswertung (Ansichten `lieferanten`, `telefon`, `auswertung`). „Mehr“ öffnet Einstellungen mit Papierkorb und Ideen & Fehler. Beim Öffnen startet die App immer auf **Start**.
+- **Startseite „Diese Woche“** (`renderStart`): Kacheln (Gratisware noch offen €, überfällig, noch anfordern, zu verbuchen, Belegungen ohne Gratisware – nur angezeigt, wenn > 0, Antippen springt in den gefilterten Bereich), Karte „Diese Woche auf den Flächen“ (pro Fläche, mit „endet diese Woche“ bzw. „bis KW“, freie Plätze), Karte „Nächste Woche“ (endet / neu aufbauen), Karte „Gratisware ausstehend“ (max. 6, überfällige zuerst), nächster Feiertag nur wenn innerhalb von 4 Wochen.
+- **Papierkorb** (`papierkorb`, localStorage `gratiswaren-papierkorb`, Firestore `users/{uid}/papierkorb/{id}`): Löschen von Gratisware, Belegung (auch „Keine Fläche“ im Formular) und Kontakt verschiebt das Objekt samt Inhalt dorthin `{id, typ, titel, info, geloescht, daten}`. Toast mit „Rückgängig“, Dialog mit Wiederherstellen / Endgültig löschen / Leeren. Nach 30 Tagen entfernt jedes Gerät den Eintrag (`purgeTrash`). Beim ersten Anmelden eines Geräts wird nichts wiederbelebt, was in der Cloud im Papierkorb liegt. Verknüpfungen Gratisware ↔ Belegung werden beim Wiederherstellen neu gesetzt, Belegung nur wenn der Platz frei ist.
+- **Jahresauswertung** (`renderAusw`): Jahr wählbar, Vergleich mit Vorjahr. Eine Aktion zählt zum Jahr ihres Starts auf der Fläche, sonst zum Datum der Vereinbarung. Kennzahlen: Gratiswert, davon geliefert, noch nicht geliefert, Einkaufswert der Bestellungen + Gratis-Anteil. Balkendiagramm je Lieferant (Jahr grün `--cj`, Vorjahr blau `--cv`, Farben geprüft), Tabelle mit Summe und Veränderung, CSV-Export. Alles zum Einkaufspreis der Gratisware.
+- **Ideen & Fehler** (`notizen`, localStorage `gratiswaren-notizen`, Firestore `meta/notizen`): Glühbirne oben rechts in jedem Bereich. Art (Idee/Fehler/Wunsch), „Was wollte ich machen? / Was hat nicht funktioniert? / Was wäre einfacher gewesen?“, merkt sich Datum und Bereich. Erledigt-Haken, Löschen, „Liste teilen / kopieren“ (Text zum Einfügen in einen Claude-Chat).
+- **App-Sperre** (pro Gerät, localStorage `gratiswaren-sperre`, wird **nicht** abgeglichen): Mehr → App-Sperre. PIN 4–8 Ziffern (gespeichert nur als SHA-256 mit Salz), optional Face ID/Touch ID über einen Passkey dieses Geräts (WebAuthn, `registerFace`/`navigator.credentials.get`). Sperrt beim Öffnen und beim Verlassen (sofort / 1 / 5 / 15 Min). 5 Fehlversuche → 30 s Wartezeit. „PIN vergessen?“ → mit Passwort des Firebase-Kontos entsperren (nur wenn angemeldet). Die Sperre verdeckt die Oberfläche; Schutz der Daten bleibt Gerätesperre + Firestore-Regeln.
+
 ## 7. So kommt ein Update aufs iPad
 
 1. Geänderte Dateien (meist `index.html` und `sw.js`) bei GitHub hochladen: Repository `gratisware` → **Add file** → **Upload files** → **Commit changes**. Gleichnamige Dateien werden ersetzt.
@@ -151,9 +166,8 @@ appId: "1:1004419186622:web:8227595c3e4b1f3691c3ef"
 ## 9. Ideen aus dem Brainstorming (noch nichts davon gebaut)
 
 **Empfohlene Reihenfolge**
-1. **Papierkorb** (Gelöschtes 30 Tage zurückholen; wichtig wegen Abgleich zwischen Geräten) und **Versionsanzeige** in der App („Version vom …“).
-2. **Startseite „Diese Woche“:** was steht wo, was wird umgebaut, was ist zu verbuchen, was ist überfällig, welcher Feiertag kommt.
-4. **Jahresauswertung pro Lieferant** für Jahresgespräche (Gratiswert, Flächenauslastung, Vorjahresvergleich).
+1. **Versionsanzeige** in der App („Version vom …“).
+2. Flächenauslastung in der Jahresauswertung (belegte Wochen je Fläche).
 
 **Weitere Ideen**
 - Pfand der Gratisware mitrechnen (z. B. 3,10 € je Kiste).
